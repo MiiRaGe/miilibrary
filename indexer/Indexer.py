@@ -29,8 +29,8 @@ class Indexer:
         #All directory is always created by sorter and contains all movie sorted alphabetically
         self.sourceDir = sourceDir
         self.alphabeticalDir = os.path.join(sourceDir,"All")
-        self.genreDir = Tool.makeDir(os.path.join(sourceDir,'Genres'))
-        self.noGenreDir = Tool.makeDir(os.path.join(self.genreDir,'NOGENRE'))
+        self.genreDir = Tool.make_dir(os.path.join(sourceDir,'Genres'))
+        self.noGenreDir = Tool.make_dir(os.path.join(self.genreDir,'NOGENRE'))
         
     def index(self):
         imdbRegEx = re.compile('.IMDB_ID_(\d+)$')
@@ -69,7 +69,7 @@ class Indexer:
     def createGenreFolders(self,genres):
         for genre in genres:
             genre = genre.strip()
-            Tool.makeDir(os.path.join(self.sourceDir,'Genres',genre))
+            Tool.make_dir(os.path.join(self.sourceDir,'Genres',genre))
         
 
 

@@ -83,7 +83,7 @@ class OpensubtitleWrapper:
                 self.logger.info("Got rejected by the API, waiting 1minutes")
                 time.sleep(60)
     
-    def getSubtitles(self,movieHash,movieSize,movieName):
+    def get_subtitles(self,movieHash,movieSize,movieName):
         if not self.loginSuccessfull :
             self.logIn()
             if not self.loginSuccessfull :

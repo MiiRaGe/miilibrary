@@ -1,301 +1,321 @@
-'''
-Created on 18 janv. 2014
-
-@author: miistair
-'''
-
+__author__ = 'Alexis Durand'
 import os
 import re
 import sys
 import logging
 import Tool
+import settings
 import movieinfo.hashTool as ht
 
+from Tool import OpensubtitleWrapper
+
+""" Sorter Module """
 logger = logging.getLogger("NAS")
 
+
 class Sorter:
-    
-    def __init__(self,mediaDir):
-        self.mediaDir = mediaDir
-        self.dataDir = os.path.join(mediaDir,"data")
-        self.serieDir = os.path.join(mediaDir,"TVSeries")
-        self.movieDir = os.path.join(mediaDir, "Movies")
-        self.unsortedDir = os.path.join(mediaDir,"unsorted")
-        self.alphabeticalMovieDir = os.path.join(self.movieDir, "All")
-        Tool.makeDir(self.serieDir)
-        Tool.makeDir(self.movieDir)
-        Tool.makeDir(self.alphabeticalMovieDir)
-        Tool.makeDir(self.unsortedDir)
-    
-    def createHashList(self,media):
-        filePath = os.path.join(self.dataDir,media)
-        moviehash = str(ht.hashFile(filePath))
-        self.map[moviehash] = media
-        self.hashArray.append(moviehash)
+
+    def __init__(self, media_dir):
+        self.hash_array = []
+        self.map = {}
+        self.media_dir = media_dir
+        self.data_dir = os.path.join(media_dir, "data")
+        self.serie_dir = os.path.join(media_dir, "TVSeries")
+        self.movie_dir = os.path.join(media_dir, "Movies")
+        self.unsorted_dir = os.path.join(media_dir, "unsorted")
+        self.alphabetical_movie_dir = os.path.join(self.movie_dir, "All")
+        self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
+        Tool.make_dir(self.serie_dir)
+        Tool.make_dir(self.movie_dir)
+        Tool.make_dir(self.alphabetical_movie_dir)
+        Tool.make_dir(self.unsorted_dir)
+
+    def create_hash_list(self, media):
+        file_path = os.path.join(self.data_dir, media)
+        movie_hash = str(ht.hashFile(file_path))
+        self.map[movie_hash] = media
+        self.hash_array.append(movie_hash)
 
     def sort(self):
         logger.info("Login in the wrapper")
-        Tool.OpensubtitleWrapper.logIn(True,10)
+        OpensubtitleWrapper.logIn(True, 10)
         logger.info("Beginning Sorting")
-        self.hashArray = []
-        self.map = dict()
-        for media in os.listdir(self.dataDir):
-            self.createHashList(media)
-        
-        for moviehash in self.hashArray:
-            filename = self.map.get(moviehash)
-            result = Tool.OpensubtitleWrapper.getSubtitles(moviehash, self.getSize(os.path.join(self.dataDir,filename)), "")
-            isSorted = False
+        for media in os.listdir(self.data_dir):
+            self.create_hash_list(media)
+
+        for movie_hash in self.hash_array:
+            file_name = self.map.get(movie_hash)
+            result = OpensubtitleWrapper.get_subtitles(movie_hash,
+                                                       self.get_size(os.path.join(self.data_dir, file_name)),
+                                                       "")
+            is_sorted = False
             if result:
-                logger.info ("Got Result from opensubtitle for " + filename)
+                logger.info("Got Result from opensubtitle for " + file_name)
                 logger.debug(result)
                 if type(result) == list:
-                    result = self.getBestMatch(result,filename)
+                    result = self.get_best_match(result, file_name)
                 if result:
-                    isSorted = self.sortOpenSubtitleInfo(result)
+                    is_sorted = self.sort_open_subtitle_info(result)
             else:
-                result = Tool.OpensubtitleWrapper.getMovieNames2([moviehash,])
+                result = OpensubtitleWrapper.getMovieNames2([movie_hash])
                 if result:
                     logger.info(result)
-                    result = result.get(moviehash)
+                    result = result.get(movie_hash)
                     if type(result) == list:
-                        result = self.getBestMatch(result,filename)
+                        result = self.get_best_match(result, file_name)
                     if result:
-                        isSorted = self.sortOpenSubtitleInfo(result)
-                
-            if not isSorted:
-                if self.isSerie(self.map.get(moviehash)):
-                    self.sortTVSerie(filename)
-                    logger.info("Sorted the TV Serie :" + filename)
-                else: 
-                    logger.info("Probably a Movie? " + filename)
-                    self.sortMovieFromName(filename)
+                        is_sorted = self.sort_open_subtitle_info(result)
 
-    def isSerie(self,name):
-        return re.match(".*[sS]\d\d[Ee]\d\d.*",name)
-    
-    def getBestMatch(self,resultList,filename):
-        for result in resultList:
-            if self.compare(filename,result):
-                logger.info("Comparison returned true, moving on")
-                return result
-            else:
-                logger.info("Comparison returned false, inconsistencies exist")
-            
-        return None
-        
-    def sortOpenSubtitleInfo(self,result):
-        filename = self.map.get(result.get("MovieHash"))
-        if result.get("MovieKind")=='movie':
-            return self.createDirAndMoveMovie(result.get("MovieName"), result.get("MovieYear"), result.get("IDMovieImdb"), filename )
+            if not is_sorted:
+                if is_serie(self.map.get(movie_hash)):
+                    self.sort_tv_serie(file_name)
+                    logger.info("Sorted the TV Serie : %s" % file_name)
+                else:
+                    logger.info("Probably a Movie? %s" % file_name)
+                    self.sort_movie_from_name(file_name)
+
+    def sort_open_subtitle_info(self, result):
+        file_name = self.map.get(result.get("MovieHash"))
+        if result.get("MovieKind") == 'movie':
+            return self.create_dir_and_move_movie(result.get("MovieName"),
+                                                  result.get("MovieYear"),
+                                                  result.get("IDMovieImdb"),
+                                                  file_name)
         else:
-            parsing = re.match('"(.*)"(.*)',result.get("MovieName"))
-            serieName = ""
-            serieTitle = ""
+            parsing = re.match('"(.*)"(.*)', result.get("MovieName"))
+            serie_title = ""
             if parsing:
-                serieName = parsing.group(1).strip()
-                serieTitle = parsing.group(2).strip()
+                serie_name = parsing.group(1).strip()
+                serie_title = parsing.group(2).strip()
             else:
-                serieName = result.get("MovieName")
-                
+                serie_name = result.get("MovieName")
+
             if result.get("SeriesSeason") == '0' or result.get("SeriesEpisode") == '0':
-                self.serieRegEx = re.compile('[sS]0*(\d+)[eE](\d\d)')
-                matched = self.serieRegEx.search(result.get('SubFileName'))
+                matched = self.serie_regex.search(result.get('SubFileName'))
                 if matched:
                     result["SeriesSeason"] = matched.group(1)
                     result["SeriesEpisode"] = matched.group(2)
-            return self.createDirAndMoveSerie(serieName, result.get("SeriesSeason"),result.get("SeriesEpisode"), serieTitle, filename)
-    
-    def createDirAndMoveSerie(self,serieName,serieSeason, serieEpisodeNumber,serieTitle, filename):
-            serieName = self.applyCustomRenaming(serieName)
-            serieName = self.format(serieName)
-            serieTitle = self.format(serieTitle)
-            extension = filename[-4:]
-            if len(serieEpisodeNumber) < 2 :
-                serieEpisodeNumber = '0' + serieEpisodeNumber
-                
-            serieSeasonNumber = serieSeason
-            if len(serieSeason) < 2 :
-                serieSeasonNumber = '0' + serieSeason
-            
-            newFilename = serieName + "." + "S" + serieSeasonNumber + "E" + serieEpisodeNumber + "." +serieTitle + "."
-            quality = self.getQuality(filename)
+            return self.create_dir_and_move_serie(serie_name,
+                                                  result.get("SeriesSeason"),
+                                                  result.get("SeriesEpisode"),
+                                                  serie_title,
+                                                  file_name)
+
+    def create_dir_and_move_serie(self, serie_name, serie_season, serie_episode_number, serie_title, file_name):
+            serie_name = format_serie_name(self.apply_custom_renaming(serie_name))
+            serie_title = format_serie_name(serie_title)
+            extension = file_name[-4:]
+            if len(serie_episode_number) < 2:
+                serie_episode_number = '0' + serie_episode_number
+
+            serie_season_number = serie_season
+            if len(serie_season) < 2:
+                serie_season_number = '0' + serie_season
+
+            new_file_name = "%s.S%sE%s.%s." % (serie_name, serie_season_number, serie_episode_number, serie_title)
+            quality = get_quality(file_name)
             if quality:
-                newFilename += " ["+ quality + "]"
-            newFilename += extension
-            newFilename = re.sub(" +",".",newFilename)
-            newFilename = re.sub("\.+",".",newFilename)
-            resultDir = Tool.makeDir(os.path.join(self.serieDir,serieName))
-            episodeDir = Tool.makeDir(os.path.join(resultDir + os.path.sep +"Season "+ serieSeason))
+                new_file_name += " [%s]" % quality
+            new_file_name += extension
+            new_file_name = re.sub(" +", ".", new_file_name)
+            new_file_name = re.sub("\.+", ".", new_file_name)
+            result_dir = Tool.make_dir(os.path.join(self.serie_dir, serie_name))
+            episode_dir = Tool.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, serie_season)))
             try:
-                
-                existingEpisode = self.getEpisode(episodeDir, serieName, serieEpisodeNumber)
-                if existingEpisode:
-                    if os.path.getsize(os.path.join(episodeDir, existingEpisode)) >= os.path.getsize(os.path.join(self.dataDir,filename)):
-                        self.moveToUnsorted(self.dataDir, filename)
-                        logger.info("Moving the source to unsorted, episode already exists :" + existingEpisode)
+
+                existing_episode = get_episode(episode_dir, serie_name, serie_episode_number)
+                if existing_episode:
+                    if os.path.getsize(os.path.join(episode_dir, existing_episode)) >=\
+                            os.path.getsize(os.path.join(self.data_dir, file_name)):
+                        self.move_to_unsorted(self.data_dir, file_name)
+                        logger.info("Moving the source to unsorted, episode already exists :%s" % existing_episode)
                     else:
-                        self.moveToUnsorted(episodeDir, existingEpisode)   
-                        logger.info("Moving destination to unsorted (because bigger = better): " + newFilename)
-                        os.rename(os.path.join(self.dataDir,filename), os.path.join(episodeDir,newFilename))
+                        self.move_to_unsorted(episode_dir, existing_episode)
+                        logger.info("Moving destination to unsorted (because bigger = better): %s" % new_file_name)
+                        os.rename(os.path.join(self.data_dir, file_name), os.path.join(episode_dir, new_file_name))
                     return True
                 else:
-                    logger.info("Moving the episode to the correct folder..."  + newFilename)
-                    os.rename(os.path.join(self.dataDir,filename), os.path.join(episodeDir, newFilename))
+                    logger.info("Moving the episode to the correct folder...%s" % new_file_name)
+                    os.rename(os.path.join(self.data_dir, file_name), os.path.join(episode_dir, new_file_name))
                     return True
             except (WindowsError, OSError):
-                logger.error(("Can't move "+os.path.join(self.dataDir,filename)))
+                logger.error(("Can't move %s" % os.path.join(self.data_dir, file_name)))
                 logger.error(sys.exc_info()[1])
                 return False
-    
-    def sortTVSerie(self,media):
-        newMedia = self.renameSerie(media)
-        self.serieRegEx = re.compile('\A(.*)[sS]0*(\d+)[eE](\d\d).*\Z')
-        result = self.serieRegEx.match(newMedia)
-        if result:
-            serieName = self.format(result.group(1))
-            seasonnumber = result.group(2)
-            episodeNumber = result.group(3)
-            self.createDirAndMoveSerie(serieName,seasonnumber, episodeNumber,"", media)
-    
-    def applyCustomRenaming(self,seriename):
-        lowerSeriename = seriename.lower()
-        logger.info("Custom renamming :" + seriename)
-        for item in Tool.Configuration.items('Sorting'):
-            logger.debug("Applygin filter :" + item[0] + " -> " + item[1])
-            result = re.sub(item[0],item[1],lowerSeriename)
-            if not (result == lowerSeriename):
-                logger.debug("Renamed :" + lowerSeriename + " to " + result)
-                return result
-        return seriename
 
-    def sortMovieFromName(self,filename):
-        filename
-        info = self.getInfo(filename)
+    def sort_tv_serie(self, media):
+        new_media = rename_serie(media)
+        self.serie_regex = re.compile('\A(.*)[sS]0*(\d+)[eE](\d\d).*\Z')
+        result = self.serie_regex.match(new_media)
+        if result:
+            serie_name = format_serie_name(result.group(1))
+            season_number = result.group(2)
+            episode_number = result.group(3)
+            self.create_dir_and_move_serie(serie_name, season_number, episode_number, "", media)
+
+    def sort_movie_from_name(self, file_name):
+        info = get_info(file_name)
         if info is None:
             return False
         name = info.get("title")
         year = info.get("year")
-        logger.info("Name/Year found from filename : Name = <"+ name  + ">" + " Year = <" + year + ">")
-        result = Tool.MovieDBWrapper.getMovieName(name,year)
-        logger.debug("Result from tmdb:" + str(result))
+        logger.info("Name/Year found from file_name : Name = <%s>, Year = <%s>" % (name, year))
+        result = Tool.MovieDBWrapper.getMovieName(name, year)
+        logger.debug("Result from tmdb: %s" % result)
         if result:
             result = result[0]
-            movieid = str(result.get("id"))
-            logger.debug("Found Id : " + movieid )
-            imdbid = Tool.MovieDBWrapper.getMovieIMDBID(movieid)
-            if imdbid:
-                imdbid = imdbid.get("imdb_id")
-                self.createDirAndMoveMovie(result.get("title"),year, imdbid, filename)
+            movie_id = str(result.get("id"))
+            logger.debug("Found Id : " + movie_id )
+            imdb_id = Tool.MovieDBWrapper.get_movie_imdb_id(movie_id)
+            if imdb_id:
+                imdb_id = imdb_id.get("imdb_id")
+                self.create_dir_and_move_movie(result.get("title"), year, imdb_id, file_name)
                 return True
-        self.moveToUnsorted(self.dataDir, filename)
+        self.move_to_unsorted(self.data_dir, file_name)
         return False
-     
-    def moveToUnsorted(self,filedir,filename):
+
+    def move_to_unsorted(self, file_dir, file_name):
         try:
-            if os.path.exists(os.path.join(self.unsortedDir,filename)):
-                os.remove(os.path.join(self.unsortedDir,filename))
-            os.rename(os.path.join(filedir,filename), os.path.join(self.unsortedDir,filename))
+            if os.path.exists(os.path.join(self.unsorted_dir, file_name)):
+                os.remove(os.path.join(self.unsorted_dir, file_name))
+            os.rename(os.path.join(file_dir, file_name), os.path.join(self.unsorted_dir, file_name))
         except (WindowsError, OSError):
-            logger.error("Can't create "+ filename)
+            logger.error("Can't create %s" % file_name)
             logger.error(sys.exc_info()[1])
-        
-    def createDirAndMoveMovie(self,movieName,year,imdbid,filename):
-        movieName = re.sub("[\*\:]","-",movieName) #Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
-        customMovieDir =  movieName + " (" + year + ")"
-        quality =  self.getQuality(filename)
+
+    def create_dir_and_move_movie(self, movie_name, year, imdbid, filename):
+        #Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
+        movie_name = re.sub("[\*\:]", "-", movie_name)
+        custom_movie_dir = "%s (%s)" % (movie_name, year)
+        quality = get_quality(filename)
         if quality:
-            customMovieDir += " [" + quality + "]"
+            custom_movie_dir += " [" + quality + "]"
         try:
-            createdMovieDir = Tool.makeDir(os.path.join(self.alphabeticalMovieDir,customMovieDir))
+            created_movie_dir = Tool.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
             if imdbid:
-                open(os.path.join(createdMovieDir,".IMDB_ID_"+imdbid), "w")
-            newName = re.sub(".*(\.[a-zA-Z0-9]*)$", re.sub(" ",".",customMovieDir) + "\g<1>", filename)
-            logger.info("Moving " + filename + ", with new name " + newName)
-            os.rename(os.path.join(self.dataDir,filename),os.path.join(createdMovieDir,newName))
+                open(os.path.join(created_movie_dir, ".IMDB_ID_%s" % imdbid), "w")
+            new_name = re.sub(".*(\.[a-zA-Z0-9]*)$", "%s\g<1>" % re.sub(" ", ".", custom_movie_dir), filename)
+            logger.info("Moving %s, with new name %s" % (filename, new_name))
+            os.rename(os.path.join(self.data_dir, filename), os.path.join(created_movie_dir, new_name))
             return True
         except (WindowsError, OSError):
-            logger.error("Can't create "+ customMovieDir)
+            logger.error("Can't create %s" % custom_movie_dir)
             logger.error("Probably because windows naming convention sucks, skipping...")
             logger.error(sys.exc_info()[1])
             return False
-        
-    def getInfo(self,name):
-        regexRes = re.match("(.*)(20[01][0-9]|19[5-9][0-9]).*",name)
-        if regexRes:
-            title = re.sub("[!\"$%&\*()_=';\-/,}\.{~@:?>< \t\n\r\f\v]"," ",regexRes.group(1))
-            title = re.sub("  ", " ",title).strip()
-            result = dict({"title":title,"year":regexRes.group(2)})
-            return result
-        return None
-    
-    def getSize(self,fileName):
-        return str(os.path.getsize(os.path.join(self.dataDir,fileName)))
-    
-    def getQuality(self,name):
-        quality = []
-        regexRes = re.search("(720p|1080p)",name)
-        if regexRes:
-            quality.append(regexRes.group(1))
-            
-        if re.search("[aA][cC]3",name):
-            quality.append("AC3")
-            
-        if re.search("DTS",name):
-            quality.append("DTS")
-            
-        if re.search("([bB][lL][uU]-*[rR][aA][yY]|[bB][rR][Rr][iI][Pp])",name):
-            quality.append("BluRay")
-            
-        if re.search("[wW][eE][bB]-*[RrdD][iIlL][pP]?",name):
-            quality.append("WebRIP")
-            
-        return ','.join(quality)
-    
-    def getEpisode(self,episodeDir,serieName,number):
-        for episode in os.listdir(episodeDir):
-            if (re.search("[Ss]\d+[eE]" + number, episode )) :
-                logger.info("Same episode found (" + serieName + " e" + number +") : "  + episode)
-                return episode
-        return None
-    
-    def format(self,serieName):
-        serieName = re.sub("[!\"$%&\*()_=';\-/,}\.{~@:?>< \t\n\r\f\v]",".",serieName)
-        serieName = re.sub("\.+",".",serieName)
-        serieNameToken = serieName.split(".")
-        return str.strip(' '.join(map(str.capitalize,serieNameToken)))
-        
-    def renameSerie(self,fileName):
-        newMedia = re.sub("[!\"$%&\*()_=';\-/,}\.{~@:?>< \t\n\r\f\v]",".",fileName)
-        newMedia = re.sub("\.\.",".",newMedia)
-        if (re.sub("[^\d]([0-3]?\d)x(\d{1,2})[^\d]","S\g<1>E\g<2>",newMedia) is not newMedia):
-            newMedia = re.sub("([0-3]?\d)x(\d{1,2})","S\g<1>E\g<2>",newMedia)
-        return newMedia
-    
-    def compare(self,filename, result):
-        logger.info("Comparing Opensubtitle result with filename for safety")
-        if self.isSerie(filename):
-            #Movie type consistency issue
-            if result.get("MovieKind") == "movie":
-                logger.info("Type Inconsistent : " + result.get("MovieKind") + " expected Tv Series/Episode")
-                return False
-            matchingPattern = re.search("[sS]0*(\d+)[eE]0*(\d+)",filename)
-            if not ( result.get("SeriesSeason") == matchingPattern.group(1)) or not(result.get("SeriesEpisode") == matchingPattern.group(2)):
-                logger.info("SXXEXX inconsistent : S" + result.get("SeriesSeason") + "E" + result.get("SeriesEpisode") + ", expected : S" + matchingPattern.group(1) + "E" + matchingPattern.group(2))
-                return False
-            #Otherwise it should be safe
-            return True
-        #Other case it's a movie
-        if not (result.get("MovieKind") == "movie"):
-            logger.info("Type Inconsistent : " + result.get("MovieKind") + " expected movie")
-            return False
-        #Year pattern result
-        yearMatching = re.search("(20[01][0-9]|19[5-9][0-9])",filename)
-        if yearMatching and not(yearMatching.group(1) == result.get("MovieYear")):
-            logger.info("Year Inconsistent : " + result.get("MovieYear") + " expected year : " + yearMatching.group(1))
-            return False
-        
-        #Otherwise it should be ok
-        return True
-                
 
+    def get_size(self, file_name):
+        return str(os.path.getsize(os.path.join(self.data_dir, file_name)))
+
+
+def get_info(name):
+    regex_res = re.match("(.*)(20[01][0-9]|19[5-9][0-9]).*", name)
+    if regex_res:
+        title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
+        result = {"title": title,
+                  "year": regex_res.group(2)}
+        return result
+    return None
+
+
+def get_quality(name):
+    quality = []
+    regex_resolution = re.search("(720p|1080p)", name)
+    if regex_resolution:
+        quality.append(regex_resolution.group(1))
+
+    if re.search("[aA][cC]3", name):
+        quality.append("AC3")
+
+    if re.search("DTS", name):
+        quality.append("DTS")
+
+    if re.search("([bB][lL][uU]-*[rR][aA][yY]|[bB][rR][Rr][iI][Pp])", name):
+        quality.append("BluRay")
+
+    if re.search("[wW][eE][bB]-*[RrdD][iIlL][pP]?", name):
+        quality.append("WebRIP")
+
+    return ','.join(quality)
+
+
+def get_episode(episode_dir, serie_name, number):
+    for episode in os.listdir(episode_dir):
+        if re.search("[Ss]\d+[eE]" + number, episode):
+            logger.info("Same episode found (%s e%s) : %s" % (serie_name, number, episode))
+            return episode
+    return None
+
+
+def rename_serie(file_name):
+    new_name = change_token_to_dot(file_name)
+    if re.sub("[^\d]([0-3]?\d)x(\d{1,2})[^\d]", "S\g<1>E\g<2>", new_name) is not new_name:
+        new_name = re.sub("([0-3]?\d)x(\d{1,2})", "S\g<1>E\g<2>", new_name)
+    return new_name
+
+
+def compare(file_name, result):
+    logger.info("Comparing Opensubtitle result with file_name for safety")
+    if is_serie(file_name):
+        #Movie type consistency issue
+        if result.get("MovieKind") == "movie":
+            logger.info("Type Inconsistent : " + result.get("MovieKind") + " expected Tv Series/Episode")
+            return False
+        matching_pattern = re.search("[sS]0*(\d+)[eE]0*(\d+)", file_name)
+        if not (result.get("SeriesSeason") == matching_pattern.group(1)) or\
+                not(result.get("SeriesEpisode") == matching_pattern.group(2)):
+            logger.info("SXXEXX inconsistent : S%sE%s, expected : S%sE%s" % (result.get("SeriesSeason"),
+                                                                             result.get("SeriesEpisode"),
+                                                                             matching_pattern.group(1),
+                                                                             matching_pattern.group(2)))
+            return False
+        #Otherwise it should be safe
+        return True
+    #Other case it's a movie
+    if not (result.get("MovieKind") == "movie"):
+        logger.info("Type Inconsistent : " + result.get("MovieKind") + " expected movie")
+        return False
+    #Year pattern result
+    year_matching = re.search("(20[01][0-9]|19[5-9][0-9])", file_name)
+    if year_matching and not(year_matching.group(1) == result.get("MovieYear")):
+        logger.info("Year Inconsistent : %s, expected year : %s" %
+                    (result.get("MovieYear"), year_matching.group(1)))
+        return False
+
+    #Otherwise it should be ok
+    return True
+
+
+def get_best_match(result_list, filename):
+    for result in result_list:
+        if compare(filename, result):
+            logger.info("Comparison returned true, moving on")
+            return result
+        else:
+            logger.info("Comparison returned false, inconsistencies exist")
+    return None
+
+
+def is_serie(self, name):
+        return re.match(".*[sS]\d\d[Ee]\d\d.*", name)
+
+
+def change_token_to_dot(string):
+    return re.sub("[^a-zA-Z0-9]*", ".", string)
+
+
+def format_serie_name(serie_name):
+    serie_name_token = change_token_to_dot(serie_name).split(".")
+    return str.strip(' '.join(map(str.capitalize, serie_name_token)))
+
+
+def apply_custom_renaming(serie_name):
+    lower_serie_name = serie_name.lower()
+    logger.info("Custom renamming :%s" % lower_serie_name)
+    for old, new in settings.CUSTOM_RENAMING.items():
+        logger.debug("Applying filter : %s -> %s" % (old, new))
+        result = re.sub(old, new, lower_serie_name)
+        if not (result == lower_serie_name):
+            logger.debug("Renamed : %s to %s" % (lower_serie_name, result))
+            return result
+    return serie_name

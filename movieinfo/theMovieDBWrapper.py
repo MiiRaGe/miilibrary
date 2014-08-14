@@ -30,7 +30,7 @@ class TheMovieDBWrapper:
         response = json.loads(response_body)
         return response.get("results")
         
-    def getMovieIMDBID(self,movieId):
+    def get_movie_imdb_id(self,movieId):
         searchRequest = Request(self.server + "3/movie/" +movieId + self.api_key, headers=self.headers)
         try:
             response_body = urlopen(searchRequest).read()
