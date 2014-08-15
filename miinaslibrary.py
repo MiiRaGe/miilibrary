@@ -29,7 +29,7 @@ def miinaslibrary():
     logger.info("Sorting Module :")
     doSort()
     logger.info("Analysis Module :")
-    #st.analyse(os.path.join(output_dir,'TVSeries'),os.path.join(output_dir,'TVStatistics.txt'))
+    #st.analyse(os.path.join(destination_dir,'TVSeries'),os.path.join(destination_dir,'TVStatistics.txt'))
     logger.info("Indexing Module :")
     doIndex()
 
@@ -43,8 +43,8 @@ def doSort():
 
 
 def doUnpack(sourceFolder): 
-    ru.unrarAndMove()
+    ru.unrar_and_link()
     ru.cleanup()
     if settings.SOURCE_CLEANUP:
-        ru.cleanupSource(sourceFolder)
-    ru.printStatistic()
+        ru.cleanup_source(sourceFolder)
+    ru.print_statistic()
