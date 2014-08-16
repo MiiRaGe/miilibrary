@@ -1,4 +1,4 @@
-import os,Tool,re,logging,platform
+import os,tools,re,logging,platform
 logger = logging.getLogger("NAS")
 
 if platform.system() == 'Windows':
@@ -29,8 +29,8 @@ class Indexer:
         #All directory is always created by sorter and contains all movie sorted alphabetically
         self.sourceDir = sourceDir
         self.alphabeticalDir = os.path.join(sourceDir,"All")
-        self.genreDir = Tool.make_dir(os.path.join(sourceDir,'Genres'))
-        self.noGenreDir = Tool.make_dir(os.path.join(self.genreDir,'NOGENRE'))
+        self.genreDir = tools.make_dir(os.path.join(sourceDir,'Genres'))
+        self.noGenreDir = tools.make_dir(os.path.join(self.genreDir,'NOGENRE'))
         
     def index(self):
         imdbRegEx = re.compile('.IMDB_ID_(\d+)$')
@@ -44,7 +44,7 @@ class Indexer:
                         imdbFile = file
                         break   
                 if imdbFile and not os.path.exists(os.path.join(folderAbs,imdbFile + '.indexed')):
-                    imdbData = Tool.OpensubtitleWrapper.getImdbInformation(int(id.group(1)))
+                    imdbData = tools.OpensubtitleWrapper.get_imdb_information(int(id.group(1)))
                     if imdbData:
                         logger.info(folder)
                         logger.info("\t" + str(imdbData.get('genres')))
@@ -69,7 +69,7 @@ class Indexer:
     def createGenreFolders(self,genres):
         for genre in genres:
             genre = genre.strip()
-            Tool.make_dir(os.path.join(self.sourceDir,'Genres',genre))
+            tools.make_dir(os.path.join(self.sourceDir,'Genres',genre))
         
 
 

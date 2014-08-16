@@ -3,11 +3,11 @@ import os
 import re
 import sys
 import logging
-import Tool
+import tools
 import settings
 import movieinfo.hashTool as ht
 
-from Tool import OpensubtitleWrapper
+from tools import OpensubtitleWrapper
 
 """ Sorter Module """
 logger = logging.getLogger("NAS")
@@ -25,10 +25,10 @@ class Sorter:
         self.unsorted_dir = os.path.join(media_dir, "unsorted")
         self.alphabetical_movie_dir = os.path.join(self.movie_dir, "All")
         self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
-        Tool.make_dir(self.serie_dir)
-        Tool.make_dir(self.movie_dir)
-        Tool.make_dir(self.alphabetical_movie_dir)
-        Tool.make_dir(self.unsorted_dir)
+        tools.make_dir(self.serie_dir)
+        tools.make_dir(self.movie_dir)
+        tools.make_dir(self.alphabetical_movie_dir)
+        tools.make_dir(self.unsorted_dir)
 
     def create_hash_list(self, media):
         file_path = os.path.join(self.data_dir, media)
@@ -38,7 +38,7 @@ class Sorter:
 
     def sort(self):
         logger.info("Login in the wrapper")
-        OpensubtitleWrapper.logIn(True, 10)
+        OpensubtitleWrapper.log_in(True, 10)
         logger.info("Beginning Sorting")
         for media in os.listdir(self.data_dir):
             self.create_hash_list(media)
@@ -46,18 +46,18 @@ class Sorter:
         for movie_hash in self.hash_array:
             file_name = self.map.get(movie_hash)
             result = OpensubtitleWrapper.get_subtitles(movie_hash,
-                                                       self.get_size(os.path.join(self.data_dir, file_name)),
+                                                       str(get_size(os.path.join(self.data_dir, file_name))),
                                                        "")
             is_sorted = False
             if result:
                 logger.info("Got Result from opensubtitle for " + file_name)
                 logger.debug(result)
-                if type(result) == list:
+                if isinstance(result, list):
                     result = self.get_best_match(result, file_name)
                 if result:
                     is_sorted = self.sort_open_subtitle_info(result)
             else:
-                result = OpensubtitleWrapper.getMovieNames2([movie_hash])
+                result = OpensubtitleWrapper.get_movie_names2([movie_hash])
                 if result:
                     logger.info(result)
                     result = result.get(movie_hash)
@@ -119,8 +119,8 @@ class Sorter:
             new_file_name += extension
             new_file_name = re.sub(" +", ".", new_file_name)
             new_file_name = re.sub("\.+", ".", new_file_name)
-            result_dir = Tool.make_dir(os.path.join(self.serie_dir, serie_name))
-            episode_dir = Tool.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, serie_season)))
+            result_dir = tools.make_dir(os.path.join(self.serie_dir, serie_name))
+            episode_dir = tools.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, serie_season)))
             try:
 
                 existing_episode = get_episode(episode_dir, serie_name, serie_episode_number)
@@ -160,13 +160,13 @@ class Sorter:
         name = info.get("title")
         year = info.get("year")
         logger.info("Name/Year found from file_name : Name = <%s>, Year = <%s>" % (name, year))
-        result = Tool.MovieDBWrapper.getMovieName(name, year)
+        result = tools.MovieDBWrapper.getMovieName(name, year)
         logger.debug("Result from tmdb: %s" % result)
         if result:
             result = result[0]
             movie_id = str(result.get("id"))
             logger.debug("Found Id : " + movie_id )
-            imdb_id = Tool.MovieDBWrapper.get_movie_imdb_id(movie_id)
+            imdb_id = tools.MovieDBWrapper.get_movie_imdb_id(movie_id)
             if imdb_id:
                 imdb_id = imdb_id.get("imdb_id")
                 self.create_dir_and_move_movie(result.get("title"), year, imdb_id, file_name)
@@ -191,7 +191,7 @@ class Sorter:
         if quality:
             custom_movie_dir += " [" + quality + "]"
         try:
-            created_movie_dir = Tool.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
+            created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
             if imdbid:
                 open(os.path.join(created_movie_dir, ".IMDB_ID_%s" % imdbid), "w")
             new_name = re.sub(".*(\.[a-zA-Z0-9]*)$", "%s\g<1>" % re.sub(" ", ".", custom_movie_dir), filename)
@@ -204,8 +204,8 @@ class Sorter:
             logger.error(sys.exc_info()[1])
             return False
 
-    def get_size(self, file_name):
-        return str(os.path.getsize(os.path.join(self.data_dir, file_name)))
+def get_size(file_name):
+    return os.path.getsize(os.path.abspath(file_name))
 
 
 def get_info(name):
@@ -296,7 +296,7 @@ def get_best_match(result_list, filename):
     return None
 
 
-def is_serie(self, name):
+def is_serie(name):
         return re.match(".*[sS]\d\d[Ee]\d\d.*", name)
 
 

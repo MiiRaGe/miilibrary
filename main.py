@@ -1,5 +1,10 @@
-import os,miinaslibrary
-import Tool,platform,time
+import platform
+import os
+import time
+
+import miinaslibrary
+import settings
+import tools
 
 try:
     import pyinotify
@@ -7,27 +12,26 @@ try:
     
     #Mask for watched events only write, move and close write
     mask = pyinotify.IN_CLOSE_WRITE |pyinotify.IN_MODIFY |pyinotify.IN_MOVED_TO
-    
-    
+
     class PTmp(ProcessEvent):
     
         def process_IN_CLOSE_WRITE(self, event):
-            print "Written: %s" %  os.path.join(event.path, event.name)
+            print "Written: %s" % os.path.join(event.path, event.name)
     
         def process_IN_MODIFY(self, event):
             #Doesn't print anything in order to avoid flooding as the event is repeatedly created
             pass
     
         def process_IN_MOVED_TO(self, event):
-            print "Moved: %s" %  os.path.join(event.path, event.name)
+            print "Moved: %s" % os.path.join(event.path, event.name)
     
     
        
     def mainLinux():
         wm = WatchManager()
         notifier = Notifier(wm, PTmp())
-        wm.add_watch(Tool.Configuration.get('Global','sourceFolder'), mask, rec=True)
-        print('Watching :' + Tool.Configuration.get('Global','sourceFolder'))
+        wm.add_watch(settings.SOURCE_FOLDER, mask, rec=True)
+        print('Watching : %s' % settings.SOURCE_FOLDER)
         while True:  # loop forever
             try:
                 # process the queue of events as explained above

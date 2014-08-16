@@ -2,15 +2,15 @@ from unpacker import UnpackerMain
 from sorter import Sorter
 from indexer import Indexer
 from analysis import seasonTool as st
-import Tool
+import tools
 import logging
 import os
 import settings
 ##### Folder Initialisation #####
 source_dir = settings.SOURCE_FOLDER
-output_dir = settings.UNPACKING_ENABLED
+output_dir = settings.DESTINATION_FOLDER
 movie_dir = os.path.join(output_dir, "Movies")
-data_dir = Tool.make_dir(os.path.join(output_dir, "data"))
+data_dir = tools.make_dir(os.path.join(output_dir, "data"))
 
 ##### Modules Initialisation #####
 ru = UnpackerMain.RecursiveUnrarer(source_dir, data_dir)
@@ -20,7 +20,7 @@ indexer = Indexer.Indexer(movie_dir)
 
 def miinaslibrary():
     
-    Tool.shift_log()
+    tools.shift_log()
     
     logger = logging.getLogger('NAS')
     logger.info("---MiiNASLibrary---")

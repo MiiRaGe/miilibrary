@@ -16,10 +16,10 @@ class RecursiveUnrarer:
         self.level = 0
         self.removed = 0
         self.extracted = 0
-        self.moved = 0
+        self.linked = 0
 
     def unrar_and_link(self):
-        self.moved = 0
+        self.linked = 0
         self.extracted = 0
         self.recursive_unrar_and_link(self.source_dir)
 
@@ -92,17 +92,17 @@ class RecursiveUnrarer:
             if os.path.getsize(destination_file) != os.path.getsize(source_file):
                 os.remove(destination_file)
                 os.link(source_file, destination_file)
-                self.moved += 1
+                self.linked += 1
             else:
                 logger.error("Not linking, same file exist (weight wise)")
         else:
             os.link(source_file, destination_file)
-            self.moved += 1
+            self.linked += 1
 
     def print_statistic(self):
         logger.info("-----------Summary-----------")
         logger.info("Extracted : %s" % self.extracted)
-        logger.info("moved : %s" % self.moved)
+        logger.info("Linked : %s" % self.linked)
         logger.info("Removed : %s" % self.removed)
         logger.info("-----------------------------")
 

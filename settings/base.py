@@ -5,7 +5,7 @@
 SOURCE_FOLDER = ''
 
 #This is the root of the media folder (destination)
-OUTPUT_FOLDER = ''
+DESTINATION_FOLDER = ''
 
 #Architecture of outputFolder is as follow :
 #outputFolder
