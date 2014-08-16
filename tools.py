@@ -73,13 +73,34 @@ def shift_log():
 
 
 def validate_settings():
-    return all(os.path.exists(settings.SOURCE_FOLDER),
+    if settings.SOURCE_FOLDER == '':
+        print "Error, settings.SOURCE_FOLDER can't be empty"
+    if settings.DESTINATION_FOLDER == '':
+        print "Error, settings.DESTINATION_FOLDER can't be empty"
+    if not os.path.exists(settings.SOURCE_FOLDER):
+        print "Error in settings.SOURCE_FOLDER, %s does not exist" % settings.SOURCE_FOLDER
+    if not os.path.exists(settings.DESTINATION_FOLDER):
+        print "Error in settings.DESTINATION_FOLDER, %s does not exist" % settings.DESTINATION_FOLDER
+    if not isinstance(settings.MINIMUM_SIZE, int):
+        print "settings.MINIMUM_SIZE have to be an int"
+    if not settings.MINIMUM_SIZE >= 0:
+        print "settings.MINIMUM_SIZE have to positive, got: %s" % settings.MINIMUM_SIZE
+    if not isinstance(settings.CUSTOM_RENAMING, dict):
+        print "settings.CUSTOM_RENAMING have to be an dict"
+    if not isinstance(settings.UNPACKING_ENABLED, bool):
+        print "settings.UNPACKING_ENABLED have to be an bool"
+    if not isinstance(settings.SOURCE_CLEANUP, bool):
+        print "settings.SOURCE_CLEANUP have to be an bool"
+
+    return all([not settings.SOURCE_FOLDER == '',
+               not settings.DESTINATION_FOLDER == '',
+               os.path.exists(settings.SOURCE_FOLDER),
                os.path.exists(settings.DESTINATION_FOLDER),
-               isinstance(int, settings.MINIMUM_SIZE),
-               settings.MINIMUM_SIZE < 0,
-               isinstance(dict, settings.CUSTOM_RENAMING),
-               isinstance(bool, settings.UNPACKING_ENABLED),
-               isinstance(bool, settings.SOURCE_CLEANUP))
+               isinstance(settings.MINIMUM_SIZE, int),
+               settings.MINIMUM_SIZE >= 0,
+               isinstance(settings.CUSTOM_RENAMING, dict),
+               isinstance(settings.UNPACKING_ENABLED, bool),
+               isinstance(settings.SOURCE_CLEANUP, bool)])
 
 
 mswindows = (sys.platform == "win32")

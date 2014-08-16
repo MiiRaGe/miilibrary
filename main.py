@@ -61,10 +61,12 @@ def main_wait():
         time.sleep(3600*4)
 
 if __name__ == '__main__':
-    tools.validate_settings()
-    system = platform.system()
-    print("Platform is :" + system)
-    if system == 'Linux': 
-        main_linux()
+    if tools.validate_settings():
+        system = platform.system()
+        print("Platform is :" + system)
+        if system == 'Linux':
+            main_linux()
+        else:
+            main_wait()
     else:
-        main_wait()
+        print "Invalid settings in settings/base.py or settings/local.py"

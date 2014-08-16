@@ -51,8 +51,11 @@ class TestMain(unittest.TestCase):
             tools.delete_dir(os.path.join(abs_output, media_file))
         print("*** Environment Torn Down***")
 
+    def test_validate_settings(self):
+        print "== Testing validate_settings =="
+        self.assertTrue(tools.validate_settings())
+
     def test_unpacker_main(self):
         import miinaslibrary
         print "== Testing doUnpack =="
         miinaslibrary.doUnpack(settings.SOURCE_FOLDER)
-        print "== Test OK =="
