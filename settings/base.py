@@ -30,19 +30,18 @@ DESTINATION_FOLDER = ''
 
 """[Unpacking]"""
 #Is the script unpacking and moving from the source folder (can be deactivated to only sort what's in the data folder)
-UNPACKING_ENABLED = 1
+UNPACKING_ENABLED = True
 
 #Minimum size to be considered as non sample (in MB)
 MINIMUM_SIZE = 125
 
 #Delete the empty folders in the source folder, useful when resorting the whole TVSeries output folder
-SOURCE_CLEANUP = 0
+SOURCE_CLEANUP = False
 
 """[Sorting]"""
 #Contain custom rules for renaming
 CUSTOM_RENAMING = {
     'dummy name US': 'name',
-
 }
 
 """[OpenSubtitle]"""
