@@ -91,12 +91,18 @@ class RecursiveUnrarer:
         if os.path.exists(destination_file):
             if os.path.getsize(destination_file) != os.path.getsize(source_file):
                 os.remove(destination_file)
-                os.link(source_file, destination_file)
+                try:
+                    os.link(source_file, destination_file)
+                except AttributeError:
+                    shutil.copy(source_file, destination_file)
                 self.linked += 1
             else:
                 logger.error("Not linking, same file exist (weight wise)")
         else:
-            os.link(source_file, destination_file)
+            try:
+                os.link(source_file, destination_file)
+            except AttributeError:
+                shutil.copy(source_file, destination_file)
             self.linked += 1
 
     def print_statistic(self):

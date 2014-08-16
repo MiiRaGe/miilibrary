@@ -105,7 +105,7 @@ def delete_dir(path):
     else:
         cmd = "rm -rf \"%s\"" % path
     output = getstatusoutput(cmd)
-    if not output[0]:
+    if output[0]:
         raise RuntimeError(output[1])
 
 
@@ -116,5 +116,5 @@ def delete_file(path):
     else:
         cmd = "rm -f \"%s\"" % path
     output = getstatusoutput(cmd)
-    if not output[0]:
+    if output[0]:
         raise RuntimeError(output[1])
