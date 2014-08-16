@@ -17,9 +17,12 @@ class TestMain(unittest.TestCase):
 
         abs_data = os.path.abspath('./tests/test_data/')
         print "\t ** Moving Files **"
-        for media_file in os.listdir(abs_data):
-            print "\t\t * Moving: %s*" % media_file
-            shutil.copy(os.path.join(abs_data, media_file), os.path.join(settings.SOURCE_FOLDER, media_file))
+        try:
+            for media_file in os.listdir(abs_data):
+                print "\t\t * Moving: %s*" % media_file
+                shutil.copy(os.path.join(abs_data, media_file), os.path.join(settings.SOURCE_FOLDER, media_file))
+        except WindowsError:
+            print "\t\t * No data to move... tests are void **"
 
         print "\t ** Changing log file **"
         tools.remove_handler()
