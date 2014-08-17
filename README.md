@@ -1,29 +1,28 @@
-# README #
+# MiiNASLibrary 2.0 #
+
+### Project Management Platform ###
+
 https://app.sonicagile.com/project/miirage/miinaslibrary/backlog
-This README would normally document whatever steps are necessary to get your application up and running.
 
-### What is this repository for? ###
+### Dependencies ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* Python 2.6-2.7 
+* See requirements.txt for full module dependencies
 
-### How do I get set up? ###
+### Setting up ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+* Install dependencies : pip install -r requirements.txt
+* Run tests : python -m unittest tests.tests_auto
+* Deployement : Carefully set the input and output directory in settings/local.py (local copy of base.py)
 
-### Contribution guidelines ###
+### Running ###
 
-* Writing tests
-* Code review
-* Other guidelines
+* python ./main.py
 
-### Who do I talk to? ###
+### Contributors ###
 
-* Repo owner or admin
-* Other community or team contact
+* Alexis Durand (Owner)
+
+### Contact ###
+
+* alexis.durand28@gmail.com
