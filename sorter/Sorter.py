@@ -53,7 +53,7 @@ class Sorter:
                 logger.info("Got Result from opensubtitle for " + file_name)
                 logger.debug(result)
                 if isinstance(result, list):
-                    result = self.get_best_match(result, file_name)
+                    result = get_best_match(result, file_name)
                 if result:
                     is_sorted = self.sort_open_subtitle_info(result)
             else:
@@ -62,7 +62,7 @@ class Sorter:
                     logger.info(result)
                     result = result.get(movie_hash)
                     if type(result) == list:
-                        result = self.get_best_match(result, file_name)
+                        result = get_best_match(result, file_name)
                     if result:
                         is_sorted = self.sort_open_subtitle_info(result)
 
@@ -102,7 +102,7 @@ class Sorter:
                                                   file_name)
 
     def create_dir_and_move_serie(self, serie_name, serie_season, serie_episode_number, serie_title, file_name):
-            serie_name = format_serie_name(self.apply_custom_renaming(serie_name))
+            serie_name = format_serie_name(apply_custom_renaming(serie_name))
             serie_title = format_serie_name(serie_title)
             extension = file_name[-4:]
             if len(serie_episode_number) < 2:
@@ -204,6 +204,7 @@ class Sorter:
             logger.error(sys.exc_info()[1])
             return False
 
+
 def get_size(file_name):
     return os.path.getsize(os.path.abspath(file_name))
 
@@ -254,54 +255,66 @@ def rename_serie(file_name):
     return new_name
 
 
-def compare(file_name, result):
-    logger.info("Comparing Opensubtitle result with file_name for safety")
+def compare(file_name, api_result):
+    logger.info("Comparing Opensubtitle api_result with file_name for safety")
     if is_serie(file_name):
         #Movie type consistency issue
-        if result.get("MovieKind") == "movie":
-            logger.info("Type Inconsistent : " + result.get("MovieKind") + " expected Tv Series/Episode")
+        if api_result.get("MovieKind") == "movie":
+            logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected Tv Series/Episode")
             return False
-        matching_pattern = re.search("[sS]0*(\d+)[eE]0*(\d+)", file_name)
-        if not (result.get("SeriesSeason") == matching_pattern.group(1)) or\
-                not(result.get("SeriesEpisode") == matching_pattern.group(2)):
-            logger.info("SXXEXX inconsistent : S%sE%s, expected : S%sE%s" % (result.get("SeriesSeason"),
-                                                                             result.get("SeriesEpisode"),
-                                                                             matching_pattern.group(1),
-                                                                             matching_pattern.group(2)))
+        matching_pattern = re.search("(.*)[sS]0*(\d+)[eE]0*(\d+)", file_name)
+        if not all([api_result.get("SeriesSeason") == matching_pattern.group(2),
+                    api_result.get("SeriesEpisode") == matching_pattern.group(3)]):
+            logger.info("SXXEXX inconsistent : S%sE%s, expected : S%sE%s" % (api_result.get("SeriesSeason"),
+                                                                             api_result.get("SeriesEpisode"),
+                                                                             matching_pattern.group(2),
+                                                                             matching_pattern.group(3)))
             return False
-        #Otherwise it should be safe
+
+        #Weak comparison using letters
+        if letter_coverage(matching_pattern.group(1), api_result.get('MovieName')) < 0.65:
+            return False
+
+        logger.info("Found a perfect match")
         return True
+
     #Other case it's a movie
-    if not (result.get("MovieKind") == "movie"):
-        logger.info("Type Inconsistent : " + result.get("MovieKind") + " expected movie")
-        return False
-    #Year pattern result
-    year_matching = re.search("(20[01][0-9]|19[5-9][0-9])", file_name)
-    if year_matching and not(year_matching.group(1) == result.get("MovieYear")):
-        logger.info("Year Inconsistent : %s, expected year : %s" %
-                    (result.get("MovieYear"), year_matching.group(1)))
+    if not (api_result.get("MovieKind") == "movie"):
+        logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected movie")
         return False
 
-    #Otherwise it should be ok
+    #Year pattern api_result
+    name_year_matching = re.search("([^\(\)]*).(20[01][0-9]|19[5-9][0-9])?", file_name)
+    if name_year_matching.group(2) and not(name_year_matching.group(2) == api_result.get("MovieYear")):
+        logger.info("Year Inconsistent : %s, expected year : %s" %
+                    (api_result.get("MovieYear"), name_year_matching.group(2)))
+        return False
+
+    if not (letter_coverage(name_year_matching.group(1), api_result.get('MovieName')) > 0.65):
+        logger.info("Letter inconsistency : %s, %s" %
+                    (api_result.get("MovieName"), name_year_matching.group(1)))
+        return False
+
+    logger.info("Found a perfect match")
     return True
 
 
-def get_best_match(result_list, filename):
-    for result in result_list:
-        if compare(filename, result):
+def get_best_match(api_result_list, file_name):
+    for api_result in api_result_list:
+        if compare(file_name.lower(), api_result):
             logger.info("Comparison returned true, moving on")
-            return result
+            return api_result
         else:
             logger.info("Comparison returned false, inconsistencies exist")
     return None
 
 
 def is_serie(name):
-        return re.match(".*[sS]\d\d[Ee]\d\d.*", name)
+    return re.match(".*[sS]\d\d[Ee]\d\d.*", name)
 
 
 def change_token_to_dot(string):
-    return re.sub("[^a-zA-Z0-9]*", ".", string)
+    return re.sub("[^a-zA-Z0-9]+", ".", string)
 
 
 def format_serie_name(serie_name):
@@ -313,9 +326,50 @@ def apply_custom_renaming(serie_name):
     lower_serie_name = serie_name.lower()
     logger.info("Custom renamming :%s" % lower_serie_name)
     for old, new in settings.CUSTOM_RENAMING.items():
+        old = old.lower()
+        new = new.lower()
         logger.debug("Applying filter : %s -> %s" % (old, new))
         result = re.sub(old, new, lower_serie_name)
         if not (result == lower_serie_name):
             logger.debug("Renamed : %s to %s" % (lower_serie_name, result))
             return result
     return serie_name
+
+
+def letter_coverage(file_name, api_name):
+    file_letter_count = {}
+    for letter in file_name.lower():
+        if letter.isalnum():
+            file_letter_count[letter] = file_letter_count.get(letter, 0) + 1.0
+
+    api_letter_count = {}
+    for letter in api_name.lower():
+        if letter.isalnum():
+            api_letter_count[letter] = api_letter_count.get(letter, 0) + 1.0
+
+    small = file_letter_count
+    big = api_letter_count
+    if len(small) > len(big):
+        small = api_letter_count
+        big = file_letter_count
+
+    try:
+        percent_coverage = 0.0
+        for letter in small:
+            if small[letter] > big.get(letter, 0.0):
+                ratio = big.get(letter, 1.0) / small[letter]
+            else:
+                ratio = small[letter] / big[letter]
+            percent_coverage += 100 * ratio * small[letter] / sum(big.values())
+
+        name_size_factor = float(len(file_name)) / len(api_name)
+        if name_size_factor > 1:
+            name_size_factor = 1 / name_size_factor
+        set_size_factor = float(len(small)) / len(big)
+
+        size_factor = set_size_factor * name_size_factor
+
+        return percent_coverage * size_factor
+    except ZeroDivisionError:
+        logger.exception("Empty title name, can't compare")
+

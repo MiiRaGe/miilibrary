@@ -28,32 +28,36 @@ class RecursiveUnrarer:
         for i in range(0, self.level - 1):
             indent += "\t"
 
-        logger.debug("%sEntering :%s:" % (indent, current_directory))
+        logger.debug("%sEntering : %s" % (indent, current_directory))
         indent += "\t"
-        for data_file in listdir(current_directory):
-            full_file_path = os.path.join(current_directory, data_file)
-            if os.path.isfile(full_file_path):
-                if data_file.endswith(".part01.rar"):
-                    logger.debug("%sExtracting :%s" % (indent, data_file))
-                    self.unrar(full_file_path)
+        try:
+            for data_file in listdir(current_directory):
+                full_file_path = os.path.join(current_directory, data_file)
+                if os.path.isfile(full_file_path):
+                    if data_file.endswith(".part01.rar"):
+                        logger.debug("%sExtracting :%s" % (indent, data_file))
+                        self.unrar(full_file_path)
 
-                elif re.match(".*\.part[0-9]*\.rar$", data_file):
-                    logger.debug("%sBypassing :%s" % (indent, data_file))
+                    elif re.match(".*\.part[0-9]*\.rar$", data_file):
+                        logger.debug("%sBypassing :%s" % (indent, data_file))
 
-                elif data_file.endswith(".rar"):
-                    logger.debug("%sExtracting :%s" % (indent, data_file))
-                    self.unrar(full_file_path)
+                    elif data_file.endswith(".rar"):
+                        logger.debug("%sExtracting :%s" % (indent, data_file))
+                        self.unrar(full_file_path)
 
-                elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
-                                os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 000000:
-                    #Moving every movie type, cleanup later
-                    logger.debug("%sMoving :%s to the data folder..." % (indent, data_file))
-                    self.link_video(current_directory, data_file)
+                    elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
+                                    os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 000000:
+                        #Moving every movie type, cleanup later
+                        logger.debug("%sMoving :%s to the data folder..." % (indent, data_file))
+                        self.link_video(current_directory, data_file)
 
-            elif os.path.isdir(full_file_path) and full_file_path is not self.destination_dir:
-                self.level += 1
-                self.recursive_unrar_and_link(full_file_path)
-                self.level -= 1
+                elif os.path.isdir(full_file_path) and full_file_path is not self.destination_dir:
+                    self.level += 1
+                    self.recursive_unrar_and_link(full_file_path)
+                    self.level -= 1
+        except WindowsError:
+            logger.debug("%sDirectory empty :%s:" % (indent, current_directory))
+
 
     def unrar(self, archive_file):
         if os.path.exists(archive_file + "_extracted"):

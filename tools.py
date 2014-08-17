@@ -42,11 +42,10 @@ except OSError, e:
 #Creating the logger named 'NAS' and configuring
 logger = logging.getLogger('NAS')
 
-#Where it's written to
-handler = logging.FileHandler(os.path.join(output_dir, 'myNasLibrary.log.0'))
+timestamp = datetime.datetime.now().strftime("%d_%m_%y.%H-%M")
+handler = logging.FileHandler(os.path.join(output_dir, 'miiNasLibrary.%s.LOG' % timestamp))
 logger.addHandler(handler)
 
-#How it's formated in the logs
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 handler.setFormatter(formatter)
 
@@ -65,9 +64,9 @@ def shift_log():
     remove_handler()
 
     #Timestamp for the logfile
-    timestamp = datetime.datetime.now().strftime("%d-%m-%y.%H:%M")
+    timestamp = datetime.datetime.now().strftime("%y_%m_%d.%H-%M")
 
-    hdlr2 = logging.FileHandler(os.path.join(output_dir, 'myNasLibrary' + timestamp + '.log'))
+    hdlr2 = logging.FileHandler(os.path.join(output_dir, 'miiNasLibrary.%s.LOG' % timestamp))
     #Readding the handler
     logger.addHandler(hdlr2)
 
