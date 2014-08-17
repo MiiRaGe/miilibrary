@@ -19,56 +19,56 @@ try:
 except OSError:
     pass
 test_handler = logging.FileHandler(abs_log_file)
-logging.getLogger('NAS').addHandler(test_handler)
-
+logger = logging.getLogger('NAS')
+logger.addHandler(test_handler)
 
 class TestMain(unittest.TestCase):
     def setUp(self):
-        print("*** Building environment ***")
+        logger.info("*** Building environment ***")
         settings.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
         settings.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
 
         abs_data = '%s/test_data/'  % os.path.dirname(__file__)
-        print "\t ** Moving Files **"
+        logger.info("\t ** Moving Files **")
         try:
             for media_file in os.listdir(abs_data):
-                print "\t\t * Moving: %s*" % media_file
+                logger.info("\t\t * Moving: %s*") % media_file
                 shutil.copy(os.path.join(abs_data, media_file), os.path.join(settings.SOURCE_FOLDER, media_file))
         except WindowsError:
-            print "\t\t * No data to move... tests are void **"
-        print("*** Environment Builded ***")
+            logger.info("\t\t * No data to move... tests are void **")
+        logger.info("*** Environment Builded ***")
 
     def tearDown(self):
-        print("*** Tearing down environment ***")
+        logger.info("*** Tearing down environment ***")
         abs_input = os.path.abspath('./tests/test_input/')
-        print "\t ** Cleaning input Files **"
+        logger.info("\t ** Cleaning input Files **")
         try:
             for media_file in os.listdir(abs_input):
                 if media_file == '.gitignore':
                     continue
-                print "\t\t * Removing: %s *" % media_file
+                logger.info("\t\t * Removing: %s *") % media_file
                 tools.delete_file(os.path.join(abs_input, media_file))
         except WindowsError:
-            print "\t\t * No data to move... tests are void **"
+            logger.info("\t\t * No data to move... tests are void **")
 
-        print "\t ** Cleaning output directory **"
+        logger.info("\t ** Cleaning output directory **")
         abs_output = os.path.abspath('./tests/test_output/')
         try:
             for media_file in os.listdir(abs_output):
                 if media_file == '.gitignore':
                     continue
-                print "\t\t * Removing: %s *" % media_file
+                logger.info("\t\t * Removing: %s *" % media_file)
                 tools.delete_dir(os.path.join(abs_output, media_file))
         except WindowsError:
-            print "\t\t * No data to move... tests are void **"
+            logger.info("\t\t * No data to move... tests are void **")
 
-        print("*** Environment Torn Down***")
+        logger.info("*** Environment Torn Down***")
 
     def test_main(self):
-        print "== Testing validate_settings =="
+        logger.info("== Testing validate_settings ==")
         self.assertTrue(tools.validate_settings())
 
-        print "== Testing doUnpack =="
+        logger.info("== Testing doUnpack ==")
         miinaslibrary.doUnpack(settings.SOURCE_FOLDER)
 
 
