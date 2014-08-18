@@ -210,13 +210,22 @@ def get_size(file_name):
 
 
 def get_info(name):
-    regex_res = re.match("(.*)(20[01][0-9]|19[5-9][0-9]).*", name)
+    regex_res = re.match("(.+)(20[01][0-9]|19[5-9][0-9])", name)
     if regex_res:
         title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
-        result = {"title": title,
-                  "year": regex_res.group(2)}
+        result = {"title": title}
+        try:
+            result['year'] = regex_res.group(2)
+        except AttributeError:
+            logger.exception("No year infor for %s" % name)
         return result
-    return None
+
+    regex_res = re.match("(.+)(720p|1080p)", name)
+    if regex_res:
+        title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
+        return {"title": title}
+
+    return {"title": name}
 
 
 def get_quality(name):

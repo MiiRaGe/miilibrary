@@ -3,6 +3,7 @@ __author__ = 'MiiRaGe'
 import logging
 import os
 import shutil
+import tempfile
 import unittest
 
 import settings
@@ -10,7 +11,7 @@ import miinaslibrary
 import tools
 
 from sorter.Sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
-    compare, letter_coverage
+    compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
 
 tools.remove_handler()
 abs_log_file = '%s/test_log.LOG' % os.path.dirname(__file__)
@@ -21,6 +22,7 @@ except OSError:
 test_handler = logging.FileHandler(abs_log_file)
 logger = logging.getLogger('NAS')
 logger.addHandler(test_handler)
+
 
 class TestMain(unittest.TestCase):
     def setUp(self):
@@ -150,3 +152,59 @@ class TestSorter(unittest.TestCase):
         str1 = 'How to Train Your Dragon'
         str2 = 'House of Flying Daggers'
         self.assertLessEqual(letter_coverage(str1, str2), limit)
+
+    def test_change_token_to_dot(self):
+        serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/....?'
+        self.assertEqual('The.Walking.Dead.', change_token_to_dot(serie_name1))
+
+    def test_rename_serie(self):
+        serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/..25x15..?'
+        self.assertEqual('The.Walking.Dead.S25E15.', rename_serie(serie_name1))
+
+    def test_get_episode(self):
+        tmp_dir = tempfile.mkdtemp()
+        f1 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E04.mkv')
+        f2 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E02.mkv')
+        f3 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E05.mkv')
+
+        self.assertIsNone(get_episode(tmp_dir, 'useless arg', '01'))
+        self.assertIsNotNone(get_episode(tmp_dir, 'useless arg', '02'))
+        self.assertIsNone(get_episode(tmp_dir, 'useless arg', '03'))
+
+    def test_get_quality(self):
+        name = 'serie de malade 720p 1080p DTS AC3 BLU-ray webrip'
+        quality = get_quality(name)
+
+        self.assertIn('720p', quality)
+        self.assertIn('DTS', quality)
+        self.assertIn('AC3', quality)
+        self.assertIn('BluRay', quality)
+        self.assertIn('WebRIP', quality)
+
+        self.assertNotIn('1080p', quality)
+        self.assertNotIn('Web-RIP', quality)
+
+    def test_get_info(self):
+        name = 'The.Matrix.2001'
+        res = get_info(name)
+        self.assertEqual(res['title'], 'The Matrix')
+        self.assertEqual(res['year'], '2001')
+
+        name = 'Hancock.(2004)'
+        res = get_info(name)
+        self.assertEqual(res['title'], 'Hancock')
+        self.assertEqual(res['year'], '2004')
+
+        name = '2012.(2007)'
+        res = get_info(name)
+        self.assertEqual(res['title'], '2012')
+        self.assertEqual(res['year'], '2007')
+
+        name = '2012.720p'
+        res = get_info(name)
+        self.assertEqual(res['title'], '2012')
+        self.assertIsNone(res.get('year'))
+
+        name = 'Iron Man 3'
+        res = get_info(name)
+        self.assertEqual(res['title'], name)
