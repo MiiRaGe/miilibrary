@@ -14,7 +14,6 @@ from miinaslibrary import MiiNASLibrary
 from sorter.Sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
     compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
 
-tools.remove_handler()
 abs_log_file = '%s/test_log.LOG' % os.path.dirname(__file__)
 try:
     os.remove(abs_log_file)
@@ -68,7 +67,7 @@ class TestMain(unittest.TestCase):
                 if media_file == '.gitignore':
                     continue
                 logger.info("\t\t * Removing: %s *" % media_file)
-                tools.delete_dir(os.path.join(abs_output, media_file))
+                shutil.rmtree(os.path.join(abs_output, media_file))
         except WindowsError:
             logger.info("\t\t * No data to move... tests are void **")
 

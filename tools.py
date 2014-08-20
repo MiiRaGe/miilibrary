@@ -30,27 +30,29 @@ MovieDBWrapper = theMovieDBWrapper.TheMovieDBWrapper()
 OpensubtitleWrapper = opensubtitleWrapper.OpensubtitleWrapper()
 
 ########### LOG #############
-#Creating the log directory
-output_dir = os.path.join(settings.DESTINATION_FOLDER, 'log')
-try:
-    os.makedirs(output_dir)
-except OSError, e:
-    pass
 
-
-
-#Creating the logger named 'NAS' and configuring
+handler = None
 logger = logging.getLogger('NAS')
-
-timestamp = datetime.datetime.now().strftime("%d_%m_%y.%H-%M")
-handler = logging.FileHandler(os.path.join(output_dir, 'miiNasLibrary.%s.LOG' % timestamp))
-logger.addHandler(handler)
-
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-handler.setFormatter(formatter)
 
-#Amount of information in the tool
-logger.setLevel(logging.DEBUG)
+
+def init_log():
+    #Creating the log directory
+    log_dir = os.path.join(settings.DESTINATION_FOLDER, 'log')
+    try:
+        os.makedirs(log_dir)
+        os.makedirs('%s/extractions/' % log_dir)
+    except OSError, e:
+        pass
+
+    timestamp = datetime.datetime.now().strftime("%d_%m_%y.%H-%M")
+    handler = logging.FileHandler(os.path.join(log_dir, 'miiNasLibrary.%s.LOG' % timestamp))
+    logger.addHandler(handler)
+
+    handler.setFormatter(formatter)
+
+    #Amount of information in the tool
+    logger.setLevel(logging.DEBUG)
 
 
 def remove_handler():
@@ -66,9 +68,11 @@ def shift_log():
     #Timestamp for the logfile
     timestamp = datetime.datetime.now().strftime("%y_%m_%d.%H-%M")
 
-    hdlr2 = logging.FileHandler(os.path.join(output_dir, 'miiNasLibrary.%s.LOG' % timestamp))
+    handler2 = logging.FileHandler(os.path.join(output_dir, 'miiNasLibrary.%s.LOG' % timestamp))
+    handler2.setFormatter(formatter)
+
     #Readding the handler
-    logger.addHandler(hdlr2)
+    logger.addHandler(handler2)
 
 
 def validate_settings():

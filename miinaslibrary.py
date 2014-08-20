@@ -12,6 +12,7 @@ from unpacker import UnpackerMain
 
 class MiiNASLibrary:
     def __init__(self):
+        tools.init_log()
         ##### Folder Initialisation #####
         self.source_dir = settings.SOURCE_FOLDER
         self.output_dir = settings.DESTINATION_FOLDER
