@@ -5,10 +5,11 @@ import os
 import shutil
 import tempfile
 import unittest
+from mock import patch
 
 import settings
-import miinaslibrary
 import tools
+from miinaslibrary import MiiNASLibrary
 
 from sorter.Sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
     compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
@@ -23,38 +24,45 @@ test_handler = logging.FileHandler(abs_log_file)
 logger = logging.getLogger('NAS')
 logger.addHandler(test_handler)
 
+try:
+    raise WindowsError
+except NameError:
+    WindowsError = None
+else:
+    pass
+
 
 class TestMain(unittest.TestCase):
     def setUp(self):
         logger.info("*** Building environment ***")
-        settings.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
-        settings.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
+        self.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
+        self.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
 
-        abs_data = '%s/test_data/'  % os.path.dirname(__file__)
+        abs_data = '%s/test_data/' % os.path.dirname(__file__)
         logger.info("\t ** Moving Files **")
         try:
             for media_file in os.listdir(abs_data):
-                logger.info("\t\t * Moving: %s*") % media_file
-                shutil.copy(os.path.join(abs_data, media_file), os.path.join(settings.SOURCE_FOLDER, media_file))
+                logger.info("\t\t * Moving: %s *" % media_file)
+                shutil.copy(os.path.join(abs_data, media_file), os.path.join(self.SOURCE_FOLDER, media_file))
         except WindowsError:
             logger.info("\t\t * No data to move... tests are void **")
         logger.info("*** Environment Builded ***")
 
     def tearDown(self):
         logger.info("*** Tearing down environment ***")
-        abs_input = os.path.abspath('./tests/test_input/')
+        abs_input = self.SOURCE_FOLDER
         logger.info("\t ** Cleaning input Files **")
         try:
             for media_file in os.listdir(abs_input):
                 if media_file == '.gitignore':
                     continue
-                logger.info("\t\t * Removing: %s *") % media_file
+                logger.info("\t\t * Removing: %s *" % media_file)
                 tools.delete_file(os.path.join(abs_input, media_file))
         except WindowsError:
             logger.info("\t\t * No data to move... tests are void **")
 
         logger.info("\t ** Cleaning output directory **")
-        abs_output = os.path.abspath('./tests/test_output/')
+        abs_output = self.DESTINATION_FOLDER
         try:
             for media_file in os.listdir(abs_output):
                 if media_file == '.gitignore':
@@ -67,11 +75,14 @@ class TestMain(unittest.TestCase):
         logger.info("*** Environment Torn Down***")
 
     def test_main(self):
-        logger.info("== Testing validate_settings ==")
-        self.assertTrue(tools.validate_settings())
+        with patch.multiple(settings, SOURCE_FOLDER=self.SOURCE_FOLDER, DESTINATION_FOLDER=self.DESTINATION_FOLDER):
+            logger.info("== Testing validate_settings ==")
+            self.assertTrue(tools.validate_settings())
 
-        logger.info("== Testing doUnpack ==")
-        miinaslibrary.doUnpack(settings.SOURCE_FOLDER)
+            logger.info("== Testing doUnpack ==")
+            mnl = MiiNASLibrary()
+            mnl.doUnpack()
+            self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 4)
 
 
 class TestSorter(unittest.TestCase):

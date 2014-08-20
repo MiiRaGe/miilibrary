@@ -2,9 +2,9 @@ import platform
 import os
 import time
 
-import miinaslibrary
 import settings
 import tools
+from miinaslibrary import MiiNASLibrary
 
 try:
     import pyinotify
@@ -26,6 +26,7 @@ try:
             print "Moved: %s" % os.path.join(event.path, event.name)
     
     def main_linux():
+        mnl = MiiNASLibrary()
         wm = WatchManager()
         notifier = Notifier(wm, EventProcessor())
         wm.add_watch(settings.SOURCE_FOLDER, mask, rec=True)
@@ -39,7 +40,7 @@ try:
                     notifier.read_events()
                 else:
                     print 'Moving, Copying done running mynaslibrary'
-                    miinaslibrary.miinaslibrary()
+                    mnl.run()
                     print 'Now waiting'
                     notifier.check_events()
             except KeyboardInterrupt:
@@ -56,8 +57,9 @@ except ImportError:
 
 
 def main_wait():
+    mnl = MiiNASLibrary()
     while True:
-        miinaslibrary.miinaslibrary()
+        mnl.run()
         time.sleep(3600*4)
 
 if __name__ == '__main__':

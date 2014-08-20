@@ -1,10 +1,19 @@
 import logging
 import os
 import re
-import settings
 import shutil
 import subprocess
 from os import listdir
+
+import settings
+import tools
+
+try:
+    raise WindowsError
+except NameError:
+    WindowsError = None
+else:
+    pass
 
 logger = logging.getLogger("NAS")
 
@@ -58,13 +67,13 @@ class RecursiveUnrarer:
         except WindowsError:
             logger.debug("%sDirectory empty :%s:" % (indent, current_directory))
 
-
     def unrar(self, archive_file):
         if os.path.exists(archive_file + "_extracted"):
             return
-        os.chdir(self.destination_dir)
         logger.debug("Processing extraction...")
-        return_value = subprocess.call('unrar e -y ' + archive_file, shell=True)
+
+        stdout = open("%s/%s.extraction.LOG" % (tools.output_dir, archive_file.split('/')[-1]), "wb")
+        return_value = subprocess.call('unrar e -y %s %s' % (archive_file, self.destination_dir), shell=True, stdout=stdout)
         if not return_value:
             logger.debug("Extraction OK!")
             open(archive_file + "_extracted", "w")

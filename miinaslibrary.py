@@ -1,50 +1,51 @@
-from unpacker import UnpackerMain
-from sorter import Sorter
-from indexer import Indexer
-from analysis import seasonTool as st
-import tools
 import logging
 import os
+
+import tools
 import settings
-##### Folder Initialisation #####
-source_dir = settings.SOURCE_FOLDER
-output_dir = settings.DESTINATION_FOLDER
-movie_dir = os.path.join(output_dir, "Movies")
-data_dir = tools.make_dir(os.path.join(output_dir, "data"))
 
-##### Modules Initialisation #####
-ru = UnpackerMain.RecursiveUnrarer(source_dir, data_dir)
-s = Sorter.Sorter(output_dir)
-indexer = Indexer.Indexer(movie_dir)
+from analysis import seasonTool as st
+from indexer import Indexer
+from sorter import Sorter
+from unpacker import UnpackerMain
 
 
-def miinaslibrary():
-    
-    tools.shift_log()
-    
-    logger = logging.getLogger('NAS')
-    logger.info("---MiiNASLibrary---")
-    logger.info("Unpacking Module :")
-    doUnpack(source_dir)
-    logger.info("Sorting Module :")
-    doSort()
-    logger.info("Analysis Module :")
-    #st.analyse(os.path.join(destination_dir,'TVSeries'),os.path.join(destination_dir,'TVStatistics.txt'))
-    logger.info("Indexing Module :")
-    doIndex()
+class MiiNASLibrary:
+    def __init__(self):
+        ##### Folder Initialisation #####
+        self.source_dir = settings.SOURCE_FOLDER
+        self.output_dir = settings.DESTINATION_FOLDER
+        self.movie_dir = os.path.join(self.output_dir, "Movies")
+        self.data_dir = tools.make_dir(os.path.join(self.output_dir, "data"))
 
+        ##### Modules Initialisation #####
+        self.recursive_unrarer = UnpackerMain.RecursiveUnrarer(self.source_dir, self.data_dir)
+        self.sorter = Sorter.Sorter(self.output_dir)
+        self.indexer = Indexer.Indexer(self.movie_dir)
 
-def doIndex(): 
-    indexer.index()
+    def run(self):
+        tools.shift_log()
 
+        logger = logging.getLogger('NAS')
+        logger.info("---MiiNASLibrary---")
+        logger.info("Unpacking Module :")
+        self.doUnpack()
+        logger.info("Sorting Module :")
+        self.doSort()
+        logger.info("Analysis Module :")
+        #st.analyse(os.path.join(destination_dir,'TVSeries'),os.path.join(destination_dir,'TVStatistics.txt'))
+        logger.info("Indexing Module :")
+        self.doIndex()
 
-def doSort():
-    s.sort()
+    def doIndex(self):
+        self.indexer.index()
 
+    def doSort(self):
+        self.sorter.sort()
 
-def doUnpack(sourceFolder): 
-    ru.unrar_and_link()
-    ru.cleanup()
-    if settings.SOURCE_CLEANUP:
-        ru.cleanup_source(sourceFolder)
-    ru.print_statistic()
+    def doUnpack(self):
+        self.recursive_unrarer.unrar_and_link()
+        self.recursive_unrarer.cleanup()
+        if settings.SOURCE_CLEANUP:
+            self.recursive_unrarer.cleanup_source(self.source_dir)
+        self.recursive_unrarer.print_statistic()
