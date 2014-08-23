@@ -55,7 +55,7 @@ class RecursiveUnrarer:
                         self.unrar(full_file_path)
 
                     elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
-                                    os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 000000:
+                                    os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 1000000:
                         #Moving every movie type, cleanup later
                         logger.debug("%sMoving :%s to the data folder..." % (indent, data_file))
                         self.link_video(current_directory, data_file)
@@ -93,7 +93,8 @@ class RecursiveUnrarer:
                 os.remove(self.destination_dir + os.path.sep + media_file)
                 self.removed += 1
             else:
-                if os.path.getsize(self.destination_dir + os.path.sep + media_file) < settings.MINIMUM_SIZE * 000000:
+                print "%s < %s" % (os.path.getsize(self.destination_dir + os.path.sep + media_file), settings.MINIMUM_SIZE * 1000000)
+                if os.path.getsize(self.destination_dir + os.path.sep + media_file) < settings.MINIMUM_SIZE * 1000000:
                     logger.debug("Removing (Reason : size < %sMo): %s" % (settings.MINIMUM_SIZE, media_file))
                     os.remove(self.destination_dir + os.path.sep + media_file)
                     self.removed += 1

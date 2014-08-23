@@ -91,8 +91,8 @@ def validate_settings():
         print "Error in settings.SOURCE_FOLDER, %s does not exist" % settings.SOURCE_FOLDER
     if not os.path.exists(settings.DESTINATION_FOLDER):
         print "Error in settings.DESTINATION_FOLDER, %s does not exist" % settings.DESTINATION_FOLDER
-    if not isinstance(settings.MINIMUM_SIZE, int):
-        print "settings.MINIMUM_SIZE have to be an int"
+    if not isinstance(settings.MINIMUM_SIZE, float):
+        print "settings.MINIMUM_SIZE have to be an int or float"
     if not settings.MINIMUM_SIZE >= 0:
         print "settings.MINIMUM_SIZE have to positive, got: %s" % settings.MINIMUM_SIZE
     if not isinstance(settings.CUSTOM_RENAMING, dict):
@@ -106,7 +106,7 @@ def validate_settings():
                not settings.DESTINATION_FOLDER == '',
                os.path.exists(settings.SOURCE_FOLDER),
                os.path.exists(settings.DESTINATION_FOLDER),
-               isinstance(settings.MINIMUM_SIZE, int),
+               isinstance(settings.MINIMUM_SIZE, float),
                settings.MINIMUM_SIZE >= 0,
                isinstance(settings.CUSTOM_RENAMING, dict),
                isinstance(settings.UNPACKING_ENABLED, bool),

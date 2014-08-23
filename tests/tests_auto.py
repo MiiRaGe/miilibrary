@@ -134,14 +134,19 @@ class TestMain(unittest.TestCase):
         logger.info("*** Environment Torn Down***")
 
     def test_main(self):
-        with patch.multiple(settings, SOURCE_FOLDER=self.SOURCE_FOLDER, DESTINATION_FOLDER=self.DESTINATION_FOLDER):
+        with patch.multiple(settings,
+                            SOURCE_FOLDER=self.SOURCE_FOLDER,
+                            DESTINATION_FOLDER=self.DESTINATION_FOLDER,
+                            MINIMUM_SIZE=0.2):
             logger.info("== Testing validate_settings ==")
             self.assertTrue(tools.validate_settings())
 
             logger.info("== Testing doUnpack ==")
             mnl = MiiNASLibrary()
             mnl.doUnpack()
-            self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 4)
+            self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 3)
+            print os.listdir(self.DESTINATION_FOLDER + '/data')
+
 
 
 class TestSorter(unittest.TestCase):
