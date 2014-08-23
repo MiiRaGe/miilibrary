@@ -116,7 +116,6 @@ class TestMain(unittest.TestCase):
         logger.info("*** Environment Builded ***")
 
     def tearDown(self):
-        import pdb; pdb.set_trace()
         logger.info("*** Tearing down environment ***")
         abs_input = self.SOURCE_FOLDER
         logger.info("\t ** Cleaning input Files **")
