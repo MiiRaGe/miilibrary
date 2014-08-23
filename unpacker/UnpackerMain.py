@@ -125,15 +125,3 @@ class RecursiveUnrarer:
         logger.info("Removed : %s" % self.removed)
         logger.info("-----------------------------")
 
-    def cleanup_source(self, source):
-        logger.info("-------------Clean-up Source-------------")
-        for media_file in os.listdir(source):
-            #If it's not a movie media_file or if the size < 100Mo (samples)
-            logger.info("Reading (cleanup): %s" % media_file)
-            if os.path.isdir(os.path.join(source, media_file)):
-                if os.listdir(os.path.join(source, media_file)):
-                    shutil.rmtree(os.path.join(source, media_file))
-                else:
-                    self.cleanup_source(os.path.join(source, media_file))
-                    if os.listdir(os.path.join(source, media_file)):
-                        shutil.rmtree(os.path.join(source, media_file))

@@ -27,8 +27,6 @@ try:
     raise WindowsError
 except NameError:
     WindowsError = None
-else:
-    pass
 
 
 class TestMain(unittest.TestCase):
@@ -67,7 +65,7 @@ class TestMain(unittest.TestCase):
                 if media_file == '.gitignore':
                     continue
                 logger.info("\t\t * Removing: %s *" % media_file)
-                shutil.rmtree(os.path.join(abs_output, media_file))
+                tools.delete_file(os.path.join(abs_output, media_file))
         except WindowsError:
             logger.info("\t\t * No data to move... tests are void **")
 

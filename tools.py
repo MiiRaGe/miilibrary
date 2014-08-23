@@ -2,6 +2,8 @@ import commands
 import datetime
 import logging
 import os
+import shutil
+import subprocess
 import sys
 
 import settings
@@ -41,6 +43,10 @@ def init_log():
     log_dir = os.path.join(settings.DESTINATION_FOLDER, 'log')
     try:
         os.makedirs(log_dir)
+    except OSError, e:
+        pass
+
+    try:
         os.makedirs('%s/extractions/' % log_dir)
     except OSError, e:
         pass
@@ -68,7 +74,8 @@ def shift_log():
     #Timestamp for the logfile
     timestamp = datetime.datetime.now().strftime("%y_%m_%d.%H-%M")
 
-    handler2 = logging.FileHandler(os.path.join(output_dir, 'miiNasLibrary.%s.LOG' % timestamp))
+    log_dir = os.path.join(settings.DESTINATION_FOLDER, 'log')
+    handler2 = logging.FileHandler(os.path.join(log_dir, 'miiNasLibrary.%s.LOG' % timestamp))
     handler2.setFormatter(formatter)
 
     #Readding the handler
@@ -137,8 +144,19 @@ def delete_file(path):
     """deletes the file entirely"""
     if mswindows:
         cmd = "ERASE \"%s\" /s /q" % path
+        output = getstatusoutput(cmd)
+        if output[0]:
+            raise RuntimeError(output[1])
     else:
-        cmd = "rm -f \"%s\"" % path
-    output = getstatusoutput(cmd)
-    if output[0]:
-        raise RuntimeError(output[1])
+        return_value = subprocess.call("rm -rf \"%s\"" % path, shell=True)
+
+def cleanup_rec(source):
+    logger.info("-------------Clean-up Rec-------------")
+    for media_file in os.listdir(source):
+        logger.info("Reading (cleanup): %s" % media_file)
+        if os.path.isdir(os.path.join(source, media_file)):
+            if os.listdir(os.path.join(source, media_file)):
+                cleanup_rec(os.path.join(source, media_file))
+            shutil.rmtree(os.path.join(source, media_file))
+        else:
+            os.remove(os.path.join(source, media_file))

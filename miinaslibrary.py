@@ -48,5 +48,7 @@ class MiiNASLibrary:
         self.recursive_unrarer.unrar_and_link()
         self.recursive_unrarer.cleanup()
         if settings.SOURCE_CLEANUP:
-            self.recursive_unrarer.cleanup_source(self.source_dir)
+            pass
+            #Complete wiping of source folder
+            #tools.cleanup_source(self.source_dir)
         self.recursive_unrarer.print_statistic()
