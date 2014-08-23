@@ -148,12 +148,16 @@ def delete_file(path):
         if output[0]:
             raise RuntimeError(output[1])
     else:
-        return_value = subprocess.call("rm -rf \"%s\"" % path, shell=True)
+        return_value = subprocess.call("rm \"%s\"" % path, shell=True)
+        if return_value:
+            raise RuntimeError("Rm failed for %s" % path)
+
 
 def cleanup_rec(source):
-    logger.info("-------------Clean-up Rec-------------")
     for media_file in os.listdir(source):
-        logger.info("Reading (cleanup): %s" % media_file)
+        if media_file == '.gitignore':
+                    continue
+        logger.info("\t\t * Removing: %s *" % media_file)
         if os.path.isdir(os.path.join(source, media_file)):
             if os.listdir(os.path.join(source, media_file)):
                 cleanup_rec(os.path.join(source, media_file))
