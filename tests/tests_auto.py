@@ -116,6 +116,7 @@ class TestMain(unittest.TestCase):
         logger.info("*** Environment Builded ***")
 
     def tearDown(self):
+        import pdb; pdb.set_trace()
         logger.info("*** Tearing down environment ***")
         abs_input = self.SOURCE_FOLDER
         logger.info("\t ** Cleaning input Files **")
@@ -145,8 +146,8 @@ class TestMain(unittest.TestCase):
             mnl = MiiNASLibrary()
             mnl.doUnpack()
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 3)
-            print os.listdir(self.DESTINATION_FOLDER + '/data')
 
+            mnl.doSort()
 
 
 class TestSorter(unittest.TestCase):
