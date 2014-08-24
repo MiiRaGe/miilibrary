@@ -50,7 +50,7 @@ class Sorter:
                                                        "")
             is_sorted = False
             if result:
-                logger.info("Got Result from opensubtitle for " + file_name)
+                logger.info("Got Result from opensubtitle for %s" % file_name)
                 logger.debug(result)
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
@@ -160,12 +160,12 @@ class Sorter:
         name = info.get("title")
         year = info.get("year")
         logger.info("Name/Year found from file_name : Name = <%s>, Year = <%s>" % (name, year))
-        result = tools.MovieDBWrapper.getMovieName(name, year)
+        result = tools.MovieDBWrapper.get_movie_name(name, year)
         logger.debug("Result from tmdb: %s" % result)
         if result:
-            result = result[0]
+            result = result.get('result')[0]
             movie_id = str(result.get("id"))
-            logger.debug("Found Id : " + movie_id )
+            logger.debug("Found Id : %s" % movie_id)
             imdb_id = tools.MovieDBWrapper.get_movie_imdb_id(movie_id)
             if imdb_id:
                 imdb_id = imdb_id.get("imdb_id")
@@ -200,7 +200,6 @@ class Sorter:
             return True
         except (WindowsError, OSError):
             logger.error("Can't create %s" % custom_movie_dir)
-            logger.error("Probably because windows naming convention sucks, skipping...")
             logger.error(sys.exc_info()[1])
             return False
 
