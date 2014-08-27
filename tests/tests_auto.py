@@ -27,6 +27,8 @@ try:
     raise WindowsError
 except NameError:
     WindowsError = None
+except Exception:
+    pass
 
 
 class TestMain(unittest.TestCase):
