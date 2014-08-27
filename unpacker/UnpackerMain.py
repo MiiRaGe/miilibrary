@@ -12,7 +12,7 @@ try:
     raise WindowsError
 except NameError:
     WindowsError = None
-else:
+except Exception:
     pass
 
 logger = logging.getLogger("NAS")
