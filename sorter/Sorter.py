@@ -162,7 +162,7 @@ class Sorter:
         logger.info("Name/Year found from file_name : Name = <%s>, Year = <%s>" % (name, year))
         result = tools.MovieDBWrapper.get_movie_name(name, year)
         logger.debug("Result from tmdb: %s" % result)
-        if result:
+        if result and result.get('result'):
             result = result.get('result')[0]
             movie_id = str(result.get("id"))
             logger.debug("Found Id : %s" % movie_id)
@@ -216,10 +216,15 @@ def get_info(name):
         try:
             result['year'] = regex_res.group(2)
         except AttributeError:
-            logger.exception("No year infor for %s" % name)
+            logger.exception("No year info for %s" % name)
         return result
 
-    regex_res = re.match("(.+)(720p|1080p)", name)
+    regex_res = re.match("(.+)(?:720p?|1080p?)", name)
+    if regex_res:
+        title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
+        return {"title": title}
+
+    regex_res = re.match("(.+).{4}$", name)
     if regex_res:
         title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         return {"title": title}

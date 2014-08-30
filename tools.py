@@ -164,3 +164,17 @@ def cleanup_rec(source):
             shutil.rmtree(os.path.join(source, media_file))
         else:
             os.remove(os.path.join(source, media_file))
+
+
+def print_rec(path, indent):
+    tabulation = ''
+    for i in range(0, indent):
+        tabulation += '\t'
+    pos = -1
+    if path.endswith('/'):
+        pos = -2
+    print '%s%s %s' % (tabulation, path.split('/')[pos], '(Dir):' if os.path.isdir(path) else '(File)')
+
+    if os.path.isdir(path):
+        for file in os.listdir(path):
+            print_rec(os.path.join(path, file), indent + 1)
