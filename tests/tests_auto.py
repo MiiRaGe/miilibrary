@@ -91,7 +91,7 @@ class TestMain(unittest.TestCase):
 
             self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
             self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
-            self.assertIn('The.Big.Bank.Theory.S01E01.720p.mkv', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
+            self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
             #TODO : Add test for duplicate file, duplicate episode, and test unsorted
 
 
