@@ -209,7 +209,10 @@ class Sorter:
         #Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub("[\*\:]", "-", movie_name)
         #TODO: Find if moving is already existing in the folder
-        #  using regex on .* (YEAR), year will be there even if non relevant
+        if self.resolve_existing_conflict(movie_name,
+                                          get_size(os.path.join(self.data_dir, filename)),
+                                          self.alphabetical_movie_dir):
+            return False #Return false if there's no need to do anything
         custom_movie_dir = "%s (%s)" % (movie_name, year)
         quality = get_quality(filename)
         if quality:
@@ -229,9 +232,27 @@ class Sorter:
             logger.exception('Found an exception when moving movie : %s' % repr(e))
         return False
 
+    def resolve_existing_conflict(self, movie_name, file_size, movie_dir):
+        #TODO: replace with db query when implemented
+        for movie in os.listdir(movie_dir):
+            if re.match('%s.\(\d{4}\)' % movie_name, movie):
+                print '%s > %s' % (get_dir_size(os.path.join(movie_dir, movie)), file_size)
+                if get_dir_size(os.path.join(movie_dir, movie)) > file_size:
+                    raise Exception('Do not sort as already existing bigger movie exists')
+                else:
+                    self.move_to_unsorted(movie_dir, movie)
+                    logger.info('Moving the old movie folder to unsorted as new file is bigger')
+                    return False
+
+
 
 def get_size(file_name):
     return os.path.getsize(os.path.abspath(file_name))
+
+
+def get_dir_size(dir_name):
+    return sum([get_size(os.path.join(dir_name, x)) for x in os.listdir(dir_name)])
+
 
 
 def get_info(name):
@@ -412,4 +433,5 @@ def letter_coverage(file_name, api_name):
     except ZeroDivisionError:
         logger.exception("Empty title name, can't compare")
         return 0
+
 
