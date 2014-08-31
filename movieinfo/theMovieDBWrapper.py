@@ -1,10 +1,6 @@
-'''
-Created on 26 janv. 2014
-
-@author: MiiRaGe
-'''
 import re
 import cgi
+
 try:
     import json
 except ImportError:

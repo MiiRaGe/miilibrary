@@ -162,15 +162,37 @@ class Sorter:
         logger.info("Name/Year found from file_name : Name = <%s>, Year = <%s>" % (name, year))
         result = tools.MovieDBWrapper.get_movie_name(name, year)
         logger.debug("Result from tmdb: %s" % result)
-        if result and result.get('result'):
-            result = result.get('result')[0]
-            movie_id = str(result.get("id"))
-            logger.debug("Found Id : %s" % movie_id)
-            imdb_id = tools.MovieDBWrapper.get_movie_imdb_id(movie_id)
-            if imdb_id:
-                imdb_id = imdb_id.get("imdb_id")
-                self.create_dir_and_move_movie(result.get("title"), year, imdb_id, file_name)
-                return True
+        try:
+            if result and result.get('results'):
+                result = result.get('results')[0]
+                movie_id = str(result.get("id"))
+                logger.debug("Matching result: %s" % result)
+                matching_year = result.get('release_date', '1900-01-01')
+                matched = re.match('(?:\d{4})', matching_year)
+                if matched:
+                    if not year:
+                        year = matched.group(0)
+                    else:
+                        if year != matched.group(0):
+                            logger.error('Year not matching for %s, Got %s expected %s' % (file_name,
+                                                                                           matched.group(0),
+                                                                                           year))
+                        else:
+                            logger.info('Year matched for %s' % file_name)
+                percent = letter_coverage(name, result['title'])
+                if percent > 65.0:
+                    logger.info('Title matched %s, %s at (%s%%)' % (name, result['title'], percent))
+                else:
+                    raise Exception('Title did not match %s, %s with (%s%%)' % (name, result['title'], percent))
+
+                logger.debug("Found Id : %s" % movie_id)
+                imdb_id = tools.MovieDBWrapper.get_movie_imdb_id(movie_id)
+                if imdb_id:
+                    imdb_id = imdb_id.get("imdb_id")
+                    self.create_dir_and_move_movie(result['title'], year, imdb_id, file_name)
+                    return True
+        except Exception, e:
+            logger.exception('Found and exception while matching file with tmdb : %s' % repr(e))
         self.move_to_unsorted(self.data_dir, file_name)
         return False
 
@@ -183,17 +205,19 @@ class Sorter:
             logger.error("Can't create %s" % file_name)
             logger.error(sys.exc_info()[1])
 
-    def create_dir_and_move_movie(self, movie_name, year, imdbid, filename):
+    def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
         #Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub("[\*\:]", "-", movie_name)
+        #TODO: Find if moving is already existing in the folder
+        #  using regex on .* (YEAR), year will be there even if non relevant
         custom_movie_dir = "%s (%s)" % (movie_name, year)
         quality = get_quality(filename)
         if quality:
             custom_movie_dir += " [" + quality + "]"
         try:
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
-            if imdbid:
-                open(os.path.join(created_movie_dir, ".IMDB_ID_%s" % imdbid), "w")
+            if imdb_id:
+                open(os.path.join(created_movie_dir, ".IMDB_ID_%s" % imdb_id), "w")
             new_name = re.sub(".*(\.[a-zA-Z0-9]*)$", "%s\g<1>" % re.sub(" ", ".", custom_movie_dir), filename)
             logger.info("Moving %s, with new name %s" % (filename, new_name))
             os.rename(os.path.join(self.data_dir, filename), os.path.join(created_movie_dir, new_name))
@@ -201,7 +225,9 @@ class Sorter:
         except (WindowsError, OSError):
             logger.error("Can't create %s" % custom_movie_dir)
             logger.error(sys.exc_info()[1])
-            return False
+        except Exception, e:
+            logger.exception('Found an exception when moving movie : %s' % repr(e))
+        return False
 
 
 def get_size(file_name):
@@ -385,4 +411,5 @@ def letter_coverage(file_name, api_name):
         return percent_coverage * size_factor
     except ZeroDivisionError:
         logger.exception("Empty title name, can't compare")
+        return 0
 
