@@ -20,6 +20,7 @@ try:
 except OSError:
     pass
 test_handler = logging.FileHandler(abs_log_file)
+test_handler.setFormatter(tools.formatter)
 logger = logging.getLogger('NAS')
 logger.addHandler(test_handler)
 
