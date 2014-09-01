@@ -1,10 +1,6 @@
-'''
-Created on 26 janv. 2014
-
-@author: MiiRaGe
-'''
 import re
 import cgi
+
 try:
     import json
 except ImportError:
@@ -25,7 +21,9 @@ class TheMovieDBWrapper:
         url = "%s/3/search/movie?%s&query=%s" % (self.server, self.api_key, cgi.escape(movie_name))
         if year:
             url += "&year=%s" % year
-        return self.get_url(url)
+        results = self.get_url(url)
+        results['results'] = sorted(results['results'], key=(lambda x: x['popularity']), reverse=True)
+        return results
 
     def get_movie_imdb_id(self, movie_id):
         url = "%s/3/movie/%s?%s" % (self.server, movie_id, self.api_key)
