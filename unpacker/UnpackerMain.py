@@ -72,7 +72,7 @@ class RecursiveUnrarer:
             return
         logger.debug("Processing extraction...")
 
-        stdout = open("%slog/extractions/%s.extraction.LOG" % (settings.DESTINATION_FOLDER, archive_file.split('/')[-1]), "wb")
+        stdout = open("%s/log/extractions/%s.extraction.LOG" % (settings.DESTINATION_FOLDER, archive_file.split('/')[-1]), "wb")
         return_value = subprocess.call('unrar e -y %s %s' % (archive_file, self.destination_dir), shell=True, stdout=stdout)
         if not return_value:
             logger.debug("Extraction OK!")
