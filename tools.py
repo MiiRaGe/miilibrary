@@ -33,7 +33,7 @@ OpensubtitleWrapper = opensubtitleWrapper.OpensubtitleWrapper()
 
 ########### LOG #############
 
-handler = None
+global handler
 logger = logging.getLogger('NAS')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
@@ -52,6 +52,7 @@ def init_log():
         pass
 
     timestamp = datetime.datetime.now().strftime("%d_%m_%y.%H-%M")
+    global handler
     handler = logging.FileHandler(os.path.join(log_dir, 'miiNasLibrary.%s.LOG' % timestamp))
     logger.addHandler(handler)
 
