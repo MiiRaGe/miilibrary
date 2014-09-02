@@ -10,6 +10,8 @@ from mock import patch
 import settings
 import tools
 from miinaslibrary import MiiNASLibrary
+from movieinfo.opensubtitleWrapper import OpensubtitleWrapper
+from movieinfo.theMovieDBWrapper import TheMovieDBWrapper
 
 from sorter.Sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
     compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
@@ -30,6 +32,30 @@ except NameError:
     WindowsError = None
 except Exception:
     pass
+
+
+def mock_get_movie_names(self, *args, **kwargs):
+    return {'status': '200 OK', 'seconds': 0.015, 'data': False}
+
+
+def mock_get_movie_names2(self, *args, **kwargs):
+    print args
+    return {}
+
+
+def mock_get_imdb_information(self, *args, **kwargs):
+    print args
+    return {}
+
+
+def mock_get_movie_name(self, *args, **kwargs):
+    print args, kwargs
+    return {}
+
+
+def mock_get_movie_imdb_id(self, *args, **kwargs):
+    print args, kwargs
+    return {}
 
 
 class TestMain(unittest.TestCase):
@@ -66,6 +92,11 @@ class TestMain(unittest.TestCase):
 
         logger.info("*** Environment Torn Down***")
 
+    @patch.multiple(OpensubtitleWrapper,
+                    get_movie_names=mock_get_movie_names,
+                    get_movie_names2=mock_get_movie_names2,
+                    get_imdb_information=mock_get_imdb_information)
+    @patch.multiple(TheMovieDBWrapper, get_movie_name=mock_get_movie_name, get_movie_imdb_id=mock_get_movie_imdb_id)
     def test_main(self):
         with patch.multiple(settings,
                             SOURCE_FOLDER=self.SOURCE_FOLDER,
