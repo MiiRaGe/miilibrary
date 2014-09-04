@@ -1,10 +1,15 @@
-import os,tools,re,logging,platform
+import logging
+import platform
+import re
+import os
+
+import tools
+
 logger = logging.getLogger("NAS")
 
 if platform.system() == 'Windows':
-    import os
-
     __CSL = None
+    
     def symlink(source, link_name):
         '''symlink(source, link_name)
            Creates a symbolic link pointing to source named link_name'''
@@ -24,52 +29,62 @@ if platform.system() == 'Windows':
     
     os.symlink = symlink
 
+
 class Indexer:
-    def __init__(self,sourceDir):
+    def __init__(self, source_dir):
         #All directory is always created by sorter and contains all movie sorted alphabetically
-        self.sourceDir = sourceDir
-        self.alphabeticalDir = os.path.join(sourceDir,"All")
-        self.genreDir = tools.make_dir(os.path.join(sourceDir,'Genres'))
-        self.noGenreDir = tools.make_dir(os.path.join(self.genreDir,'NOGENRE'))
+        self.source_dir = source_dir
+        self.alphabetical_dir = os.path.join(source_dir, "All")
+        self.genre_dir = tools.make_dir(os.path.join(source_dir, 'Genres'))
+        self.no_genre_dir = tools.make_dir(os.path.join(self.genre_dir, 'NOGENRE'))
         
     def index(self):
-        imdbRegEx = re.compile('.IMDB_ID_(\d+)$')
-        for folder in os.listdir(self.alphabeticalDir):
-            folderAbs = os.path.join(self.alphabeticalDir,folder)
-            if os.path.isdir(folderAbs):
-                imdbFile = None
-                for file in os.listdir(folderAbs):
-                    id = imdbRegEx.match(file)
+        #TODO : Add a method to destroy the index folders and rebuild them. (also removing .indexed)
+        imdb_regex = re.compile('\.IMDB_ID_(?:tt)?(\d+)$')
+        for folder in os.listdir(self.alphabetical_dir):
+            folder_abs = os.path.join(self.alphabetical_dir, folder)
+            if os.path.isdir(folder_abs):
+                imdb_file = None
+                id = None
+                for file in os.listdir(folder_abs):
+                    id = imdb_regex.match(file)
                     if id:
-                        imdbFile = file
-                        break   
-                if imdbFile and not os.path.exists(os.path.join(folderAbs,imdbFile + '.indexed')):
-                    imdbData = tools.OpensubtitleWrapper.get_imdb_information(int(id.group(1)))
-                    if imdbData:
-                        logger.info(folder)
-                        logger.info("\t" + str(imdbData.get('genres')))
-                        genres = imdbData.get('genres')
-                        if genres:
-                            self.createGenreFolders(genres)
-                            for genre in genres:
-                                genre = genre.strip()
-                                try:
-                                    os.symlink(folderAbs,os.path.join(self.sourceDir,'Genres',genre,folder))
-                                except:
-                                    logger.debug("File already linked :" + folder + " in genre:" + genre)
+                        imdb_file = file
+                        break
+
+                if imdb_file:
+                    if not os.path.exists(os.path.join(folder_abs, '%s.indexed' % imdb_file)):
+                        imdb_data = tools.OpensubtitleWrapper.get_imdb_information(int(id.group(1)))
+                        if imdb_data:
+                            logger.info(folder)
+                            logger.info("\t%s" % imdb_data.get('genres'))
+                            logger.debug("\t%s" % imdb_data)
+                            self.index_genre(imdb_data.get('genres'), folder, folder_abs)
+                            #TODO: This is where new index using imdb_data should go following index_genre
                         else:
-                            os.symlink(folderAbs,os.path.join(self.noGenreDir,folder))
+                            open(os.path.join(folder_abs, file + '.NO_IMDB_DATA'), 'w')
+                            os.symlink(folder_abs, os.path.join(self.no_genre_dir, folder))
+                        open(os.path.join(folder_abs, file + '.indexed'), 'w')
                     else:
-                        open(os.path.join(folderAbs,file + '.NO_IMDB_DATA'),'w')
-                        os.symlink(folderAbs,os.path.join(self.noGenreDir,folder))
-                    open(os.path.join(folderAbs,file + '.indexed'),'w')
+                        logger.info("Folder already indexed :%s" % folder)
                 else:
-                    open(os.path.join(folderAbs,file + '.NO_IMDB_FILE'),'w')
+                    open(os.path.join(folder_abs, file + '.NO_IMDB_FILE'), 'w')
                     
-    def createGenreFolders(self,genres):
+    def create_genre_folders(self, genres):
         for genre in genres:
             genre = genre.strip()
-            tools.make_dir(os.path.join(self.sourceDir,'Genres',genre))
-        
+            tools.make_dir(os.path.join(self.source_dir, 'Genres', genre))
 
+    def index_genre(self, genres, folder, folder_abs):
+        if genres:
+            self.create_genre_folders(genres)
+            for genre in genres:
+                genre = genre.strip()
+                try:
+                    os.symlink(folder_abs, os.path.join(self.source_dir, 'Genres', genre, folder))
+                except Exception, e:
+                    logger.debug("File already linked : %s in genre: %s" % (folder, genre))
+                    logger.exception("With exception :%s" % repr(e))
+        else:
+            os.symlink(folder_abs, os.path.join(self.no_genre_dir, folder))
 

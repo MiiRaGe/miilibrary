@@ -185,8 +185,8 @@ class Sorter:
                 else:
                     raise Exception('Title did not match %s, %s with (%s%%)' % (name, result['title'], percent))
 
-                logger.debug("Found Id : %s" % movie_id)
                 imdb_id = tools.MovieDBWrapper.get_movie_imdb_id(movie_id)
+                logger.debug("Matching (id/imdb)  %s/%s" % (movie_id, imdb_id))
                 if imdb_id:
                     imdb_id = imdb_id.get("imdb_id")
                     self.create_dir_and_move_movie(result['title'], year, imdb_id, file_name)
@@ -236,7 +236,6 @@ class Sorter:
         #TODO: replace with db query when implemented
         for movie in os.listdir(movie_dir):
             if re.match('%s.\(\d{4}\)' % movie_name, movie):
-                print '%s > %s' % (get_dir_size(os.path.join(movie_dir, movie)), file_size)
                 if get_dir_size(os.path.join(movie_dir, movie)) > file_size:
                     raise Exception('Do not sort as already existing bigger movie exists')
                 else:
@@ -245,14 +244,13 @@ class Sorter:
                     return False
 
 
-
 def get_size(file_name):
     return os.path.getsize(os.path.abspath(file_name))
 
 
 def get_dir_size(dir_name):
+    #TODO : Write unite test for that method
     return sum([get_size(os.path.join(dir_name, x)) for x in os.listdir(dir_name)])
-
 
 
 def get_info(name):

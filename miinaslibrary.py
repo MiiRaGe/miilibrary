@@ -6,7 +6,7 @@ import settings
 
 from analysis import seasonTool as st
 from indexer import Indexer
-from sorter import Sorter
+from sorter import sorter
 from unpacker import UnpackerMain
 
 
@@ -21,7 +21,7 @@ class MiiNASLibrary:
 
         ##### Modules Initialisation #####
         self.recursive_unrarer = UnpackerMain.RecursiveUnrarer(self.source_dir, self.data_dir)
-        self.sorter = Sorter.Sorter(self.output_dir)
+        self.sorter = sorter.Sorter(self.output_dir)
         self.indexer = Indexer.Indexer(self.movie_dir)
 
     def run(self):

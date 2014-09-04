@@ -10,10 +10,12 @@ from mock import patch
 import settings
 import tools
 from miinaslibrary import MiiNASLibrary
-from movieinfo.opensubtitleWrapper import OpensubtitleWrapper
-from movieinfo.theMovieDBWrapper import TheMovieDBWrapper
+from movieinfo.opensubtitle_wrapper import OpensubtitleWrapper
+from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
+from mock_osdb import *
+from mock_tmdb import *
 
-from sorter.Sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
+from sorter.sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
     compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
 
 abs_log_file = '%s/test_log.LOG' % os.path.dirname(__file__)
@@ -32,30 +34,6 @@ except NameError:
     WindowsError = None
 except Exception:
     pass
-
-
-def mock_get_movie_names(self, *args, **kwargs):
-    return {'status': '200 OK', 'seconds': 0.015, 'data': False}
-
-
-def mock_get_movie_names2(self, *args, **kwargs):
-    print args
-    return {}
-
-
-def mock_get_imdb_information(self, *args, **kwargs):
-    print args
-    return {}
-
-
-def mock_get_movie_name(self, *args, **kwargs):
-    print args, kwargs
-    return {}
-
-
-def mock_get_movie_imdb_id(self, *args, **kwargs):
-    print args, kwargs
-    return {}
 
 
 class TestMain(unittest.TestCase):
@@ -96,7 +74,9 @@ class TestMain(unittest.TestCase):
                     get_movie_names=mock_get_movie_names,
                     get_movie_names2=mock_get_movie_names2,
                     get_imdb_information=mock_get_imdb_information)
-    @patch.multiple(TheMovieDBWrapper, get_movie_name=mock_get_movie_name, get_movie_imdb_id=mock_get_movie_imdb_id)
+    @patch.multiple(TheMovieDBWrapper,
+                    get_movie_name=mock_get_movie_name,
+                    get_movie_imdb_id=mock_get_movie_imdb_id)
     def test_main(self):
         with patch.multiple(settings,
                             SOURCE_FOLDER=self.SOURCE_FOLDER,
@@ -111,7 +91,6 @@ class TestMain(unittest.TestCase):
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
             mnl.doSort()
-            tools.print_rec(self.DESTINATION_FOLDER, 0)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 2)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')),
@@ -123,7 +102,11 @@ class TestMain(unittest.TestCase):
             self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
             self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
             self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
+
+            mnl.doIndex()
             #TODO : Add test for duplicate file, duplicate episode, and test unsorted
+            #TODO : Add test for assertions on sorted stuff
+            tools.print_rec(self.DESTINATION_FOLDER, 0) #Keep this call at the end to see the global result (move for debugging)
 
 
 class TestSorter(unittest.TestCase):

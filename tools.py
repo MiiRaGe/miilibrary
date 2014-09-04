@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 import settings
-from movieinfo import theMovieDBWrapper, opensubtitleWrapper
+from movieinfo import the_movie_db_wrapper, opensubtitle_wrapper
 
 
 #Create the directory @param(path) and return the path after creation [Error safe]
@@ -28,8 +28,8 @@ def remove(path):
         logger.exception("Got an exception in remove, %s" % repr(e))
 
 #Initialise Wrappers :
-MovieDBWrapper = theMovieDBWrapper.TheMovieDBWrapper()
-OpensubtitleWrapper = opensubtitleWrapper.OpensubtitleWrapper()
+MovieDBWrapper = the_movie_db_wrapper.TheMovieDBWrapper()
+OpensubtitleWrapper = opensubtitle_wrapper.OpensubtitleWrapper()
 
 ########### LOG #############
 
