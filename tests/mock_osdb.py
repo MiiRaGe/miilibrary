@@ -1,6 +1,6 @@
 def mock_get_movie_names(_, *args, **kwargs):
     print args
-    return {'status': '200 OK', 'seconds': 0.015, 'data': False}
+    return {}
 
 
 def mock_get_movie_names2(_, *args, **kwargs):

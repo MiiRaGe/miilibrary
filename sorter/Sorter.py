@@ -7,6 +7,7 @@ import tools
 import settings
 import movieinfo.hashTool as ht
 
+from middleware import mii_mongo
 from tools import OpensubtitleWrapper
 
 """ Sorter Module """
@@ -38,7 +39,7 @@ class Sorter:
 
     def sort(self):
         logger.info("Login in the wrapper")
-        OpensubtitleWrapper.log_in(True, 10)
+        #OpensubtitleWrapper.log_in(True, 10)
         logger.info("Beginning Sorting")
         for media in os.listdir(self.data_dir):
             self.create_hash_list(media)
@@ -160,7 +161,7 @@ class Sorter:
         name = info.get("title")
         year = info.get("year")
         logger.info("Name/Year found from file_name : Name = <%s>, Year = <%s>" % (name, year))
-        result = tools.MovieDBWrapper.get_movie_name(name, year)
+        result = mii_mongo.get_or_sync_movie_name(name, year)
         logger.debug("Result from tmdb: %s" % result)
         try:
             if result and result.get('results'):

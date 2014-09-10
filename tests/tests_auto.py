@@ -72,6 +72,7 @@ class TestMain(unittest.TestCase):
 
     @patch.multiple(OpensubtitleWrapper,
                     get_movie_names=mock_get_movie_names,
+                    get_subtitles=mock_get_movie_names,
                     get_movie_names2=mock_get_movie_names2,
                     get_imdb_information=mock_get_imdb_information)
     @patch.multiple(TheMovieDBWrapper,
@@ -106,6 +107,7 @@ class TestMain(unittest.TestCase):
             mnl.doIndex()
             #TODO : Add test for duplicate file, duplicate episode, and test unsorted
             #TODO : Add test for assertions on sorted stuff
+            #TODO : Add test for opensubtitle (get real data from production and mock the result with a fake hash)
             tools.print_rec(self.DESTINATION_FOLDER, 0) #Keep this call at the end to see the global result (move for debugging)
 
 

@@ -14,11 +14,12 @@ logger = logging.getLogger("NAS")
 
 class OpensubtitleWrapper:
     def __init__(self):
-        self.server = ServerProxy("http://api.opensubtitles.org/xml-rpc")
         self.login_successful = False
         self.token = None
+        self.server = None  # server initialized in log_in to avoid program not running offline
 
     def log_in(self, retry=False, max_retries=10):
+        self.server = ServerProxy("http://api.opensubtitles.org/xml-rpc")
         result = None
         go_on = True
         fail_count = 0
