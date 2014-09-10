@@ -5,6 +5,9 @@ import os
 
 import tools
 
+from middleware import mii_mongo
+
+
 logger = logging.getLogger("NAS")
 
 if platform.system() == 'Windows':
@@ -33,6 +36,7 @@ if platform.system() == 'Windows':
 class Indexer:
     def __init__(self, source_dir):
         #All directory is always created by sorter and contains all movie sorted alphabetically
+        self.mii_mongo = mii_mongo.MiiMongo()
         self.source_dir = source_dir
         self.alphabetical_dir = os.path.join(source_dir, "All")
         self.genre_dir = tools.make_dir(os.path.join(source_dir, 'Genres'))
@@ -60,7 +64,7 @@ class Indexer:
                 if imdb_file:
                     logger.info('Found imdb file %s' % imdb_file)
                     if not os.path.exists(os.path.join(folder_abs, '%s.indexed' % imdb_file)):
-                        imdb_data = tools.OpensubtitleWrapper.get_imdb_information(int(id.group(1)))
+                        imdb_data = self.mii_mongo.get_or_sync_imdb_information(int(id.group(1)))
                         if imdb_data:
                             logger.info('Found imdb data from opensubtitle:')
                             logger.info("\tGenres: %s" % imdb_data.get('genres'))
