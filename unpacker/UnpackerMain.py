@@ -28,6 +28,9 @@ class RecursiveUnrarer:
         self.linked = 0
 
     def unrar_and_link(self):
+        logger.info("****************************************")
+        logger.info("**********      Unpacker      **********")
+        logger.info("****************************************")
         self.linked = 0
         self.extracted = 0
         self.recursive_unrar_and_link(self.source_dir)
@@ -123,5 +126,4 @@ class RecursiveUnrarer:
         logger.info("Extracted : %s" % self.extracted)
         logger.info("Linked : %s" % self.linked)
         logger.info("Removed : %s" % self.removed)
-        logger.info("-----------------------------")
 

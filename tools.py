@@ -15,8 +15,9 @@ def make_dir(path):
     #Avoid the raise of IOError exception by checking if the directory exists first
     try:
         os.makedirs(path)
-    except Exception, e:
-        logger.exception("Got an exception in make_dir, %s" % repr(e))
+    except OSError as e:
+        if e.errno != 17:
+            logger.warning('Exception in make_dir(%s): %s' % (e.filename, repr(e)))
     return path
 
 
@@ -24,8 +25,8 @@ def make_dir(path):
 def remove(path):
     try:
         os.remove(path)
-    except Exception, e:
-        logger.exception("Got an exception in remove, %s" % repr(e))
+    except OSError as e:
+        logger.warning("Exception in remove, %s" % repr(e))
 
 #Initialise Wrappers :
 MovieDBWrapper = the_movie_db_wrapper.TheMovieDBWrapper()

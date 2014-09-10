@@ -38,14 +38,15 @@ class Sorter:
         self.hash_array.append(movie_hash)
 
     def sort(self):
-        logger.info("Login in the wrapper")
-        #OpensubtitleWrapper.log_in(True, 10)
-        logger.info("Beginning Sorting")
+        logger.info("****************************************")
+        logger.info("**********       Sorter       **********")
+        logger.info("****************************************")
         for media in os.listdir(self.data_dir):
             self.create_hash_list(media)
 
         for movie_hash in self.hash_array:
             file_name = self.map.get(movie_hash)
+            logger.info('------ %s ------' % file_name)
             result = OpensubtitleWrapper.get_subtitles(movie_hash,
                                                        str(get_size(os.path.join(self.data_dir, file_name))),
                                                        "")
@@ -72,7 +73,7 @@ class Sorter:
                     self.sort_tv_serie(file_name)
                     logger.info("Sorted the TV Serie : %s" % file_name)
                 else:
-                    logger.info("Probably a Movie? %s" % file_name)
+                    logger.info("Looks like a movie")
                     self.sort_movie_from_name(file_name)
 
     def sort_open_subtitle_info(self, result):
@@ -186,14 +187,14 @@ class Sorter:
                 else:
                     raise Exception('Title did not match %s, %s with (%s%%)' % (name, result['title'], percent))
 
-                imdb_id = tools.MovieDBWrapper.get_movie_imdb_id(movie_id)
+                imdb_id = mii_mongo.get_or_sync_movie_imdb_id(movie_id)
                 logger.debug("Matching (id/imdb)  %s/%s" % (movie_id, imdb_id))
                 if imdb_id:
                     imdb_id = imdb_id.get("imdb_id")
                     self.create_dir_and_move_movie(result['title'], year, imdb_id, file_name)
                     return True
         except Exception, e:
-            logger.exception('Found and exception while matching file with tmdb : %s' % repr(e))
+            logger.warning('Found and exception while matching file with tmdb : %s' % repr(e))
         self.move_to_unsorted(self.data_dir, file_name)
         return False
 
@@ -213,7 +214,7 @@ class Sorter:
         if self.resolve_existing_conflict(movie_name,
                                           get_size(os.path.join(self.data_dir, filename)),
                                           self.alphabetical_movie_dir):
-            return False #Return false if there's no need to do anything
+            return False  #Return false if there's no need to do anything
         custom_movie_dir = "%s (%s)" % (movie_name, year)
         quality = get_quality(filename)
         if quality:

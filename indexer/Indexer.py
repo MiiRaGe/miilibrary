@@ -39,9 +39,14 @@ class Indexer:
         self.no_genre_dir = tools.make_dir(os.path.join(self.genre_dir, 'NOGENRE'))
         
     def index(self):
+        logger.info("****************************************")
+        logger.info("**********      Indexer       **********")
+        logger.info("****************************************")
         #TODO : Add a method to destroy the index folders and rebuild them. (also removing .indexed)
+        #TODO : Do that only when mongo fully implemented to avoid opensubtitle calls
         imdb_regex = re.compile('\.IMDB_ID_(?:tt)?(\d+)$')
         for folder in os.listdir(self.alphabetical_dir):
+            logger.info('------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
             if os.path.isdir(folder_abs):
                 imdb_file = None
@@ -53,20 +58,22 @@ class Indexer:
                         break
 
                 if imdb_file:
+                    logger.info('Found imdb file %s' % imdb_file)
                     if not os.path.exists(os.path.join(folder_abs, '%s.indexed' % imdb_file)):
                         imdb_data = tools.OpensubtitleWrapper.get_imdb_information(int(id.group(1)))
                         if imdb_data:
-                            logger.info(folder)
-                            logger.info("\t%s" % imdb_data.get('genres'))
-                            logger.debug("\t%s" % imdb_data)
+                            logger.info('Found imdb data from opensubtitle:')
+                            logger.info("\tGenres: %s" % imdb_data.get('genres'))
+                            logger.debug("\tData: %s" % imdb_data)
                             self.index_genre(imdb_data.get('genres'), folder, folder_abs)
                             #TODO: This is where new index using imdb_data should go following index_genre
                         else:
+                            # FIXME: Probably need to remove that, not sure what it's for
                             open(os.path.join(folder_abs, file + '.NO_IMDB_DATA'), 'w')
                             os.symlink(folder_abs, os.path.join(self.no_genre_dir, folder))
                         open(os.path.join(folder_abs, file + '.indexed'), 'w')
                     else:
-                        logger.info("Folder already indexed :%s" % folder)
+                        logger.info("Folder already indexed")
                 else:
                     open(os.path.join(folder_abs, file + '.NO_IMDB_FILE'), 'w')
                     
