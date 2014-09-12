@@ -52,7 +52,7 @@ class MiiMongoStored(object):
             return result
 
         self.logger.info('Querying the API')
-        result = self.mapping[method_name](args)
+        result = self.mapping[method_name](*args)
 
         qry = self.qry
         qry.update(data=result, date=datetime.datetime.now())
@@ -62,8 +62,8 @@ class MiiMongoStored(object):
 
 class MiiTMDB(MiiMongoStored):
     mapping = {
-        'get_movie_imdb_id': (lambda args: tools.MovieDBWrapper.get_movie_imdb_id(args[0])),
-        'get_movie_name': (lambda args: tools.MovieDBWrapper.get_movie_name(args[0], args[1])),
+        'get_movie_imdb_id': tools.MovieDBWrapper.get_movie_imdb_id,
+        'get_movie_name': tools.MovieDBWrapper.get_movie_name,
     }
     collection = tmdb
 
@@ -78,7 +78,7 @@ class MiiTMDB(MiiMongoStored):
 
 class MiiOSDB(MiiMongoStored):
     mapping = {
-        'get_imdb_information': (lambda args: tools.OpensubtitleWrapper.get_imdb_information(args[0])),
+        'get_imdb_information': tools.OpensubtitleWrapper.get_imdb_information,
     }
     collection = osdb
 
