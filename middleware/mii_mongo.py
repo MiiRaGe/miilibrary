@@ -19,9 +19,11 @@ except ConnectionFailure, e:
 # Global tools
 
 
-class MiiMongo():
-    def __init__(self):
-        self.logger = logging.getLogger('NAS')
+class MiiMongoStored(object):
+    qry = {}
+    mapping = {}
+    logger = logging.getLogger('NAS')
+    collection = None
 
     def do_query(self, qry, collection):
         if not db:
@@ -42,45 +44,44 @@ class MiiMongo():
         collection.insert(data)
         self.logger.info('Query saved in mongo')
 
-    # Open Subtitle Database
+    def get_or_sync(self, method_name, *args, **kwargs):
+        self.logger.info('get_or_sync, %s(%s)' % (method_name, args))
 
-    def get_or_sync_imdb_information(self, id):
-        self.logger.info('get_or_sync_imdb_information(%s)' % id)
-
-        result = self.do_query({'id': id}, osdb)
+        result = self.do_query(self.qry, self.collection)
         if result:
             return result
 
         self.logger.info('Querying the API')
-        result = tools.OpensubtitleWrapper.get_imdb_information(id)
+        result = self.mapping[method_name](args)
 
-        self.do_insert({'id': id, 'data': result, 'date': datetime.datetime.now()}, osdb)
+        qry = self.qry
+        qry.update(data=result, date=datetime.datetime.now())
+        self.do_insert(qry, self.collection)
         return result
 
-    # The Movie DB
 
-    def get_or_sync_movie_name(self, name, year):
-        self.logger.info('get_or_sync_movie_name(%s, %s)' % (name, year))
+class MiiTMDB(MiiMongoStored):
+    mapping = {
+        'get_movie_imdb_id': (lambda args: tools.MovieDBWrapper.get_movie_imdb_id(args[0])),
+        'get_movie_name': (lambda args: tools.MovieDBWrapper.get_movie_name(args[0], args[1])),
+    }
+    collection = tmdb
 
-        result = self.do_query({'name': name, 'year': year}, tmdb)
-        if result:
-            return result
+    def get_movie_name(self, name, year):
+        self.qry = {'name': name, 'year': year}
+        return self.get_or_sync('get_movie_name', name, year)
 
-        self.logger.info('Querying the API')
-        result = tools.MovieDBWrapper.get_movie_name(name, year)
+    def get_movie_imdb_id(self, id):
+        self.qry = {'id': id}
+        return self.get_or_sync('get_movie_imdb_id', id)
 
-        self.do_insert({'name': name, 'year': year, 'data': result, 'date': datetime.datetime.now()}, tmdb)
-        return result
 
-    def get_or_sync_movie_imdb_id(self, id):
-        self.logger.info('get_or_sync_movie_imdb_id(%s)' % id)
+class MiiOSDB(MiiMongoStored):
+    mapping = {
+        'get_imdb_information': (lambda args: tools.OpensubtitleWrapper.get_imdb_information(args[0])),
+    }
+    collection = osdb
 
-        result = self.do_query({'id': id}, tmdb)
-        if result:
-            return result
-
-        self.logger.info('Querying the API')
-        result = tools.MovieDBWrapper.get_movie_imdb_id(id)
-
-        self.do_insert({'id': id, 'data': result, 'date': datetime.datetime.now()}, tmdb)
-        return result
+    def get_imdb_information(self, id):
+        self.qry = {'id': id}
+        return self.get_or_sync('get_imdb_information', id)

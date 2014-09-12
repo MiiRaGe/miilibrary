@@ -26,7 +26,8 @@ class Sorter:
         self.unsorted_dir = os.path.join(media_dir, "unsorted")
         self.alphabetical_movie_dir = os.path.join(self.movie_dir, "All")
         self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
-        self.mii_mongo = mii_mongo.MiiMongo()
+        self.mii_tmdb = mii_mongo.MiiTMDB()
+        self.mii_osdb = mii_mongo.MiiOSDB()
         tools.make_dir(self.serie_dir)
         tools.make_dir(self.movie_dir)
         tools.make_dir(self.alphabetical_movie_dir)
@@ -163,7 +164,7 @@ class Sorter:
         name = info.get("title")
         year = info.get("year")
         logger.info("Name/Year found from file_name : Name = <%s>, Year = <%s>" % (name, year))
-        result = self.mii_mongo.get_or_sync_movie_name(name, year)
+        result = self.mii_tmdb.get_movie_name(name, year)
         logger.debug("Result from tmdb: %s" % result)
         try:
             if result and result.get('results'):
@@ -188,7 +189,7 @@ class Sorter:
                 else:
                     raise Exception('Title did not match %s, %s with (%s%%)' % (name, result['title'], percent))
 
-                imdb_id = self.mii_mongo.get_or_sync_movie_imdb_id(movie_id)
+                imdb_id = self.mii_tmdb.get_movie_imdb_id(movie_id)
                 logger.debug("Matching (id/imdb)  %s/%s" % (movie_id, imdb_id))
                 if imdb_id:
                     imdb_id = imdb_id.get("imdb_id")

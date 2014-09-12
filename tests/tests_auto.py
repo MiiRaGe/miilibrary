@@ -92,6 +92,7 @@ class TestMain(unittest.TestCase):
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
             mnl.doSort()
+
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 2)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')),
