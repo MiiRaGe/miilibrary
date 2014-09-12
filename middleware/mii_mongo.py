@@ -2,14 +2,19 @@ import datetime
 import logging
 
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
 
 import tools
 
-
-db = MongoClient().miilibrary  # Miilibrary database on the mongo instance
-
-tmdb = db.tmdb  # The Movie Database Collection
-osdb = db.osdb  # Opensubtitle Collection
+db = None
+tmdb = None
+osdb = None
+try:
+    db = MongoClient().miilibrary  # Miilibrary database on the mongo instance
+    tmdb = db.tmdb  # The Movie Database Collection
+    osdb = db.osdb  # Opensubtitle Collection
+except ConnectionFailure, e:
+    pass
 
 # Global tools
 
@@ -19,6 +24,9 @@ class MiiMongo():
         self.logger = logging.getLogger('NAS')
 
     def do_query(self, qry, collection):
+        if not db:
+            self.logger.info('Mongo looks down')
+            return
         self.logger.info('Querying mongo: %s' % qry)
         existing_data = collection.find_one(qry, {'data': 1, 'date': 1})
         if existing_data:
@@ -29,6 +37,8 @@ class MiiMongo():
                 return existing_data['data']
 
     def do_insert(self, data, collection):
+        if not db:
+            return
         collection.insert(data)
         self.logger.info('Query saved in mongo')
 
