@@ -1,16 +1,23 @@
-__author__ = 'Alexis Durand'
+import logging
 import os
 import re
-import sys
-import logging
-import tools
-import settings
-import movieinfo.hashTool as ht
 
-from middleware import mii_mongo
+
+import movieinfo.hashTool as ht
+import settings
+import tools
+
+from middleware import mii_mongo, mii_sql
 
 """ Sorter Module """
 logger = logging.getLogger("NAS")
+
+try:
+    raise WindowsError
+except NameError:
+    WindowsError = None
+except Exception:
+    pass
 
 
 class Sorter:
@@ -122,27 +129,29 @@ class Sorter:
             new_file_name = re.sub(" +", ".", new_file_name)
             new_file_name = re.sub("\.+", ".", new_file_name)
             result_dir = tools.make_dir(os.path.join(self.serie_dir, serie_name))
-            episode_dir = tools.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, serie_season)))
+            season_dir = tools.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, serie_season)))
             try:
-
-                existing_episode = get_episode(episode_dir, serie_name, serie_episode_number)
+                existing_episode = get_episode(season_dir, serie_name, serie_episode_number)
                 if existing_episode:
-                    if os.path.getsize(os.path.join(episode_dir, existing_episode)) >=\
+                    if os.path.getsize(os.path.join(season_dir, existing_episode)) >=\
                             os.path.getsize(os.path.join(self.data_dir, file_name)):
                         self.move_to_unsorted(self.data_dir, file_name)
                         logger.info("Moving the source to unsorted, episode already exists :%s" % existing_episode)
                     else:
-                        self.move_to_unsorted(episode_dir, existing_episode)
+                        self.move_to_unsorted(season_dir, existing_episode)
                         logger.info("Moving destination to unsorted (because bigger = better): %s" % new_file_name)
-                        os.rename(os.path.join(self.data_dir, file_name), os.path.join(episode_dir, new_file_name))
+                        os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
                     return True
                 else:
+                    mii_sql.insert_serie_episode(serie_name,
+                                                 serie_season,
+                                                 serie_episode_number,
+                                                 os.path.join(self.data_dir, file_name))
                     logger.info("Moving the episode to the correct folder...%s" % new_file_name)
-                    os.rename(os.path.join(self.data_dir, file_name), os.path.join(episode_dir, new_file_name))
+                    os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
                     return True
             except (WindowsError, OSError):
                 logger.error(("Can't move %s" % os.path.join(self.data_dir, file_name)))
-                logger.error(sys.exc_info()[1])
                 return False
 
     def sort_tv_serie(self, media):
@@ -205,12 +214,10 @@ class Sorter:
             os.rename(os.path.join(file_dir, file_name), os.path.join(self.unsorted_dir, file_name))
         except (WindowsError, OSError):
             logger.error("Can't create %s" % file_name)
-            logger.error(sys.exc_info()[1])
 
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
         #Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub("[\*\:]", "-", movie_name)
-        #TODO: Find if moving is already existing in the folder
         if self.resolve_existing_conflict(movie_name,
                                           get_size(os.path.join(self.data_dir, filename)),
                                           self.alphabetical_movie_dir):
@@ -221,7 +228,10 @@ class Sorter:
             custom_movie_dir += " [" + quality + "]"
         try:
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
+            movie = mii_sql.insert_movie(movie_name, year, created_movie_dir)
             if imdb_id:
+                movie.imdb_id = imdb_id
+                movie.save()
                 open(os.path.join(created_movie_dir, ".IMDB_ID_%s" % imdb_id), "w")
             new_name = re.sub(".*(\.[a-zA-Z0-9]*)$", "%s\g<1>" % re.sub(" ", ".", custom_movie_dir), filename)
             logger.info("Moving %s, with new name %s" % (filename, new_name))
@@ -229,7 +239,6 @@ class Sorter:
             return True
         except (WindowsError, OSError):
             logger.error("Can't create %s" % custom_movie_dir)
-            logger.error(sys.exc_info()[1])
         except Exception, e:
             logger.exception('Found an exception when moving movie : %s' % repr(e))
         return False
@@ -300,8 +309,8 @@ def get_quality(name):
     return ','.join(quality)
 
 
-def get_episode(episode_dir, serie_name, number):
-    for episode in os.listdir(episode_dir):
+def get_episode(season_dir, serie_name, number):
+    for episode in os.listdir(season_dir):
         if re.search("[Ss]\d+[eE]" + number, episode):
             logger.info("Same episode found (%s e%s) : %s" % (serie_name, number, episode))
             return episode

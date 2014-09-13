@@ -43,6 +43,7 @@ SOURCE_CLEANUP = False
 CUSTOM_RENAMING = {
     'dummy name US': 'name',
 }
+DB_NAME = "media.db"
 
 """[OpenSubtitle]"""
 OPENSUBTITLE_LOGIN = ''
