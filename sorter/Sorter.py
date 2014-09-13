@@ -8,7 +8,6 @@ import settings
 import movieinfo.hashTool as ht
 
 from middleware import mii_mongo
-from tools import OpensubtitleWrapper
 
 """ Sorter Module """
 logger = logging.getLogger("NAS")
@@ -49,9 +48,8 @@ class Sorter:
         for movie_hash in self.hash_array:
             file_name = self.map.get(movie_hash)
             logger.info('------ %s ------' % file_name)
-            result = OpensubtitleWrapper.get_subtitles(movie_hash,
-                                                       str(get_size(os.path.join(self.data_dir, file_name))),
-                                                       "")
+            result = self.mii_osdb.get_subtitles(movie_hash,
+                                                 str(get_size(os.path.join(self.data_dir, file_name))))
             is_sorted = False
             if result:
                 logger.info("Got Result from opensubtitle for %s" % file_name)
@@ -61,7 +59,7 @@ class Sorter:
                 if result:
                     is_sorted = self.sort_open_subtitle_info(result)
             else:
-                result = OpensubtitleWrapper.get_movie_names2([movie_hash])
+                result = self.mii_osdb.get_movie_name(movie_hash, number='2')
                 if result:
                     logger.info(result)
                     result = result.get(movie_hash)

@@ -79,9 +79,21 @@ class MiiTMDB(MiiMongoStored):
 class MiiOSDB(MiiMongoStored):
     mapping = {
         'get_imdb_information': tools.OpensubtitleWrapper.get_imdb_information,
+        'get_movie_names': tools.OpensubtitleWrapper.get_movie_names,
+        'get_movie_names2': tools.OpensubtitleWrapper.get_movie_names2,
+        'get_subtitles': tools.OpensubtitleWrapper.get_subtitles,
     }
     collection = osdb
 
     def get_imdb_information(self, id):
         self.qry = {'id': id}
         return self.get_or_sync('get_imdb_information', id)
+
+    def get_movie_name(self, movie_hash, number=''):
+        self.qry = {'movie_hash': movie_hash}
+        return self.get_or_sync('get_movie_names%s' % number, [movie_hash])
+
+    def get_subtitles(self, movie_hash, file_size):
+        self.qry = {'movie_hash': movie_hash, 'file_size': file_size}
+        return self.get_or_sync('get_subtitles', movie_hash, file_size, '')
+
