@@ -21,6 +21,7 @@ import settings
 # Override some settings now before initialising anything else
 settings.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
 settings.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
+settings.MONGO_DB_NAME = 'miilibrary_test'
 
 from mock_osdb import *
 from mock_tmdb import *

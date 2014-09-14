@@ -4,15 +4,14 @@ import logging
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
+import settings
 import tools
 
 db = None
 the_movie_db = None
 open_subtitle_db = None
 try:
-    db = MongoClient().miilibrary  # Miilibrary database on the mongo instance
-    the_movie_db = db.tmdb  # The Movie Database Collection
-    open_subtitle_db = db.osdb  # OpenSubtitle Collection
+    db = MongoClient()[settings.MONGO_DB_NAME]
 except ConnectionFailure, e:
     pass
 
@@ -83,7 +82,7 @@ class MiiTheMovieDB(MiiMongoStored):
         'get_movie_imdb_id': tools.MovieDBWrapper.get_movie_imdb_id,
         'get_movie_name': tools.MovieDBWrapper.get_movie_name,
     }
-    collection = the_movie_db
+    collection = db.tmdb
 
     def get_movie_name(self, name, year):
         """
@@ -112,7 +111,7 @@ class MiiOpenSubtitleDB(MiiMongoStored):
         'get_movie_names2': tools.OpensubtitleWrapper.get_movie_names2,
         'get_subtitles': tools.OpensubtitleWrapper.get_subtitles,
     }
-    collection = open_subtitle_db
+    collection = db.osdb
 
     def get_imdb_information(self, imdb_id):
         """

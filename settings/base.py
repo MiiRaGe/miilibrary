@@ -44,6 +44,7 @@ CUSTOM_RENAMING = {
     'dummy name US': 'name',
 }
 DB_NAME = "media.db"
+MONGO_DB_NAME = 'miilibrary'
 
 """[OpenSubtitle]"""
 OPENSUBTITLE_API_URL = "http://api.opensubtitles.org/xml-rpc"

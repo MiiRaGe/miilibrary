@@ -73,24 +73,27 @@ db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging], 
 def get_serie_episode(serie_name, serie_season, episode_number):
     """
     Look for the same episode in the db, return the file_path of the existing one if any.
-    :param serie_name: string
-    :param serie_season: integer
-    :param episode_number: integer
-    :return: tuple
+    :param string serie_name: string
+    :param int serie_season: integer
+    :param int episode_number: integer
+    :return tuple: Tuple containing the path is serie is found (Boolean, String)
     """
-    serie = Serie.get(name=serie_name, season=serie_season, episode=episode_number)
-    if serie:
-        return True, serie.file_path
-    return False,
+    try:
+        serie = Serie.get(name=serie_name, season=serie_season, episode=episode_number)
+        if serie:
+            return True, serie.file_path
+    except Exception as e:
+        return False,
+
 
 
 def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     """
     Insert a serie into the sql database following Serie model.
-    :param serie_name: string
-    :param serie_season: integer
-    :param episode_number: integer
-    :param serie_path: string
+    :param string serie_name: Name of the serie
+    :param int serie_season: Season number
+    :param int episode_number: Episode number
+    :param string serie_path: Path of the file
     """
     serie = Serie(name=serie_name, season=serie_season, episode=episode_number, file_path=serie_path)
     serie.save()
@@ -99,10 +102,10 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
 def insert_movie(title, year, path):
     """
     Insert a movie into the sql database following Movie model.
-    :param title: string
-    :param year: integer
-    :param path: string
-    :return: Movie
+    :param string title: Title of the movie
+    :param int year: Year of the movie
+    :param string path: Path of the movie file
+    :return Movie: Movie instance to be modified with additional data
     """
     movie = Movie(title=title, year=year, folder_path=path)
     movie.save()
