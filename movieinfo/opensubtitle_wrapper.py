@@ -1,25 +1,22 @@
-'''
-Created on 26 janv. 2014
-
-@author: MiiRaGe
-'''
-
 import logging
+import socket
 import time
+
 from xmlrpclib import ProtocolError, ServerProxy
 
 import settings
 
 logger = logging.getLogger("NAS")
 
-class OpensubtitleWrapper:
+
+class OpenSubtitleWrapper:
     def __init__(self):
         self.login_successful = False
         self.token = None
         self.server = None  # server initialized in log_in to avoid program not running offline
 
     def log_in(self, retry=False, max_retries=10):
-        self.server = ServerProxy("http://api.opensubtitles.org/xml-rpc")
+        self.server = ServerProxy(settings.OPENSUBTITLE_API_URL)
         result = None
         go_on = True
         fail_count = 0
@@ -37,12 +34,15 @@ class OpensubtitleWrapper:
             except (ProtocolError):
                 logger.debug("Response : %s" % result)
                 logger.info("Got rejected by the API, waiting 1minutes")
+            except socket.gaierror as e:
+                logger.warning("Can't communicate with server")
+                return
+
             fail_count += 1
             if not retry or fail_count == max_retries:
                 self.login_successful = False
                 return
-            else:
-                time.sleep(60)
+            time.sleep(60)
 
     def get_imdb_information(self, imdb_id):
         if not self.login_successful:

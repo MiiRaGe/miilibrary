@@ -46,6 +46,7 @@ CUSTOM_RENAMING = {
 DB_NAME = "media.db"
 
 """[OpenSubtitle]"""
+OPENSUBTITLE_API_URL = "http://api.opensubtitles.org/xml-rpc"
 OPENSUBTITLE_LOGIN = ''
 OPENSUBTITLE_PASSWORD = ''
 

@@ -30,7 +30,7 @@ def remove(path):
 
 #Initialise Wrappers :
 MovieDBWrapper = the_movie_db_wrapper.TheMovieDBWrapper()
-OpensubtitleWrapper = opensubtitle_wrapper.OpensubtitleWrapper()
+OpensubtitleWrapper = opensubtitle_wrapper.OpenSubtitleWrapper()
 
 ########### LOG #############
 

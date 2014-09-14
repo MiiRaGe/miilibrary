@@ -32,8 +32,8 @@ class Sorter:
         self.unsorted_dir = os.path.join(media_dir, "unsorted")
         self.alphabetical_movie_dir = os.path.join(self.movie_dir, "All")
         self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
-        self.mii_tmdb = mii_mongo.MiiTMDB()
-        self.mii_osdb = mii_mongo.MiiOSDB()
+        self.mii_tmdb = mii_mongo.MiiTheMovieDB()
+        self.mii_osdb = mii_mongo.MiiOpenSubtitleDB()
         tools.make_dir(self.serie_dir)
         tools.make_dir(self.movie_dir)
         tools.make_dir(self.alphabetical_movie_dir)
@@ -110,28 +110,28 @@ class Sorter:
                                                   serie_title,
                                                   file_name)
 
-    def create_dir_and_move_serie(self, serie_name, serie_season, serie_episode_number, serie_title, file_name):
-            serie_name = format_serie_name(apply_custom_renaming(serie_name))
-            serie_title = format_serie_name(serie_title)
+    def create_dir_and_move_serie(self, name, season, episode_number, title, file_name):
+            name = format_serie_name(apply_custom_renaming(name))
+            title = format_serie_name(title)
             extension = file_name[-4:]
-            if len(serie_episode_number) < 2:
-                serie_episode_number = '0' + serie_episode_number
+            if len(episode_number) < 2:
+                episode_number = '0' + episode_number
 
-            serie_season_number = serie_season
-            if len(serie_season) < 2:
-                serie_season_number = '0' + serie_season
+            serie_season_number = season
+            if len(season) < 2:
+                serie_season_number = '0' + season
 
-            new_file_name = "%s.S%sE%s.%s." % (serie_name, serie_season_number, serie_episode_number, serie_title)
+            new_file_name = "%s.S%sE%s.%s." % (name, serie_season_number, episode_number, title)
             quality = get_quality(file_name)
             if quality:
                 new_file_name += " [%s]" % quality
             new_file_name += extension
-            new_file_name = re.sub(" +", ".", new_file_name)
-            new_file_name = re.sub("\.+", ".", new_file_name)
-            result_dir = tools.make_dir(os.path.join(self.serie_dir, serie_name))
-            season_dir = tools.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, serie_season)))
+            new_file_name = re.sub("[\s\.]+", ".", new_file_name)
+            result_dir = tools.make_dir(os.path.join(self.serie_dir, name))
+            season_dir = tools.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, season)))
             try:
-                existing_episode = get_episode(season_dir, serie_name, serie_episode_number)
+                existing_sql_episode = mii_sql.get_serie_episode(name, int(season), int(episode_number))
+                existing_episode = get_episode(season_dir, name, episode_number)
                 if existing_episode:
                     if os.path.getsize(os.path.join(season_dir, existing_episode)) >=\
                             os.path.getsize(os.path.join(self.data_dir, file_name)):
@@ -143,10 +143,11 @@ class Sorter:
                         os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
                     return True
                 else:
-                    mii_sql.insert_serie_episode(serie_name,
-                                                 serie_season,
-                                                 serie_episode_number,
-                                                 os.path.join(self.data_dir, file_name))
+                    if not existing_sql_episode[0]:
+                        mii_sql.insert_serie_episode(name,
+                                                     season,
+                                                     episode_number,
+                                                     os.path.join(self.data_dir, file_name))
                     logger.info("Moving the episode to the correct folder...%s" % new_file_name)
                     os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
                     return True

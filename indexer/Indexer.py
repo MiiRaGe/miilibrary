@@ -36,7 +36,7 @@ if platform.system() == 'Windows':
 class Indexer:
     def __init__(self, source_dir):
         #All directory is always created by sorter and contains all movie sorted alphabetically
-        self.mii_osdb = mii_mongo.MiiOSDB()
+        self.mii_osdb = mii_mongo.MiiOpenSubtitleDB()
         self.source_dir = source_dir
         self.alphabetical_dir = os.path.join(source_dir, "All")
         self.genre_dir = tools.make_dir(os.path.join(source_dir, 'Genres'))

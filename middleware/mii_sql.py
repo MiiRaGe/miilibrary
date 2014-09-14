@@ -1,15 +1,19 @@
+import logging
+import os
+
 from peewee import *
 
 import settings
 
-db = SqliteDatabase("%s" % settings.DB_NAME)
+db = SqliteDatabase("%s" % os.path.join(settings.DESTINATION_FOLDER, settings.DB_NAME))
 
+logger = logging.getLogger('NAS')
 
 class MiiBase(Model):
     class Meta:
         database = db
-        
-        
+
+
 class Movie(MiiBase):
     title = CharField()
     year = IntegerField(null=True, default=1900)
@@ -65,12 +69,40 @@ class MovieTagging(MiiBase):
 db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging], safe=True)
 
 
+def get_serie_episode(serie_name, serie_season, episode_number):
+    """
+    Look for the same episode in the db, return the file_path of the existing one if any.
+    :param serie_name: string
+    :param serie_season: integer
+    :param episode_number: integer
+    :return: tuple
+    """
+    serie = Serie.objects.get(name=serie_name, season=serie_season, episode=episode_number)
+    if serie:
+        return True, serie.file_path
+    return False,
+
+
 def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
+    """
+    Insert a serie into the sql database following Serie model.
+    :param serie_name: string
+    :param serie_season: integer
+    :param episode_number: integer
+    :param serie_path: string
+    """
     serie = Serie(name=serie_name, season=serie_season, episode=episode_number, file_path=serie_path)
     serie.save()
 
 
 def insert_movie(title, year, path):
+    """
+    Insert a movie into the sql database following Movie model.
+    :param title: string
+    :param year: integer
+    :param path: string
+    :return: Movie
+    """
     movie = Movie(title=title, year=year, folder_path=path)
     movie.save()
     return movie

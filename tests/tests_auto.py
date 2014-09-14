@@ -1,23 +1,12 @@
-__author__ = 'MiiRaGe'
-
 import logging
 import os
 import shutil
 import tempfile
 import unittest
+
 from mock import patch
 
-import settings
-import tools
-from miinaslibrary import MiiNASLibrary
-from movieinfo.opensubtitle_wrapper import OpensubtitleWrapper
-from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
-from mock_osdb import *
-from mock_tmdb import *
-
-from sorter.sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
-    compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
-
+# Patch the logger file before import any custom file
 abs_log_file = '%s/test_log.LOG' % os.path.dirname(__file__)
 try:
     os.remove(abs_log_file)
@@ -27,6 +16,18 @@ test_handler = logging.FileHandler(abs_log_file)
 test_handler.setFormatter(tools.formatter)
 logger = logging.getLogger('NAS')
 logger.addHandler(test_handler)
+
+import settings
+import tools
+
+from miinaslibrary import MiiNASLibrary
+from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
+from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
+from mock_osdb import *
+from mock_tmdb import *
+
+from sorter.sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
+    compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
 
 try:
     raise WindowsError
@@ -70,7 +71,7 @@ class TestMain(unittest.TestCase):
 
         logger.info("*** Environment Torn Down***")
 
-    @patch.multiple(OpensubtitleWrapper,
+    @patch.multiple(OpenSubtitleWrapper,
                     get_movie_names=mock_get_movie_names,
                     get_subtitles=mock_get_movie_names,
                     get_movie_names2=mock_get_movie_names2,
@@ -88,10 +89,10 @@ class TestMain(unittest.TestCase):
 
             logger.info("== Testing doUnpack ==")
             mnl = MiiNASLibrary()
-            mnl.doUnpack()
+            mnl.unpack()
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
-            mnl.doSort()
+            mnl.sort()
 
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 2)
@@ -105,7 +106,7 @@ class TestMain(unittest.TestCase):
             self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
             self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
-            mnl.doIndex()
+            mnl.index()
             #TODO : Add test for duplicate file, duplicate episode, and test unsorted
             #TODO : Add test for assertions on sorted stuff
             #TODO : Add test for opensubtitle (get real data from production and mock the result with a fake hash)
