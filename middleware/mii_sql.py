@@ -9,6 +9,7 @@ db = SqliteDatabase("%s" % os.path.join(settings.DESTINATION_FOLDER, settings.DB
 
 logger = logging.getLogger('NAS')
 
+
 class MiiBase(Model):
     class Meta:
         database = db
@@ -77,7 +78,7 @@ def get_serie_episode(serie_name, serie_season, episode_number):
     :param episode_number: integer
     :return: tuple
     """
-    serie = Serie.objects.get(name=serie_name, season=serie_season, episode=episode_number)
+    serie = Serie.get(name=serie_name, season=serie_season, episode=episode_number)
     if serie:
         return True, serie.file_path
     return False,

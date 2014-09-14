@@ -25,7 +25,9 @@ class OpenSubtitleWrapper:
                 logger.info("Login into openSubtitle...")
                 username = settings.OPENSUBTITLE_LOGIN
                 password = settings.OPENSUBTITLE_PASSWORD
+                logger.warning('Trying to login')
                 result = self.server.LogIn(username, password, "gb", "miinaslibraryUA")
+                logger.warning('Still Trying to login')
                 self.token = result.get("token")
                 status = result.get("status")
                 if status.startswith('200'):
@@ -34,10 +36,11 @@ class OpenSubtitleWrapper:
             except (ProtocolError):
                 logger.debug("Response : %s" % result)
                 logger.info("Got rejected by the API, waiting 1minutes")
-            except socket.gaierror as e:
+            except (socket.gaierror, socket.timeout):
                 logger.warning("Can't communicate with server")
                 return
 
+            print "Looping ?"
             fail_count += 1
             if not retry or fail_count == max_retries:
                 self.login_successful = False

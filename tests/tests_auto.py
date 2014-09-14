@@ -13,21 +13,19 @@ try:
 except OSError:
     pass
 test_handler = logging.FileHandler(abs_log_file)
-test_handler.setFormatter(tools.formatter)
+test_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
 logger = logging.getLogger('NAS')
 logger.addHandler(test_handler)
 
 import settings
-import tools
+# Override some settings now before initialising anything else
+settings.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
+settings.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
 
-from miinaslibrary import MiiNASLibrary
-from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
-from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
 from mock_osdb import *
 from mock_tmdb import *
-
-from sorter.sorter import is_serie, apply_custom_renaming, format_serie_name, change_token_to_dot, \
-    compare, letter_coverage, rename_serie, get_episode, get_quality, get_info
+from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
+from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
 
 try:
     raise WindowsError
@@ -54,6 +52,7 @@ class TestMain(unittest.TestCase):
         logger.info("*** Environment Builded ***")
 
     def tearDown(self):
+        import tools
         logger.info("*** Tearing down environment ***")
         abs_input = self.SOURCE_FOLDER
         logger.info("\t ** Cleaning input Files **")
@@ -84,6 +83,8 @@ class TestMain(unittest.TestCase):
                             SOURCE_FOLDER=self.SOURCE_FOLDER,
                             DESTINATION_FOLDER=self.DESTINATION_FOLDER,
                             MINIMUM_SIZE=0.2):
+            import tools
+            from miinaslibrary import MiiNASLibrary
             logger.info("== Testing validate_settings ==")
             self.assertTrue(tools.validate_settings())
 
@@ -100,25 +101,30 @@ class TestMain(unittest.TestCase):
                              2)
 
             self.assertIn('.IMDB_ID_tt0800369', os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]'))
-            self.assertIn('.IMDB_ID_tt1981115', os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)'))
+            self.assertIn('.IMDB_ID_tt1981115',
+                          os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)'))
 
             self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
             self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
-            self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
+            self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
+                          os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
             mnl.index()
-            #TODO : Add test for duplicate file, duplicate episode, and test unsorted
+            # TODO : Add test for duplicate file, duplicate episode, and test unsorted
             #TODO : Add test for assertions on sorted stuff
             #TODO : Add test for opensubtitle (get real data from production and mock the result with a fake hash)
-            tools.print_rec(self.DESTINATION_FOLDER, 0) #Keep this call at the end to see the global result (move for debugging)
+            tools.print_rec(self.DESTINATION_FOLDER,
+                            0)  #Keep this call at the end to see the global result (move for debugging)
 
 
 class TestSorter(unittest.TestCase):
     def test_is_serie(self):
+        from sorter.sorter import is_serie
         self.assertFalse(is_serie('23name,asefjklS03esfsjkdlS05E1'))
         self.assertTrue(is_serie('23name,asefjklS03esfsjkdlS05e10'))
 
     def test_customer_renaming(self):
+        from sorter.sorter import apply_custom_renaming
         settings.CUSTOM_RENAMING = {
             'BARNABY': 'Barbie'
         }
@@ -134,14 +140,17 @@ class TestSorter(unittest.TestCase):
         self.assertEqual(apply_custom_renaming(serie1), apply_custom_renaming(serie4))
 
     def test_format_serie_name(self):
+        from sorter.sorter import format_serie_name
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/....?'
         self.assertEqual('The Walking Dead', format_serie_name(serie_name1))
 
     def test_change_token_to_dot(self):
+        from sorter.sorter import change_token_to_dot
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/.'
         self.assertEqual('The.Walking.Dead.', change_token_to_dot(serie_name1))
 
     def test_compare(self):
+        from sorter.sorter import compare
         api_result = {
             'MovieName': 'Dragons.defenders.of.berk',
             'MovieKind': 'movie'
@@ -179,6 +188,7 @@ class TestSorter(unittest.TestCase):
         self.assertTrue(compare(movie1, api_result))
 
     def test_letter_coverage(self):
+        from sorter.sorter import letter_coverage
         limit = 65
         str1 = 'Dragons riders of berk'
         str2 = 'Dragons defenders of berk'
@@ -192,15 +202,13 @@ class TestSorter(unittest.TestCase):
         str2 = 'House of Flying Daggers'
         self.assertLessEqual(letter_coverage(str1, str2), limit)
 
-    def test_change_token_to_dot(self):
-        serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/....?'
-        self.assertEqual('The.Walking.Dead.', change_token_to_dot(serie_name1))
-
     def test_rename_serie(self):
+        from sorter.sorter import rename_serie
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/..25x15..?'
         self.assertEqual('The.Walking.Dead.S25E15.', rename_serie(serie_name1))
 
     def test_get_episode(self):
+        from sorter.sorter import get_episode
         tmp_dir = tempfile.mkdtemp()
         f1 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E04.mkv')
         f2 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E02.mkv')
@@ -211,6 +219,7 @@ class TestSorter(unittest.TestCase):
         self.assertIsNone(get_episode(tmp_dir, 'useless arg', '03'))
 
     def test_get_quality(self):
+        from sorter.sorter import get_quality
         name = 'serie de malade 720p 1080p DTS AC3 BLU-ray webrip'
         quality = get_quality(name)
 
@@ -224,6 +233,7 @@ class TestSorter(unittest.TestCase):
         self.assertNotIn('Web-RIP', quality)
 
     def test_get_info(self):
+        from sorter.sorter import get_info
         name = 'The.Matrix.2001.mkv'
         res = get_info(name)
         self.assertEqual(res['title'], 'The Matrix')
