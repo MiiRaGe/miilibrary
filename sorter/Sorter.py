@@ -49,6 +49,8 @@ class Sorter:
         logger.info("****************************************")
         logger.info("**********       Sorter       **********")
         logger.info("****************************************")
+        self.map = {}
+        self.hash_array = []
         for media in os.listdir(self.data_dir):
             self.create_hash_list(media)
 
@@ -219,6 +221,7 @@ class Sorter:
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
         #Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub("[\*\:]", "-", movie_name)
+        movie_sql_exist = mii_sql.get_movie(movie_name, year=year)
         if self.resolve_existing_conflict(movie_name,
                                           get_size(os.path.join(self.data_dir, filename)),
                                           self.alphabetical_movie_dir):
@@ -229,7 +232,8 @@ class Sorter:
             custom_movie_dir += " [" + quality + "]"
         try:
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
-            movie = mii_sql.insert_movie(movie_name, year, created_movie_dir)
+            if not movie_sql_exist[0]:
+                movie = mii_sql.insert_movie(movie_name, year, created_movie_dir)
             if imdb_id:
                 movie.imdb_id = imdb_id
                 movie.save()

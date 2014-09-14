@@ -79,7 +79,7 @@ class Indexer:
                     else:
                         logger.info("Folder already indexed")
                 else:
-                    open(os.path.join(folder_abs, file + '.NO_IMDB_FILE'), 'w')
+                    open(os.path.join(folder_abs, '.NO_IMDB_FILE'), 'w')
                     
     def create_genre_folders(self, genres):
         for genre in genres:

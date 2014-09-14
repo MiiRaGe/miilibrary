@@ -54,6 +54,7 @@ class TestMain(unittest.TestCase):
 
     def tearDown(self):
         import tools
+
         logger.info("*** Tearing down environment ***")
         abs_input = self.SOURCE_FOLDER
         logger.info("\t ** Cleaning input Files **")
@@ -86,6 +87,7 @@ class TestMain(unittest.TestCase):
                             MINIMUM_SIZE=0.2):
             import tools
             from miinaslibrary import MiiNASLibrary
+
             logger.info("== Testing validate_settings ==")
             self.assertTrue(tools.validate_settings())
 
@@ -111,21 +113,32 @@ class TestMain(unittest.TestCase):
                           os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
             mnl.index()
-            # TODO : Add test for duplicate file, duplicate episode, and test unsorted
-            #TODO : Add test for assertions on sorted stuff
-            #TODO : Add test for opensubtitle (get real data from production and mock the result with a fake hash)
-            tools.print_rec(self.DESTINATION_FOLDER,
-                            0)  #Keep this call at the end to see the global result (move for debugging)
+            # TODO : Add test for assertions on sorted stuff
+            # TODO : Add test for opensubtitle (get real data from production and mock the result with a fake hash)
+
+            #Keep this call at the end to see the global result (move for debugging)
+            tools.print_rec(self.DESTINATION_FOLDER, 0)
+
+            # Test for behaviour with duplicates
+            self.setUp()
+
+            mnl.unpack()
+            mnl.sort()
+            mnl.index()
+
+            tools.print_rec(self.DESTINATION_FOLDER, 0)
 
 
 class TestSorter(unittest.TestCase):
     def test_is_serie(self):
         from sorter.sorter import is_serie
+
         self.assertFalse(is_serie('23name,asefjklS03esfsjkdlS05E1'))
         self.assertTrue(is_serie('23name,asefjklS03esfsjkdlS05e10'))
 
     def test_customer_renaming(self):
         from sorter.sorter import apply_custom_renaming
+
         settings.CUSTOM_RENAMING = {
             'BARNABY': 'Barbie'
         }
@@ -142,16 +155,19 @@ class TestSorter(unittest.TestCase):
 
     def test_format_serie_name(self):
         from sorter.sorter import format_serie_name
+
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/....?'
         self.assertEqual('The Walking Dead', format_serie_name(serie_name1))
 
     def test_change_token_to_dot(self):
         from sorter.sorter import change_token_to_dot
+
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/.'
         self.assertEqual('The.Walking.Dead.', change_token_to_dot(serie_name1))
 
     def test_compare(self):
         from sorter.sorter import compare
+
         api_result = {
             'MovieName': 'Dragons.defenders.of.berk',
             'MovieKind': 'movie'
@@ -190,6 +206,7 @@ class TestSorter(unittest.TestCase):
 
     def test_letter_coverage(self):
         from sorter.sorter import letter_coverage
+
         limit = 65
         str1 = 'Dragons riders of berk'
         str2 = 'Dragons defenders of berk'
@@ -205,11 +222,13 @@ class TestSorter(unittest.TestCase):
 
     def test_rename_serie(self):
         from sorter.sorter import rename_serie
+
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/..25x15..?'
         self.assertEqual('The.Walking.Dead.S25E15.', rename_serie(serie_name1))
 
     def test_get_episode(self):
         from sorter.sorter import get_episode
+
         tmp_dir = tempfile.mkdtemp()
         f1 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E04.mkv')
         f2 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E02.mkv')
@@ -221,6 +240,7 @@ class TestSorter(unittest.TestCase):
 
     def test_get_quality(self):
         from sorter.sorter import get_quality
+
         name = 'serie de malade 720p 1080p DTS AC3 BLU-ray webrip'
         quality = get_quality(name)
 
@@ -235,6 +255,7 @@ class TestSorter(unittest.TestCase):
 
     def test_get_info(self):
         from sorter.sorter import get_info
+
         name = 'The.Matrix.2001.mkv'
         res = get_info(name)
         self.assertEqual(res['title'], 'The Matrix')

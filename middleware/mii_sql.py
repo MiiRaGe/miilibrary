@@ -86,7 +86,6 @@ def get_serie_episode(serie_name, serie_season, episode_number):
         return False,
 
 
-
 def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     """
     Insert a serie into the sql database following Serie model.
@@ -97,6 +96,24 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     """
     serie = Serie(name=serie_name, season=serie_season, episode=episode_number, file_path=serie_path)
     serie.save()
+
+
+def get_movie(name, year=None):
+    """
+    Look for the same movie in the db, return the file_path of the existing one if any.
+    :param string name: string
+    :param int year: integer
+    :return tuple: Tuple containing the path is movie is found (Boolean, String)
+    """
+    try:
+        if year:
+            movie = Movie.get(name=name, year=year)
+        else:
+            movie = Movie.get(name=name)
+        return True, movie.file_path
+
+    except Exception as e:
+        return False,
 
 
 def insert_movie(title, year, path):
