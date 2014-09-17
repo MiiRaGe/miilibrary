@@ -2,7 +2,6 @@ import logging
 import os
 import re
 
-
 import movieinfo.hashTool as ht
 import settings
 import tools
@@ -21,7 +20,6 @@ except Exception:
 
 
 class Sorter:
-
     def __init__(self, media_dir):
         self.hash_array = []
         self.map = {}
@@ -54,7 +52,7 @@ class Sorter:
         for media in os.listdir(self.data_dir):
             self.create_hash_list(media)
 
-        for movie_hash in self.hash_array:
+        for movie_hash in sorted(self.hash_array):
             file_name = self.map.get(movie_hash)
             logger.info('------ %s ------' % file_name)
             result = self.mii_osdb.get_subtitles(movie_hash,
@@ -113,49 +111,49 @@ class Sorter:
                                                   file_name)
 
     def create_dir_and_move_serie(self, name, season, episode_number, title, file_name):
-            name = format_serie_name(apply_custom_renaming(name))
-            title = format_serie_name(title)
-            extension = file_name[-4:]
-            if len(episode_number) < 2:
-                episode_number = '0' + episode_number
+        name = format_serie_name(apply_custom_renaming(name))
+        title = format_serie_name(title)
+        extension = file_name[-4:]
+        if len(episode_number) < 2:
+            episode_number = '0' + episode_number
 
-            serie_season_number = season
-            if len(season) < 2:
-                serie_season_number = '0' + season
+        serie_season_number = season
+        if len(season) < 2:
+            serie_season_number = '0' + season
 
-            new_file_name = "%s.S%sE%s.%s." % (name, serie_season_number, episode_number, title)
-            quality = get_quality(file_name)
-            if quality:
-                new_file_name += " [%s]" % quality
-            new_file_name += extension
-            new_file_name = re.sub("[\s\.]+", ".", new_file_name)
-            result_dir = tools.make_dir(os.path.join(self.serie_dir, name))
-            season_dir = tools.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, season)))
-            try:
-                existing_sql_episode = mii_sql.get_serie_episode(name, int(season), int(episode_number))
-                existing_episode = get_episode(season_dir, name, episode_number)
-                if existing_episode:
-                    if os.path.getsize(os.path.join(season_dir, existing_episode)) >=\
-                            os.path.getsize(os.path.join(self.data_dir, file_name)):
-                        self.move_to_unsorted(self.data_dir, file_name)
-                        logger.info("Moving the source to unsorted, episode already exists :%s" % existing_episode)
-                    else:
-                        self.move_to_unsorted(season_dir, existing_episode)
-                        logger.info("Moving destination to unsorted (because bigger = better): %s" % new_file_name)
-                        os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
-                    return True
+        new_file_name = "%s.S%sE%s.%s." % (name, serie_season_number, episode_number, title)
+        quality = get_quality(file_name)
+        if quality:
+            new_file_name += " [%s]" % quality
+        new_file_name += extension
+        new_file_name = re.sub("[\s\.]+", ".", new_file_name)
+        result_dir = tools.make_dir(os.path.join(self.serie_dir, name))
+        season_dir = tools.make_dir(os.path.join("%s%sSeason %s" % (result_dir, os.path.sep, season)))
+        try:
+            existing_sql_episode = mii_sql.get_serie_episode(name, int(season), int(episode_number))
+            existing_episode = get_episode(season_dir, name, episode_number)
+            if existing_episode:
+                if os.path.getsize(os.path.join(season_dir, existing_episode)) >= \
+                        os.path.getsize(os.path.join(self.data_dir, file_name)):
+                    self.move_to_unsorted(self.data_dir, file_name)
+                    logger.info("Moving the source to unsorted, episode already exists :%s" % existing_episode)
                 else:
-                    if not existing_sql_episode[0]:
-                        mii_sql.insert_serie_episode(name,
-                                                     season,
-                                                     episode_number,
-                                                     os.path.join(self.data_dir, file_name))
-                    logger.info("Moving the episode to the correct folder...%s" % new_file_name)
+                    self.move_to_unsorted(season_dir, existing_episode)
+                    logger.info("Moving destination to unsorted (because bigger = better): %s" % new_file_name)
                     os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
-                    return True
-            except (WindowsError, OSError):
-                logger.error(("Can't move %s" % os.path.join(self.data_dir, file_name)))
-                return False
+                return True
+            else:
+                if not existing_sql_episode[0]:
+                    mii_sql.insert_serie_episode(name,
+                                                 season,
+                                                 episode_number,
+                                                 os.path.join(self.data_dir, file_name))
+                logger.info("Moving the episode to the correct folder...%s" % new_file_name)
+                os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
+                return True
+        except (WindowsError, OSError):
+            logger.error(("Can't move %s" % os.path.join(self.data_dir, file_name)))
+            return False
 
     def sort_tv_serie(self, media):
         new_media = rename_serie(media)
@@ -210,30 +208,42 @@ class Sorter:
         self.move_to_unsorted(self.data_dir, file_name)
         return False
 
-    def move_to_unsorted(self, file_dir, file_name):
+    def move_to_unsorted(self, file_dir, file_name=''):
         try:
-            if os.path.exists(os.path.join(self.unsorted_dir, file_name)):
-                os.remove(os.path.join(self.unsorted_dir, file_name))
-            os.rename(os.path.join(file_dir, file_name), os.path.join(self.unsorted_dir, file_name))
+            file_name_ext = file_name
+            if not file_name:
+                file_name_ext = file_dir.split('/')[-1]
+            if os.path.exists(os.path.join(self.unsorted_dir, file_name_ext)):
+                os.remove(os.path.join(self.unsorted_dir, file_name_ext))
+
+            if file_name:
+                os.rename(os.path.join(file_dir, file_name), os.path.join(self.unsorted_dir, file_name_ext))
+            else:
+                os.rename(file_dir, os.path.join(self.unsorted_dir, file_name_ext))
         except (WindowsError, OSError):
             logger.error("Can't create %s" % file_name)
 
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
-        #Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
+        # Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub("[\*\:]", "-", movie_name)
-        movie_sql_exist = mii_sql.get_movie(movie_name, year=year)
-        if self.resolve_existing_conflict(movie_name,
-                                          get_size(os.path.join(self.data_dir, filename)),
-                                          self.alphabetical_movie_dir):
-            return False  #Return false if there's no need to do anything
+        movie = self.resolve_existing_conflict(movie_name,
+                                               get_size(os.path.join(self.data_dir, filename)),
+                                               self.alphabetical_movie_dir,
+                                               year=year)
         custom_movie_dir = "%s (%s)" % (movie_name, year)
         quality = get_quality(filename)
         if quality:
             custom_movie_dir += " [" + quality + "]"
         try:
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
-            if not movie_sql_exist[0]:
+            if movie:
+                movie.year = year or ''
+                movie.folder_path = created_movie_dir
+                movie.save()
+                logger.info('Existing Movie object updated')
+            else:
                 movie = mii_sql.insert_movie(movie_name, year, created_movie_dir)
+                logger.info('Created Movie object')
             if imdb_id:
                 movie.imdb_id = imdb_id
                 movie.save()
@@ -248,16 +258,26 @@ class Sorter:
             logger.exception('Found an exception when moving movie : %s' % repr(e))
         return False
 
-    def resolve_existing_conflict(self, movie_name, file_size, movie_dir):
-        #TODO: replace with db query when implemented
-        for movie in os.listdir(movie_dir):
-            if re.match('%s.\(\d{4}\)' % movie_name, movie):
-                if get_dir_size(os.path.join(movie_dir, movie)) > file_size:
-                    raise Exception('Do not sort as already existing bigger movie exists')
-                else:
-                    self.move_to_unsorted(movie_dir, movie)
-                    logger.info('Moving the old movie folder to unsorted as new file is bigger')
-                    return False
+    def resolve_existing_conflict(self, movie_name, file_size, movie_dir, year=None):
+        # TODO: replace with db query when implemented
+        """
+        Query the db to see if movie exist, returns movie object for update if match is found
+        :param string movie_name: Name of the movie
+        :param int file_size: Size of the current movie
+        :param string movie_dir: Path of the current movie
+        :param int year: year of the movie
+        :return: Movie :raise Exception: Don't sort as already existing
+        :rtype: mii_sql.Movie
+        """
+        exist, movie = mii_sql.get_movie(movie_name, year=year)
+        if exist:
+            #TODO: Delete source if size equal
+            if get_dir_size(movie.folder_path) >= file_size:
+                raise Exception('Do not sort as already existing bigger movie exists')
+            else:
+                self.move_to_unsorted(movie.folder_path)
+                logger.info('Moving the old movie folder to unsorted as new file is bigger')
+                return movie
 
 
 def get_size(file_name):
@@ -265,7 +285,7 @@ def get_size(file_name):
 
 
 def get_dir_size(dir_name):
-    #TODO : Write unite test for that method
+    # TODO : Write unite test for that method
     return sum([get_size(os.path.join(dir_name, x)) for x in os.listdir(dir_name)])
 
 
@@ -332,7 +352,7 @@ def rename_serie(file_name):
 def compare(file_name, api_result):
     logger.info("Comparing Opensubtitle api_result with file_name for safety")
     if is_serie(file_name):
-        #Movie type consistency issue
+        # Movie type consistency issue
         if api_result.get("MovieKind") == "movie":
             logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected Tv Series/Episode")
             return False
@@ -352,14 +372,14 @@ def compare(file_name, api_result):
         logger.info("Found a perfect match")
         return True
 
-    #Other case it's a movie
+    # Other case it's a movie
     if not (api_result.get("MovieKind") == "movie"):
         logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected movie")
         return False
 
     #Year pattern api_result
     name_year_matching = re.search("([^\(\)]*).(20[01][0-9]|19[5-9][0-9])?", file_name)
-    if name_year_matching.group(2) and not(name_year_matching.group(2) == api_result.get("MovieYear")):
+    if name_year_matching.group(2) and not (name_year_matching.group(2) == api_result.get("MovieYear")):
         logger.info("Year Inconsistent : %s, expected year : %s" %
                     (api_result.get("MovieYear"), name_year_matching.group(2)))
         return False

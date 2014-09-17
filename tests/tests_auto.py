@@ -98,6 +98,7 @@ class TestMain(unittest.TestCase):
 
             mnl.sort()
 
+            tools.print_rec(self.DESTINATION_FOLDER, 0)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 2)
             self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')),
@@ -117,7 +118,6 @@ class TestMain(unittest.TestCase):
             # TODO : Add test for opensubtitle (get real data from production and mock the result with a fake hash)
 
             #Keep this call at the end to see the global result (move for debugging)
-            tools.print_rec(self.DESTINATION_FOLDER, 0)
 
             # Test for behaviour with duplicates
             self.setUp()

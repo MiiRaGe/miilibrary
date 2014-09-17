@@ -70,20 +70,21 @@ class MovieTagging(MiiBase):
 db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging], safe=True)
 
 
-def get_serie_episode(serie_name, serie_season, episode_number):
+def get_serie_episode(name, season, episode):
     """
     Look for the same episode in the db, return the file_path of the existing one if any.
-    :param string serie_name: string
-    :param int serie_season: integer
-    :param int episode_number: integer
+    :param string name: string
+    :param int season: integer
+    :param int episode: integer
     :return tuple: Tuple containing the path is serie is found (Boolean, String)
     """
     try:
-        serie = Serie.get(name=serie_name, season=serie_season, episode=episode_number)
+        logger.info('Querying serie table with name=%s, season=%s and episode=%s' % (name, season, episode))
+        serie = Serie.get(name=name, season=season, episode=episode)
         if serie:
-            return True, serie.file_path
+            return True, serie
     except Exception as e:
-        return False,
+        return False, None
 
 
 def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
@@ -98,22 +99,25 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     serie.save()
 
 
-def get_movie(name, year=None):
+def get_movie(title, year=None):
     """
     Look for the same movie in the db, return the file_path of the existing one if any.
-    :param string name: string
+    :param string title: string
     :param int year: integer
     :return tuple: Tuple containing the path is movie is found (Boolean, String)
+    :rtype (bool, Movie):
     """
     try:
+        logger.info('Querying movie table with name=%s and year=%s' % (title, year))
         if year:
-            movie = Movie.get(name=name, year=year)
+            movie = Movie.get(title=title, year=year)
         else:
-            movie = Movie.get(name=name)
-        return True, movie.file_path
-
+            movie = Movie.get(title=title)
+        logger.info('Found movie')
+        return True, movie
     except Exception as e:
-        return False,
+        logger.info('Found nothing %s' % repr(e))
+        return False, None
 
 
 def insert_movie(title, year, path):
