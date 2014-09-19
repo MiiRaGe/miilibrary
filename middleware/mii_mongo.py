@@ -82,7 +82,7 @@ class MiiTheMovieDB(MiiMongoStored):
         'get_movie_imdb_id': tools.MovieDBWrapper.get_movie_imdb_id,
         'get_movie_name': tools.MovieDBWrapper.get_movie_name,
     }
-    collection = db.tmdb
+    collection = db.tmdb if db else None
 
     def get_movie_name(self, name, year):
         """
@@ -111,7 +111,7 @@ class MiiOpenSubtitleDB(MiiMongoStored):
         'get_movie_names2': tools.OpensubtitleWrapper.get_movie_names2,
         'get_subtitles': tools.OpensubtitleWrapper.get_subtitles,
     }
-    collection = db.osdb
+    collection = db.osdb if db else None
 
     def get_imdb_information(self, imdb_id):
         """
