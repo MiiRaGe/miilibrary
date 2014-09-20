@@ -11,7 +11,8 @@ db = None
 the_movie_db = None
 open_subtitle_db = None
 try:
-    db = MongoClient()[settings.MONGO_DB_NAME]
+    db = MongoClient(host='mongodb://%s:%s@%s:%s' % (
+        settings.MONGO_USER, settings.MONGO_PASSWORD, settings.MONGO_HOST, settings.MONGO_PORT))[settings.MONGO_DB_NAME]
 except ConnectionFailure, e:
     pass
 
