@@ -286,7 +286,7 @@ def get_size(file_name):
 
 def get_dir_size(dir_name):
     # TODO : Write unite test for that method
-    return sum([get_size(os.path.join(dir_name, x)) for x in os.listdir(dir_name)])
+    return sum([get_size(os.path.join(dir_name, x)) for x in os.listdir(dir_name)]) if os.path.exists(dir_name) else 0
 
 
 def get_info(name):

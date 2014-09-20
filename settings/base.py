@@ -43,12 +43,21 @@ SOURCE_CLEANUP = False
 CUSTOM_RENAMING = {
     'dummy name US': 'name',
 }
-DB_NAME = "media.db"
-MONGO_DB_NAME = 'miilibrary'
 
 """[OpenSubtitle]"""
 OPENSUBTITLE_API_URL = "http://api.opensubtitles.org/xml-rpc"
 OPENSUBTITLE_LOGIN = ''
 OPENSUBTITLE_PASSWORD = ''
 
+"""[Databases]"""
+MONGO_HOST = 'localhost'
+MONGO_PORT = '27017'
+MONGO_USER = 'user'
+MONGO_PASSWORD = ''
+MONGO_DB_NAME = 'miilibrary'
 
+MYSQL_HOST = 'localhost'
+MYSQL_PORT = '3306'
+MYSQL_USERNAME = 'MiiRaGe'
+MYSQL_PASSWORD = '1234'
+MYSQL_NAME = "media"

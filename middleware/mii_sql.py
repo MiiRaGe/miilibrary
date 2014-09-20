@@ -1,12 +1,11 @@
 import logging
-import os
 
 from peewee import *
 
 import settings
 
-db = SqliteDatabase("%s" % os.path.join(settings.DESTINATION_FOLDER, settings.DB_NAME))
-
+# db = SqliteDatabase("%s" % os.path.join(settings.DESTINATION_FOLDER, settings.MYSQL_NAME))
+db = MySQLDatabase(settings.MYSQL_NAME, host='localhost', port=3306, user="MiiRaGe", password='1234')
 logger = logging.getLogger('NAS')
 
 
