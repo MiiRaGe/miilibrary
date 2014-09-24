@@ -226,15 +226,15 @@ class Sorter:
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
         # Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub("[\*\:]", "-", movie_name)
-        movie = self.resolve_existing_conflict(movie_name,
-                                               get_size(os.path.join(self.data_dir, filename)),
-                                               self.alphabetical_movie_dir,
-                                               year=year)
-        custom_movie_dir = "%s (%s)" % (movie_name, year)
-        quality = get_quality(filename)
-        if quality:
-            custom_movie_dir += " [" + quality + "]"
         try:
+            movie = self.resolve_existing_conflict(movie_name,
+                                                   get_size(os.path.join(self.data_dir, filename)),
+                                                   self.alphabetical_movie_dir,
+                                                   year=year)
+            custom_movie_dir = "%s (%s)" % (movie_name, year)
+            quality = get_quality(filename)
+            if quality:
+                custom_movie_dir += " [" + quality + "]"
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
             if movie:
                 movie.year = year or ''

@@ -66,7 +66,7 @@ if __name__ == '__main__':
     if tools.validate_settings():
         system = platform.system()
         print("Platform is :" + system)
-        if system == 'Linux':
+        if system in ['Linux', 'Darwin']:
             main_linux()
         else:
             main_wait()

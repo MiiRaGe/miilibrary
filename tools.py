@@ -168,7 +168,7 @@ def cleanup_rec(source):
             os.remove(os.path.join(source, media_file))
 
 
-def print_rec(path, indent):
+def print_rec(path, indent=0):
     tabulation = ''
     for i in range(0, indent):
         tabulation += '\t'

@@ -40,7 +40,6 @@ class OpenSubtitleWrapper:
                 logger.warning("Can't communicate with server")
                 return
 
-            print "Looping ?"
             fail_count += 1
             if not retry or fail_count == max_retries:
                 self.login_successful = False

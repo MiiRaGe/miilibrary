@@ -6,6 +6,7 @@ from pymongo.errors import ConnectionFailure
 
 import settings
 import tools
+logger = logging.getLogger('NAS')
 
 db = None
 the_movie_db = None
@@ -14,9 +15,7 @@ try:
     db = MongoClient(host='mongodb://%s:%s@%s:%s' % (
         settings.MONGO_USER, settings.MONGO_PASSWORD, settings.MONGO_HOST, settings.MONGO_PORT))[settings.MONGO_DB_NAME]
 except ConnectionFailure, e:
-    pass
-
-logger = logging.getLogger('NAS')
+    logger.warning("Connection Failure :%s", repr(e))
 
 
 # Global tools
