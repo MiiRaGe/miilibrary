@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Series</title>
+</head>
+<body>
+<h1>Movies</h1>
+    <ul>
+    {% for movie in movies %}
+        <li>{{ movie.title }} ({{ movie.year }}) <a href="http://www.imdb.com/title/tt{{movie.imdb_id}}">IMDB Link</a> Rating: {{ movie.rating }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

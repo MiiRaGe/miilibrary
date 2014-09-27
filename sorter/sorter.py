@@ -431,7 +431,7 @@ def change_token_to_dot(string):
 
 def format_serie_name(serie_name):
     serie_name_token = change_token_to_dot(serie_name).split(".")
-    return str.strip(' '.join(map(str.capitalize, serie_name_token)))
+    return str.strip(' '.join([str(x).capitalize() for x in serie_name_token]))
 
 
 def apply_custom_renaming(serie_name):

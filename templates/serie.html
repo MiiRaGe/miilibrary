@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Series</title>
+</head>
+<body>
+    <h1>Series</h1>
+    <ul>
+    {% for serie in series %}
+        <li>{{ serie.name }} : Season {{ serie.season }} Episode {{ serie.episode }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
