@@ -24,6 +24,7 @@ class Movie(MiiBase):
     imdb_id = CharField(null=True)
     rating = FloatField(null=True)
     folder_path = CharField()
+    file_size = IntegerField()
 
     class Meta:
         database = db
