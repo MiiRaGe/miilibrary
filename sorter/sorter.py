@@ -132,22 +132,32 @@ class Sorter:
         try:
             existing_sql_episode = mii_sql.get_serie_episode(name, int(season), int(episode_number))
             existing_episode = get_episode(season_dir, name, episode_number)
-            if existing_episode:
-                if os.path.getsize(os.path.join(season_dir, existing_episode)) >= \
-                        os.path.getsize(os.path.join(self.data_dir, file_name)):
+            if existing_sql_episode[0]:
+                serie = existing_sql_episode[1]
+
+                if serie.file_size > os.path.getsize(os.path.join(self.data_dir, file_name)):
                     self.move_to_unsorted(self.data_dir, file_name)
                     logger.info("Moving the source to unsorted, episode already exists :%s" % existing_episode)
+                elif serie.file_size == os.path.getsize(os.path.join(self.data_dir, file_name)):
+                    os.remove(os.path.join(self.data_dir, file_name))
+                    logger.info("Removed the source, episode already exists and same size:%s" % existing_episode)
                 else:
                     self.move_to_unsorted(season_dir, existing_episode)
                     logger.info("Moving destination to unsorted (because bigger = better): %s" % new_file_name)
                     os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
+                    serie.file_path = os.path.join(season_dir, new_file_name)
+                    serie.file_size = os.path.getsize(os.path.join(season_dir, new_file_name))
+                    serie.save()
                 return True
             else:
                 if not existing_sql_episode[0]:
-                    mii_sql.insert_serie_episode(name,
-                                                 season,
-                                                 episode_number,
-                                                 os.path.join(self.data_dir, file_name))
+                    serie = mii_sql.insert_serie_episode(name,
+                                                         season,
+                                                         episode_number,
+                                                         os.path.join(self.data_dir, file_name))
+                    serie.file_size = os.path.getsize(os.path.join(self.data_dir, file_name))
+                    serie.save()
+                    logger.info("Created Serie object %s,S%sE%s" % (name, season, episode_number))
                 logger.info("Moving the episode to the correct folder...%s" % new_file_name)
                 os.rename(os.path.join(self.data_dir, file_name), os.path.join(season_dir, new_file_name))
                 return True
@@ -271,7 +281,7 @@ class Sorter:
         """
         exist, movie = mii_sql.get_movie(movie_name, year=year)
         if exist:
-            #TODO: Delete source if size equal
+            # TODO: Delete source if size equal
             if get_dir_size(movie.folder_path) >= file_size:
                 raise Exception('Do not sort as already existing bigger movie exists')
             else:
@@ -365,7 +375,7 @@ def compare(file_name, api_result):
                                                                              matching_pattern.group(3)))
             return False
 
-        #Weak comparison using letters
+        # Weak comparison using letters
         if letter_coverage(matching_pattern.group(1), api_result.get('MovieName')) < 0.65:
             return False
 
@@ -377,7 +387,7 @@ def compare(file_name, api_result):
         logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected movie")
         return False
 
-    #Year pattern api_result
+    # Year pattern api_result
     name_year_matching = re.search("([^\(\)]*).(20[01][0-9]|19[5-9][0-9])?", file_name)
     if name_year_matching.group(2) and not (name_year_matching.group(2) == api_result.get("MovieYear")):
         logger.info("Year Inconsistent : %s, expected year : %s" %

@@ -23,6 +23,10 @@ settings.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
 settings.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
 settings.MONGO_DB_NAME += '_test'
 settings.MYSQL_NAME += '_test'
+from middleware.mii_sql import db, Movie, MovieTagging, Serie, SerieTagging, Tag
+if 'test' in db.database:
+    db.drop_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging], cascade=True)
+    db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging], safe=True)
 
 from mock_osdb import *
 from mock_tmdb import *
@@ -40,6 +44,7 @@ except Exception:
 class TestMain(unittest.TestCase):
     def setUp(self):
         logger.info("*** Building environment ***")
+
         self.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
         self.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
 

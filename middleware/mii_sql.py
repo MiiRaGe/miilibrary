@@ -45,6 +45,7 @@ class Serie(MiiBase):
     season = IntegerField()
     episode = IntegerField()
     file_path = CharField()
+    file_size = IntegerField()
 
     class Meta:
         database = db
@@ -87,6 +88,7 @@ def get_serie_episode(name, season, episode):
         if serie:
             return True, serie
     except Exception as e:
+        logger.info('Found nothing %s' % repr(e))
         return False, None
 
 
@@ -100,6 +102,7 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     """
     serie = Serie(name=serie_name, season=serie_season, episode=episode_number, file_path=serie_path)
     serie.save()
+    return serie
 
 
 def get_movie(title, year=None):
