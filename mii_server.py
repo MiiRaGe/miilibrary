@@ -4,7 +4,7 @@ from middleware.mii_sql import Movie, Serie
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/home")
 def index():
     try:
         return render_template('/index.html')
