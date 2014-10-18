@@ -27,7 +27,6 @@ class Movie(MiiBase):
     file_size = IntegerField()
 
     class Meta:
-        database = db
         indexes = (
             (('title', 'year'), True),
         )
@@ -36,9 +35,6 @@ class Movie(MiiBase):
 
 class Tag(MiiBase):
     name = CharField()
-
-    class Meta:
-        database = db
 
 
 class Serie(MiiBase):
@@ -49,7 +45,6 @@ class Serie(MiiBase):
     file_size = IntegerField()
 
     class Meta:
-        database = db
         indexes = (
             (('name', 'season', 'episode'), True),
         )
@@ -60,16 +55,10 @@ class SerieTagging(MiiBase):
     serie = ForeignKeyField(Serie)
     tag = ForeignKeyField(Tag)
 
-    class Meta:
-        database = db
-
 
 class MovieTagging(MiiBase):
     movie = ForeignKeyField(Movie)
     tag = ForeignKeyField(Tag)
-
-    class Meta:
-        database = db
 
 
 db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging], safe=True)

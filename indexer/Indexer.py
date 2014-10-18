@@ -12,14 +12,14 @@ logger = logging.getLogger("NAS")
 
 if platform.system() == 'Windows':
     __CSL = None
-    
+
     def symlink(source, link_name):
         '''symlink(source, link_name)
            Creates a symbolic link pointing to source named link_name'''
         global __CSL
         if __CSL is None:
             import ctypes
-            
+
             csl = ctypes.windll.kernel32.CreateSymbolicLinkW
             csl.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
             csl.restype = ctypes.c_ubyte
@@ -29,25 +29,35 @@ if platform.system() == 'Windows':
             flags = 1
         if __CSL(link_name, source, flags) == 0:
             raise ctypes.WinError()
-    
+
     os.symlink = symlink
 
 
 class Indexer:
     def __init__(self, source_dir):
-        #All directory is always created by sorter and contains all movie sorted alphabetically
+        # All directory is always created by sorter and contains all movie sorted alphabetically
         self.mii_osdb = mii_mongo.MiiOpenSubtitleDB()
         self.source_dir = source_dir
         self.alphabetical_dir = os.path.join(source_dir, "All")
-        self.genre_dir = tools.make_dir(os.path.join(source_dir, 'Genres'))
-        self.no_genre_dir = tools.make_dir(os.path.join(self.genre_dir, 'NOGENRE'))
-        
+        self.index_mapping = {
+            'genre_dir': (os.path.join(source_dir, 'Genres'), lambda x: x.get('genres')),
+            'rating_dir': (os.path.join(source_dir, 'Ratings'), lambda x: [str(int(float(x.get('rating'))))]),
+            'year_dir': (os.path.join(source_dir, 'Years'), lambda x: [x.get('year')]),
+            'director_dir': (os.path.join(source_dir, 'Directors'), lambda x: x.get('directors', {}).values()),
+            'actor_dir': (os.path.join(source_dir, 'Actors'), lambda x: x.get('cast', {}).values())
+        }
+
+    def init(self):
+        for dir, _ in self.index_mapping.values():
+            tools.delete_dir(dir)
+            tools.make_dir(dir)
+
     def index(self):
         logger.info("****************************************")
         logger.info("**********      Indexer       **********")
         logger.info("****************************************")
-        #TODO : Add a method to destroy the index folders and rebuild them. (also removing .indexed)
-        #TODO : Do that only when mongo fully implemented to avoid opensubtitle calls
+        self.init()
+
         imdb_regex = re.compile('\.IMDB_ID_(?:tt)?(\d+)$')
         for folder in os.listdir(self.alphabetical_dir):
             logger.info('------ %s ------' % folder)
@@ -63,39 +73,25 @@ class Indexer:
 
                 if imdb_file:
                     logger.info('Found imdb file %s' % imdb_file)
-                    if not os.path.exists(os.path.join(folder_abs, '%s.indexed' % imdb_file)):
-                        imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
-                        if imdb_data:
-                            logger.info('Found imdb data from opensubtitle:')
-                            logger.info("\tGenres: %s" % imdb_data.get('genres'))
-                            logger.debug("\tData: %s" % imdb_data)
-                            self.index_genre(imdb_data.get('genres'), folder, folder_abs)
-                            #TODO: This is where new index using imdb_data should go following index_genre
-                        else:
-                            # FIXME: Probably need to remove that, not sure what it's for
-                            open(os.path.join(folder_abs, file + '.NO_IMDB_DATA'), 'w')
-                            os.symlink(folder_abs, os.path.join(self.no_genre_dir, folder))
-                        open(os.path.join(folder_abs, file + '.indexed'), 'w')
+                    imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
+                    if imdb_data:
+                        logger.info('Found imdb data from opensubtitle:')
+                        logger.debug("\tData: %s" % imdb_data)
+                        for index in self.index_mapping.keys():
+                            self.index_values(self.index_mapping[index][1](imdb_data), folder, folder_abs, index)
                     else:
-                        logger.info("Folder already indexed")
+                        # FIXME: Probably need to remove that, not sure what it's for
+                        open(os.path.join(folder_abs, file + '.NO_IMDB_DATA'), 'w')
                 else:
                     open(os.path.join(folder_abs, '.NO_IMDB_FILE'), 'w')
-                    
-    def create_genre_folders(self, genres):
-        for genre in genres:
-            genre = genre.strip()
-            tools.make_dir(os.path.join(self.source_dir, 'Genres', genre))
 
-    def index_genre(self, genres, folder, folder_abs):
-        if genres:
-            self.create_genre_folders(genres)
-            for genre in genres:
-                genre = genre.strip()
-                try:
-                    os.symlink(folder_abs, os.path.join(self.source_dir, 'Genres', genre, folder))
-                except Exception, e:
-                    logger.debug("File already linked : %s in genre: %s" % (folder, genre))
-                    logger.exception("With exception :%s" % repr(e))
-        else:
-            os.symlink(folder_abs, os.path.join(self.no_genre_dir, folder))
-
+    def index_values(self, values, folder, folder_abs, index_dir):
+        if values:
+            logger.info('\tIndexing %s, with %s' % (folder, values))
+            try:
+                for value in values:
+                    value = value.strip()
+                    tools.make_dir(os.path.join(self.index_mapping[index_dir][0], value))
+                    os.symlink(folder_abs, os.path.join(self.index_mapping[index_dir][0], value, folder))
+            except Exception, e:
+                logger.exception("With exception :%s" % repr(e))
