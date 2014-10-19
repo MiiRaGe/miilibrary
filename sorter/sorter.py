@@ -42,6 +42,7 @@ class Sorter:
         movie_hash = str(ht.hashFile(file_path))
         self.map[movie_hash] = media
         self.hash_array.append(movie_hash)
+        self.hash_array = list(set(self.hash_array))
 
     def sort(self):
         logger.info("****************************************")
