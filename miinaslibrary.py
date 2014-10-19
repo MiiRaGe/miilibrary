@@ -26,7 +26,6 @@ class MiiNASLibrary:
         self.recursive_unrarer = UnpackerMain.RecursiveUnrarer(self.source_dir, self.data_dir)
         self.sorter = sorter.Sorter(self.output_dir)
         self.indexer = Indexer.Indexer(self.movie_dir)
-        tools.print_rec(settings.DESTINATION_FOLDER)
 
     def run(self):
         tools.shift_log()
@@ -37,6 +36,7 @@ class MiiNASLibrary:
         logger.info("Analysis Module :")
         # st.analyse(os.path.join(destination_dir,'TVSeries'),os.path.join(destination_dir,'TVStatistics.txt'))
         self.index()
+        tools.print_rec(settings.DESTINATION_FOLDER)
 
     def unpack(self):
         """

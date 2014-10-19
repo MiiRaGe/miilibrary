@@ -60,7 +60,7 @@ class Sorter:
             is_sorted = False
             if result:
                 logger.info("Got Result from opensubtitle for %s" % file_name)
-                logger.debug(result)
+                #logger.debug(result)
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
                 if result:

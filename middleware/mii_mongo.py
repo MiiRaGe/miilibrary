@@ -34,7 +34,7 @@ def do_query(qry, collection):
     logger.info('Querying mongo: %s' % qry)
     existing_data = collection.find_one(qry, {'data': 1, 'date': 1})
     if existing_data:
-        logger.info('Result found in mongo %s' % (existing_data['data']))
+        logger.info('Result found in mongo')
         if (datetime.datetime.now() - existing_data['date']).days > 31:
             logger.info('Too old, querying new data')
         else:
