@@ -164,7 +164,13 @@ def cleanup_rec(source):
         if os.path.isdir(os.path.join(source, media_file)):
             if os.listdir(os.path.join(source, media_file)):
                 cleanup_rec(os.path.join(source, media_file))
-            shutil.rmtree(os.path.join(source, media_file))
+            try:
+                shutil.rmtree(os.path.join(source, media_file))
+            except:
+                try:
+                    os.remove(os.path.join(source, media_file))
+                except:
+                    pass
         else:
             os.remove(os.path.join(source, media_file))
 

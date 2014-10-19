@@ -100,6 +100,8 @@ class RecursiveUnrarer:
                     logger.debug("Removing (Reason : size < %sMo): %s" % (settings.MINIMUM_SIZE, media_file))
                     os.remove(self.destination_dir + os.path.sep + media_file)
                     self.removed += 1
+                if os.path.islink(os.path.join(self.destination_dir, media_file)):
+                    os.unlink(os.path.join(self.destination_dir, media_file))
 
     def link_video(self, source_path, file_to_link):
         source_file = source_path + os.path.sep + file_to_link
