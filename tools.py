@@ -40,6 +40,7 @@ formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
 
 def init_log():
+
     #Creating the log directory
     log_dir = os.path.join(settings.DESTINATION_FOLDER, 'log')
     try:
