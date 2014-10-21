@@ -25,6 +25,7 @@ class Sorter:
         self.map = {}
         self.media_dir = media_dir
         self.data_dir = os.path.join(media_dir, "data")
+        self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
         self.serie_dir = os.path.join(media_dir, "TVSeries")
         self.movie_dir = os.path.join(media_dir, "Movies")
         self.unsorted_dir = os.path.join(media_dir, "unsorted")
@@ -83,6 +84,15 @@ class Sorter:
                 else:
                     logger.info("Looks like a movie")
                     self.sort_movie_from_name(file_name)
+
+        self.update_whatsnew()
+
+    def update_whatsnew(self):
+        tools.delete_dir(self.whatsnew_dir)
+        self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
+        for whatsnew in mii_sql.WhatsNew.select().limit(10):
+            os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
+
 
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get("MovieHash"))

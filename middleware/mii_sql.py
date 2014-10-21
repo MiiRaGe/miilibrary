@@ -1,10 +1,10 @@
+import datetime
 import logging
 
 from peewee import *
 
 import settings
 
-# db = SqliteDatabase("%s" % os.path.join(settings.DESTINATION_FOLDER, settings.MYSQL_NAME))
 db = MySQLDatabase(settings.MYSQL_NAME,
                    host=settings.MYSQL_HOST,
                    port=settings.MYSQL_PORT,
@@ -24,7 +24,7 @@ class Movie(MiiBase):
     imdb_id = CharField(null=True)
     rating = FloatField(null=True)
     folder_path = CharField()
-    file_size = IntegerField()
+    file_size = BigIntegerField()
 
     class Meta:
         indexes = (
@@ -39,16 +39,21 @@ class Tag(MiiBase):
 
 class Serie(MiiBase):
     name = CharField()
-    season = IntegerField()
-    episode = IntegerField()
-    file_path = CharField()
-    file_size = IntegerField()
 
     class Meta:
-        indexes = (
-            (('name', 'season', 'episode'), True),
-        )
-        order_by = ('name', 'season', 'episode')
+        order_by = ('name',)
+
+
+class Season(MiiBase):
+    number = IntegerField()
+    serie = ForeignKeyField(Serie, related_name='seasons')
+
+
+class Episode(MiiBase):
+    number = IntegerField()
+    season = ForeignKeyField(Season, related_name='episodes')
+    file_path = CharField()
+    file_size = BigIntegerField()
 
 
 class SerieTagging(MiiBase):
@@ -61,7 +66,16 @@ class MovieTagging(MiiBase):
     tag = ForeignKeyField(Tag)
 
 
-db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging], safe=True)
+class WhatsNew(MiiBase):
+    date = DateField()
+    name = CharField()
+    path = CharField()
+
+    class Meta:
+        order_by = ('date', )
+
+
+db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew], safe=True)
 
 
 def get_serie_episode(name, season, episode):
@@ -74,10 +88,12 @@ def get_serie_episode(name, season, episode):
     """
     try:
         logger.info('Querying serie table with name=%s, season=%s and episode=%s' % (name, season, episode))
-        serie = Serie.get(name=name, season=season, episode=episode)
-        if serie:
-            return True, serie
-    except Exception as e:
+        episode = Episode.select().join(Season).join(Serie).where(Season.number == season,
+                                                                  Episode.number == episode,
+                                                                  Serie.name == name).get()
+        if episode:
+            return True, episode
+    except (Serie.DoesNotExist, Season.DoesNotExist, Episode.DoesNotExist) as e:
         logger.info('Found nothing %s' % repr(e))
         return False, None
 
@@ -90,9 +106,28 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     :param int episode_number: Episode number
     :param string serie_path: Path of the file
     """
-    serie = Serie(name=serie_name, season=serie_season, episode=episode_number, file_path=serie_path)
-    serie.save()
-    return serie
+    try:
+        serie = Serie.get(name=serie_name)
+    except Serie.DoesNotExist:
+        serie = Serie(name=serie_name)
+        serie.save()
+
+    try:
+        season = Season.get(number=serie_season, serie=serie)
+    except Season.DoesNotExist:
+        season = Season(number=serie_season, serie=serie)
+        season.save()
+
+    episode = Episode(number=episode_number, season=season, file_path=serie_path)
+    episode.save()
+
+    # Add the movie to the what's new folder
+    wn = WhatsNew(date=datetime.datetime.now(),
+                  path=serie_path,
+                  name='%s S%sE%s' % (serie_name, serie_season, episode_number))
+    wn.save()
+
+    return episode
 
 
 def get_movie(title, year=None):
@@ -111,7 +146,7 @@ def get_movie(title, year=None):
             movie = Movie.get(title=title)
         logger.info('Found movie')
         return True, movie
-    except Exception as e:
+    except Movie.DoesNotExist as e:
         logger.info('Found nothing %s' % repr(e))
         return False, None
 
@@ -126,4 +161,9 @@ def insert_movie(title, year, path):
     """
     movie = Movie(title=title, year=year, folder_path=path)
     movie.save()
+
+    # Add the movie to the what's new folder
+    wn = WhatsNew(date=datetime.datetime.now(), path=path, name='%s (%s)' % (title, year))
+    wn.save()
+
     return movie
