@@ -6,7 +6,7 @@ import subprocess
 from os import listdir
 
 import settings
-import tools
+from middleware import mii_sql
 
 try:
     raise WindowsError
@@ -71,15 +71,23 @@ class RecursiveUnrarer:
             logger.debug("%sDirectory empty :%s:" % (indent, current_directory))
 
     def unrar(self, archive_file):
-        if os.path.exists(archive_file + "_extracted"):
+        try:
+            mii_sql.Unpacked.get(filename=archive_file)
             return
+        except mii_sql.Unpacked.DoesNotExist:
+            pass
+
         logger.debug("Processing extraction...")
 
-        stdout = open("%s/log/extractions/%s.extraction.LOG" % (settings.DESTINATION_FOLDER, archive_file.split('/')[-1]), "wb")
-        return_value = subprocess.call('unrar e -y %s %s' % (archive_file, self.destination_dir), shell=True, stdout=stdout)
+        stdout = open("%s/log/extractions/%s.extraction.LOG" % (settings.DESTINATION_FOLDER,
+                                                                archive_file.split('/')[-1]),
+                      "wb")
+        return_value = subprocess.call('unrar e -y %s %s' % (archive_file, self.destination_dir),
+                                       shell=True,
+                                       stdout=stdout)
         if not return_value:
             logger.debug("Extraction OK!")
-            open(archive_file + "_extracted", "w")
+            mii_sql.Unpacked(filename=archive_file).save()
             self.extracted += 1
         else:
             logger.error("Extraction failed")
@@ -106,14 +114,22 @@ class RecursiveUnrarer:
     def link_video(self, source_path, file_to_link):
         source_file = source_path + os.path.sep + file_to_link
         destination_file = self.destination_dir + os.path.sep + file_to_link
+        try:
+            mii_sql.Unpacked.get(filename=source_file)
+            logger.error("Not linking, same file exist (weight wise)")
+            return
+        except mii_sql.Unpacked.DoesNotExist:
+            pass
+
         if os.path.exists(destination_file):
-            if os.path.getsize(destination_file) != os.path.getsize(source_file):
+            if os.path.getsize(destination_file) <= os.path.getsize(source_file):
                 os.remove(destination_file)
                 try:
                     os.link(source_file, destination_file)
                 except AttributeError:
                     shutil.copy(source_file, destination_file)
                 self.linked += 1
+                mii_sql.Unpacked(filename=source_file).save()
             else:
                 logger.error("Not linking, same file exist (weight wise)")
         else:
@@ -121,6 +137,7 @@ class RecursiveUnrarer:
                 os.link(source_file, destination_file)
             except AttributeError:
                 shutil.copy(source_file, destination_file)
+            mii_sql.Unpacked(filename=source_file).save()
             self.linked += 1
 
     def print_statistic(self):

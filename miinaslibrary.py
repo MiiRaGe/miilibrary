@@ -36,7 +36,6 @@ class MiiNASLibrary:
         logger.info("Analysis Module :")
         # st.analyse(os.path.join(destination_dir,'TVSeries'),os.path.join(destination_dir,'TVStatistics.txt'))
         self.index()
-        self.update_whatsnew()
         tools.print_rec(settings.DESTINATION_FOLDER)
 
 

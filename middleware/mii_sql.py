@@ -75,7 +75,12 @@ class WhatsNew(MiiBase):
         order_by = ('date', )
 
 
-db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew], safe=True)
+class Unpacked(MiiBase):
+    filename = CharField()
+
+
+db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked],
+                 safe=True)
 
 
 def get_serie_episode(name, season, episode):
@@ -105,6 +110,7 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     :param int serie_season: Season number
     :param int episode_number: Episode number
     :param string serie_path: Path of the file
+    :rtype Episode: Episode of the serie
     """
     try:
         serie = Serie.get(name=serie_name)
@@ -158,6 +164,7 @@ def insert_movie(title, year, path):
     :param int year: Year of the movie
     :param string path: Path of the movie file
     :return Movie: Movie instance to be modified with additional data
+    :rtype Movie: Movie type
     """
     movie = Movie(title=title, year=year, folder_path=path)
     movie.save()
