@@ -60,8 +60,8 @@ class RecursiveUnrarer:
                     elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
                                     os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 1000000:
                         #Moving every movie type, cleanup later
-                        logger.debug("%sMoving :%s to the data folder..." % (indent, data_file))
-                        self.link_video(current_directory, data_file)
+                        if self.link_video(current_directory, data_file):
+                            logger.debug("%sMoving :%s to the data folder..." % (indent, data_file))
 
                 elif os.path.isdir(full_file_path) and full_file_path is not self.destination_dir:
                     self.level += 1
@@ -117,12 +117,12 @@ class RecursiveUnrarer:
         try:
             mii_sql.Unpacked.get(filename=source_file)
             logger.error("Not linking, same file exist (weight wise)")
-            return
+            return False
         except mii_sql.Unpacked.DoesNotExist:
             pass
 
         if os.path.exists(destination_file):
-            if os.path.getsize(destination_file) <= os.path.getsize(source_file):
+            if os.path.getsize(destination_file) < os.path.getsize(source_file):
                 os.remove(destination_file)
                 try:
                     os.link(source_file, destination_file)
@@ -130,8 +130,10 @@ class RecursiveUnrarer:
                     shutil.copy(source_file, destination_file)
                 self.linked += 1
                 mii_sql.Unpacked(filename=source_file).save()
+                return True
             else:
                 logger.error("Not linking, same file exist (weight wise)")
+                return False
         else:
             try:
                 os.link(source_file, destination_file)
@@ -139,6 +141,7 @@ class RecursiveUnrarer:
                 shutil.copy(source_file, destination_file)
             mii_sql.Unpacked(filename=source_file).save()
             self.linked += 1
+            return True
 
     def print_statistic(self):
         logger.info("-----------Summary-----------")

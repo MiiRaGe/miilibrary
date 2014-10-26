@@ -413,9 +413,10 @@ def compare(file_name, api_result):
                     (api_result.get("MovieYear"), name_year_matching.group(2)))
         return False
 
-    if not (letter_coverage(name_year_matching.group(1), api_result.get('MovieName')) > 0.65):
+    name_matching = re.search("([^\(\)]*).+(20[01][0-9]|19[5-9][0-9])", file_name)
+    if name_matching and not (letter_coverage(name_matching.group(1), api_result.get('MovieName')) > 0.65):
         logger.info("Letter inconsistency : %s, %s" %
-                    (api_result.get("MovieName"), name_year_matching.group(1)))
+                    (api_result.get("MovieName"), name_matching.group(1)))
         return False
 
     logger.info("Found a perfect match")
@@ -424,6 +425,7 @@ def compare(file_name, api_result):
 
 def get_best_match(api_result_list, file_name):
     for api_result in api_result_list:
+        #TODO Get the whole list score and return the best one
         if compare(file_name.lower(), api_result):
             logger.info("Comparison returned true, moving on")
             return api_result
