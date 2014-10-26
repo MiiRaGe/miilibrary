@@ -185,5 +185,5 @@ def print_rec(path, indent=0):
     print '%s%s %s' % (tabulation, path.split('/')[pos], '(Dir):' if os.path.isdir(path) else '(File)')
 
     if os.path.isdir(path):
-        for file in os.listdir(path):
+        for file in sorted(os.listdir(path)):
             print_rec(os.path.join(path, file), indent + 1)
