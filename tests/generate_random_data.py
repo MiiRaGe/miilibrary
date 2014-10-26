@@ -1,4 +1,4 @@
 import random
 
 while True:
-	print random.random()
+    print random.random()
