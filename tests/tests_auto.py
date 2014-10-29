@@ -182,35 +182,35 @@ class TestSorter(unittest.TestCase):
         }
 
         serie1 = 'Dragons.defenders.of.berk.S05e10.fap'
-        self.assertFalse(compare(serie1, api_result))
+        self.assertFalse(compare(serie1, api_result)[0])
 
         api_result['MovieKind'] = 'web series'
         api_result['SeriesSeason'] = '5'
         api_result['SeriesEpisode'] = '9'
-        self.assertFalse(compare(serie1, api_result))
+        self.assertFalse(compare(serie1, api_result)[0])
 
         api_result['SeriesSeason'] = '4'
         api_result['SeriesEpisode'] = '10'
-        self.assertFalse(compare(serie1, api_result))
+        self.assertFalse(compare(serie1, api_result)[0])
 
         api_result['SeriesSeason'] = '5'
         api_result['SeriesEpisode'] = '10'
-        self.assertTrue(compare(serie1, api_result))
+        self.assertTrue(compare(serie1, api_result)[0])
 
         serie1 = 'Dragons.riders.of.berk.S05e10.fap'
-        self.assertTrue(compare(serie1, api_result))
+        self.assertTrue(compare(serie1, api_result)[0])
 
         api_result['MovieName'] = 'Dragons.riders.of.berk'
         api_result['MovieKind'] = 'movie'
         api_result['MovieYear'] = '2014'
         movie1 = 'Dragons.defenders.of.berk (2014)'
-        self.assertTrue(compare(movie1, api_result))
+        self.assertTrue(compare(movie1, api_result)[0])
 
         api_result['MovieYear'] = '2013'
-        self.assertFalse(compare(movie1, api_result))
+        self.assertFalse(compare(movie1, api_result)[0])
 
         movie1 = 'Dragons.defenders.of.berk'
-        self.assertTrue(compare(movie1, api_result))
+        self.assertTrue(compare(movie1, api_result)[0])
 
     def test_letter_coverage(self):
         from sorter.sorter import letter_coverage
@@ -287,3 +287,60 @@ class TestSorter(unittest.TestCase):
         name = 'Iron Man 3.mkv'
         res = get_info(name)
         self.assertEqual(res['title'], 'Iron Man 3')
+
+    def test_get_best_match(self):
+        from sorter.sorter import get_best_match
+
+        api_results = {'status': '200 OK', 'seconds': 0.024, 'data': [{'ISO639': 'en', 'SubComments': '0', 'UserID': '703291',
+                                                 'SubFileName': 'Drop Dead Diva S05E03.HDTV.x264-EVOLVE.srt',
+                                                 'SubAddDate': '2013-07-08 10:17:23', 'SubBad': '0',
+                                                 'SubLanguageID': 'eng', 'SeriesEpisode': '3', 'MovieImdbRating': '7.8',
+                                                 'SubHash': '324fc73f61d9c347cf0364a03fdec6d5',
+                                                 'MovieReleaseName': 'Drop Dead Diva.S05E03.HDTV.x264-EVOLVE',
+                                                 'SubtitlesLink': 'http://www.opensubtitles.org/en/subtitles/5078190/drop-dead-diva-surrogates-en/sid-3cqrqrbsn9ue79hub8c4e4o8o4',
+                                                 'IDMovie': '154657', 'SeriesIMDBParent': '1280822',
+                                                 'SubDownloadsCnt': '5916', 'MovieByteSize': '1184815977',
+                                                 'MovieKind': 'episode', 'SeriesSeason': '5',
+                                                 'IDSubMovieFile': '10716736', 'SubSize': '68648',
+                                                 'IDSubtitle': '5078190', 'IDSubtitleFile': '1953620249',
+                                                 'MovieFPS': '23.976', 'SubSumCD': '1', 'SubAuthorComment': '',
+                                                 'MovieNameEng': '', 'MatchedBy': 'moviehash', 'SubHD': '1',
+                                                 'SubRating': '0.0',
+                                                 'SubDownloadLink': 'http://dl.opensubtitles.org/en/download/filead/src-api/vrf-785c5f9500/1953620249.gz/sid-3cqrqrbsn9ue79hub8c4e4o8o4',
+                                                 'SubHearingImpaired': '0',
+                                                 'ZipDownloadLink': 'http://dl.opensubtitles.org/en/download/subad/src-api/vrf-7a9a71a8b1/5078190/sid-3cqrqrbsn9ue79hub8c4e4o8o4',
+                                                 'SubFeatured': '0', 'MovieTimeMS': '0', 'SubActualCD': '1',
+                                                 'UserNickName': '', 'SubFormat': 'srt',
+                                                 'MovieHash': '0cad1409b7388393', 'LanguageName': 'English',
+                                                 'UserRank': '', 'MovieName': '"Drop Dead Diva" Surrogates',
+                                                 'IDMovieImdb': '2946002', 'MovieYear': '2013'},
+                                                {'ISO639': 'en', 'SubComments': '0', 'UserID': '1566989',
+                                                 'SubFileName': 'The.Walking.Dead.S05E03.HDTV.x264-ASAP.srt',
+                                                 'SubAddDate': '2014-10-27 06:36:56', 'SubBad': '0',
+                                                 'SubLanguageID': 'eng', 'SeriesEpisode': '3', 'MovieImdbRating': '9.6',
+                                                 'SubHash': 'dae10630df5b03add004e5805f0dfb33',
+                                                 'MovieReleaseName': 'The.Walking.Dead.S05E03.HDTV.x264-ASAP',
+                                                 'SubtitlesLink': 'http://www.opensubtitles.org/en/subtitles/5872414/the-walking-dead-four-walls-and-a-roof-en/sid-3cqrqrbsn9ue79hub8c4e4o8o4',
+                                                 'IDMovie': '184630', 'SeriesIMDBParent': '1520211',
+                                                 'SubDownloadsCnt': '1342', 'MovieByteSize': '1184815977',
+                                                 'MovieKind': 'episode', 'SeriesSeason': '5',
+                                                 'IDSubMovieFile': '10716860', 'SubSize': '29017',
+                                                 'IDSubtitle': '5872414', 'IDSubtitleFile': '1954450797',
+                                                 'MovieFPS': '23.976', 'SubSumCD': '1',
+                                                 'SubAuthorComment': 'Sync and Corrected by honeybunny/Thnkx to addic7ed.',
+                                                 'MovieNameEng': '', 'MatchedBy': 'moviehash', 'SubHD': '1',
+                                                 'SubRating': '0.0',
+                                                 'SubDownloadLink': 'http://dl.opensubtitles.org/en/download/filead/src-api/vrf-dcc1da5e2a/1954450797.gz/sid-3cqrqrbsn9ue79hub8c4e4o8o4',
+                                                 'SubHearingImpaired': '0',
+                                                 'ZipDownloadLink': 'http://dl.opensubtitles.org/en/download/subad/src-api/vrf-92943630a2/5872414/sid-3cqrqrbsn9ue79hub8c4e4o8o4',
+                                                 'SubFeatured': '0', 'MovieTimeMS': '0', 'SubActualCD': '1',
+                                                 'UserNickName': 'GoldenBeard', 'SubFormat': 'srt',
+                                                 'MovieHash': '0cad1409b7388393', 'LanguageName': 'English',
+                                                 'UserRank': 'trusted',
+                                                 'MovieName': '"The Walking Dead" Four Walls and a Roof',
+                                                 'IDMovieImdb': '3689244', 'MovieYear': '2014'}]
+        }
+
+        serie = 'The.Walking.Dead.S05E03.mkv'
+        #TODO write the test.
+        #print get_best_match(api_results['data'], serie)

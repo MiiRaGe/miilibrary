@@ -380,11 +380,12 @@ def rename_serie(file_name):
 
 def compare(file_name, api_result):
     logger.info("Comparing Opensubtitle api_result with file_name for safety")
+    score = 0
     if is_serie(file_name):
         # Movie type consistency issue
         if api_result.get("MovieKind") == "movie":
             logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected Tv Series/Episode")
-            return False
+            return False, 0
         matching_pattern = re.search("(.*)[sS]0*(\d+)[eE]0*(\d+)", file_name)
         if not all([api_result.get("SeriesSeason") == matching_pattern.group(2),
                     api_result.get("SeriesEpisode") == matching_pattern.group(3)]):
@@ -392,46 +393,57 @@ def compare(file_name, api_result):
                                                                              api_result.get("SeriesEpisode"),
                                                                              matching_pattern.group(2),
                                                                              matching_pattern.group(3)))
-            return False
+            return False, 0
 
         # Weak comparison using letters
         if letter_coverage(matching_pattern.group(1), api_result.get('MovieName')) < 0.65:
-            return False
+            return False, 0
 
-        logger.info("Found a perfect match")
-        return True
+        logger.info("Found a possible match")
+        return True, letter_coverage(matching_pattern.group(1), api_result.get('MovieName'))
 
     # Other case it's a movie
     if not (api_result.get("MovieKind") == "movie"):
         logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected movie")
-        return False
+        return False, 0
 
     # Year pattern api_result
     name_year_matching = re.search("([^\(\)]*).(20[01][0-9]|19[5-9][0-9])?", file_name)
     if name_year_matching.group(2) and not (name_year_matching.group(2) == api_result.get("MovieYear")):
         logger.info("Year Inconsistent : %s, expected year : %s" %
                     (api_result.get("MovieYear"), name_year_matching.group(2)))
-        return False
-
+        return False, 0
+    else:
+        score += 0.10
     name_matching = re.search("([^\(\)]*).+(20[01][0-9]|19[5-9][0-9])", file_name)
-    if name_matching and not (letter_coverage(name_matching.group(1), api_result.get('MovieName')) > 0.65):
-        logger.info("Letter inconsistency : %s, %s" %
-                    (api_result.get("MovieName"), name_matching.group(1)))
-        return False
-
+    if name_matching:
+        if not (letter_coverage(name_matching.group(1), api_result.get('MovieName')) > 0.65):
+            logger.info("Letter inconsistency : %s, %s" %
+                        (api_result.get("MovieName"), name_matching.group(1)))
+            return False, 0
+        else:
+            score += letter_coverage(name_matching.group(1), api_result.get('MovieName'))
     logger.info("Found a perfect match")
-    return True
+
+    return True, score
 
 
 def get_best_match(api_result_list, file_name):
+    scores = []
     for api_result in api_result_list:
         #TODO Get the whole list score and return the best one
-        if compare(file_name.lower(), api_result):
+        matching, score = compare(file_name.lower(), api_result)
+        scores.append((matching, score, api_result))
+        if matching:
             logger.info("Comparison returned true, moving on")
-            return api_result
         else:
             logger.info("Comparison returned false, inconsistencies exist")
-    return None
+
+    scores = sorted(scores, key=(lambda x: x[2]), reverse=True)
+    if scores[0] and scores[1] > 0:
+        return scores[2]
+    else:
+        return None
 
 
 def is_serie(name):
