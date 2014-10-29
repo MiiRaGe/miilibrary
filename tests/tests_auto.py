@@ -342,5 +342,5 @@ class TestSorter(unittest.TestCase):
         }
 
         serie = 'The.Walking.Dead.S05E03.mkv'
-        #TODO write the test.
-        #print get_best_match(api_results['data'], serie)
+        self.assertEqual(get_best_match(api_results['data'], serie)['MovieName'],
+                         '"The Walking Dead" Four Walls and a Roof')

@@ -396,11 +396,15 @@ def compare(file_name, api_result):
             return False, 0
 
         # Weak comparison using letters
-        if letter_coverage(matching_pattern.group(1), api_result.get('MovieName')) < 0.65:
+        api_serie_name = api_result.get('MovieName')
+        title_matched = re.search('\"([^\"]*)\"', api_serie_name)
+        api_serie_name = title_matched.group(1) if title_matched else api_serie_name
+
+        if letter_coverage(matching_pattern.group(1), api_serie_name) < 65:
             return False, 0
 
         logger.info("Found a possible match")
-        return True, letter_coverage(matching_pattern.group(1), api_result.get('MovieName'))
+        return True, letter_coverage(matching_pattern.group(1), api_serie_name)
 
     # Other case it's a movie
     if not (api_result.get("MovieKind") == "movie"):
@@ -417,7 +421,7 @@ def compare(file_name, api_result):
         score += 0.10
     name_matching = re.search("([^\(\)]*).+(20[01][0-9]|19[5-9][0-9])", file_name)
     if name_matching:
-        if not (letter_coverage(name_matching.group(1), api_result.get('MovieName')) > 0.65):
+        if not (letter_coverage(name_matching.group(1), api_result.get('MovieName')) > 65):
             logger.info("Letter inconsistency : %s, %s" %
                         (api_result.get("MovieName"), name_matching.group(1)))
             return False, 0
@@ -440,8 +444,8 @@ def get_best_match(api_result_list, file_name):
             logger.info("Comparison returned false, inconsistencies exist")
 
     scores = sorted(scores, key=(lambda x: x[2]), reverse=True)
-    if scores[0] and scores[1] > 0:
-        return scores[2]
+    if scores and scores[0][1] > 0:
+        return scores[0][2]
     else:
         return None
 

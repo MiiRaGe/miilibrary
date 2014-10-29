@@ -46,12 +46,12 @@ class Serie(MiiBase):
 
 class Season(MiiBase):
     number = IntegerField()
-    serie = ForeignKeyField(Serie, related_name='seasons')
+    serie = ForeignKeyField(Serie, related_name='seasons', on_delete='CASCADE')
 
 
 class Episode(MiiBase):
     number = IntegerField()
-    season = ForeignKeyField(Season, related_name='episodes')
+    season = ForeignKeyField(Season, related_name='episodes', on_delete='CASCADE')
     file_path = CharField()
     file_size = BigIntegerField()
 
