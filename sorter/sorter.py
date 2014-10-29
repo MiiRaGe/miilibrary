@@ -90,7 +90,7 @@ class Sorter:
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
-        for whatsnew in mii_sql.WhatsNew.select().limit(10):
+        for whatsnew in mii_sql.WhatsNew.select().order_by('date').limit(10):
             os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
 
 

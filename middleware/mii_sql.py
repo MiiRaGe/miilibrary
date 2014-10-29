@@ -67,7 +67,7 @@ class MovieTagging(MiiBase):
 
 
 class WhatsNew(MiiBase):
-    date = DateField()
+    date = DateTimeField()
     name = CharField()
     path = CharField()
 
