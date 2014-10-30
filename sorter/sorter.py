@@ -437,13 +437,13 @@ def get_best_match(api_result_list, file_name):
     for api_result in api_result_list:
         #TODO Get the whole list score and return the best one
         matching, score = compare(file_name.lower(), api_result)
-        scores.append((matching, score, api_result))
         if matching:
             logger.info("Comparison returned true, moving on")
+            scores.append((matching, score, api_result))
         else:
             logger.info("Comparison returned false, inconsistencies exist")
 
-    scores = sorted(scores, key=(lambda x: x[2]), reverse=True)
+    scores = sorted(scores, key=(lambda x: x[2]))
     if scores and scores[0][1] > 0:
         return scores[0][2]
     else:
