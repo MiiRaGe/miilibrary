@@ -501,12 +501,13 @@ def letter_coverage(file_name, api_name):
         percent_coverage = 0.0
         for letter in small:
             if small[letter] > big.get(letter, 0.0):
-                ratio = big.get(letter, 1.0) / small[letter]
+                ratio = big.get(letter, 0.0) / small[letter]
             else:
                 ratio = small[letter] / big[letter]
             percent_coverage += 100 * ratio * small[letter] / sum(big.values())
 
         name_size_factor = float(len(file_name)) / len(api_name)
+
         if name_size_factor > 1:
             name_size_factor = 1 / name_size_factor
         set_size_factor = float(len(small)) / len(big)

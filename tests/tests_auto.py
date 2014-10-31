@@ -233,6 +233,10 @@ class TestSorter(unittest.TestCase):
         str2 = 'House of Flying Daggers'
         self.assertLessEqual(letter_coverage(str1, str2), limit)
 
+        str1 = 'friends.'
+        str2 = 'New Girl'
+        print letter_coverage(str1, str2)
+
     def test_rename_serie(self):
         from sorter.sorter import rename_serie
 
@@ -328,13 +332,3 @@ class TestSorter(unittest.TestCase):
         self.assertEqual(get_best_match(data, serie)['MovieName'],
                          '"The Walking Dead" No Sanctuary')
 
-        data = [{'SeriesEpisode': '5', 'MovieKind': 'episode', 'SeriesSeason': '1',
-                 'MovieName': '"Friends" The One with the East German Laundry Detergent', 'MovieYear': '1994'},
-                {'SeriesEpisode': '5', 'MovieKind': 'episode', 'SeriesSeason': '1',
-                 'MovieName': '"New Girl" Cece Crashes', 'MovieYear': '2011'},
-                {'SeriesEpisode': '5', 'MovieKind': 'episode', 'SeriesSeason': '1',
-                 'MovieName': '"Friends" The One with the East German Laundry Detergent', 'MovieYear': '1994'},]
-
-        serie = 'friends.s01e05.720p.bluray.x264-psychd.mkv'
-
-        print get_best_match(data, serie)
