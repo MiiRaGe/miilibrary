@@ -253,14 +253,14 @@ class Sorter:
         file_path = os.path.join(self.data_dir, filename)
         try:
             exist, movie = mii_sql.get_movie(movie_name, year=year)
-            if exist:
+            if exist and os.path.exists(movie.folder_path):
                 if movie.file_size > os.path.getsize(file_path):
                     logger.info('Do not sort as already existing bigger movie exists')
                     self.move_to_unsorted(file_path)
                     return False
                 elif movie.file_size == os.path.getsize(file_path):
                     logger.info('Same size movie exists, deleting source')
-                    os.remove(movie.folder_path)
+                    tools.remove(movie.folder_path)
                     return False
                 else:
                     logger.info('Moving the old movie folder to unsorted as new file is bigger')
@@ -270,7 +270,9 @@ class Sorter:
             quality = get_quality(filename)
             if quality:
                 custom_movie_dir += " [" + quality + "]"
+            logger.debug('Custom folder name :%s' % custom_movie_dir)
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
+            logger.debug('Created folder path :%s' % created_movie_dir)
             if movie:
                 movie.year = year or ''
                 movie.folder_path = created_movie_dir
