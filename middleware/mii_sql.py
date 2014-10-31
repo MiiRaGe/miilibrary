@@ -81,7 +81,12 @@ class Unpacked(MiiBase):
 
 db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked],
                  safe=True)
-
+db.execute_sql("create view summary as "
+               "select serie.name as 'Name', season.number as 'Season', episode.number as 'Episode'"
+               "from serie"
+               "     inner join season on season.serie_id = serie.id "
+               "        inner join episode on episode.season_id = season.id "
+               "order by serie.name, season.number, episode.number;")
 
 def get_serie_episode(name, season, episode):
     """

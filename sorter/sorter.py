@@ -49,6 +49,7 @@ class Sorter:
         logger.info("****************************************")
         logger.info("**********       Sorter       **********")
         logger.info("****************************************")
+        #TODO optimize sorting
         self.map = {}
         self.hash_array = []
         for media in os.listdir(self.data_dir):
