@@ -298,16 +298,15 @@ class TestSorter(unittest.TestCase):
         from sorter.sorter import get_best_match
 
         data = [{
-                                 'SeriesEpisode': '3',
-                                 'MovieKind': 'episode', 'SeriesSeason': '5',
-                                 'MovieName': '"Drop Dead Diva" Surrogates',
-                                 'MovieYear': '2013'},
-                                {
-                                 'SeriesEpisode': '3',
-                                 'MovieKind': 'episode', 'SeriesSeason': '5',
-                                 'MovieName': '"The Walking Dead" Four Walls and a Roof',
-                                 'MovieYear': '2014'}]
-
+                    'SeriesEpisode': '3',
+                    'MovieKind': 'episode', 'SeriesSeason': '5',
+                    'MovieName': '"Drop Dead Diva" Surrogates',
+                    'MovieYear': '2013'},
+                {
+                    'SeriesEpisode': '3',
+                    'MovieKind': 'episode', 'SeriesSeason': '5',
+                    'MovieName': '"The Walking Dead" Four Walls and a Roof',
+                    'MovieYear': '2014'}]
 
         serie = 'The.Walking.Dead.S05E03.mkv'
         self.assertEqual(get_best_match(data, serie)['MovieName'],
@@ -322,9 +321,20 @@ class TestSorter(unittest.TestCase):
              "MovieYear": "2014"},
             {"SeriesEpisode": "1", "MovieKind": "episode", "SeriesSeason": "5",
              "MovieName": "\"Waking the Dead\" Towers of Silence: Part 1",
-             "MovieYear": "2005"},]
-    
+             "MovieYear": "2005"}, ]
+
         serie = 'The.Walking.Dead.S05E01.mkv'
 
         self.assertEqual(get_best_match(data, serie)['MovieName'],
                          '"The Walking Dead" No Sanctuary')
+
+        data = [{'SeriesEpisode': '5', 'MovieKind': 'episode', 'SeriesSeason': '1',
+                 'MovieName': '"Friends" The One with the East German Laundry Detergent', 'MovieYear': '1994'},
+                {'SeriesEpisode': '5', 'MovieKind': 'episode', 'SeriesSeason': '1',
+                 'MovieName': '"New Girl" Cece Crashes', 'MovieYear': '2011'},
+                {'SeriesEpisode': '5', 'MovieKind': 'episode', 'SeriesSeason': '1',
+                 'MovieName': '"Friends" The One with the East German Laundry Detergent', 'MovieYear': '1994'},]
+
+        serie = 'friends.s01e05.720p.bluray.x264-psychd.mkv'
+
+        print get_best_match(data, serie)
