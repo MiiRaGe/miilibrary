@@ -261,7 +261,7 @@ class Sorter:
                     return False
                 elif movie.file_size == os.path.getsize(file_path):
                     logger.info('Same size movie exists, deleting source')
-                    tools.remove(movie.folder_path)
+                    tools.delete_dir(file_path)
                     return False
                 else:
                     logger.info('Moving the old movie folder to unsorted as new file is bigger')
