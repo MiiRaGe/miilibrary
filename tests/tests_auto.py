@@ -235,7 +235,7 @@ class TestSorter(unittest.TestCase):
 
         str1 = 'friends.'
         str2 = 'New Girl'
-        print letter_coverage(str1, str2)
+        self.assertLessEqual(letter_coverage(str1, str2), limit)
 
     def test_rename_serie(self):
         from sorter.sorter import rename_serie
