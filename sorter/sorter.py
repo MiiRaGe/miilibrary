@@ -94,7 +94,6 @@ class Sorter:
         for whatsnew in mii_sql.WhatsNew.select().order_by('date').limit(10):
             os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
 
-
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get("MovieHash"))
         if result.get("MovieKind") == 'movie':
@@ -297,19 +296,6 @@ class Sorter:
         except Exception, e:
             logger.exception('Found an exception when moving movie : %s' % repr(e))
         return False
-
-    def resolve_existing_conflict(self, movie_name, file_size, movie_dir, year=None):
-        # TODO: replace with db query when implemented
-        """
-        Query the db to see if movie exist, returns movie object for update if match is found
-        :param string movie_name: Name of the movie
-        :param int file_size: Size of the current movie
-        :param string movie_dir: Path of the current movie
-        :param int year: year of the movie
-        :return: Movie :raise Exception: Don't sort as already existing
-        :rtype: mii_sql.Movie
-        """
-
 
 
 def get_size(file_name):
