@@ -300,19 +300,6 @@ class Sorter:
             logger.exception('Found an exception when moving movie : %s' % repr(e))
         return False
 
-    def resolve_existing_conflict(self, movie_name, file_size, movie_dir, year=None):
-        # TODO: replace with db query when implemented
-        """
-        Query the db to see if movie exist, returns movie object for update if match is found
-        :param string movie_name: Name of the movie
-        :param int file_size: Size of the current movie
-        :param string movie_dir: Path of the current movie
-        :param int year: year of the movie
-        :return: Movie :raise Exception: Don't sort as already existing
-        :rtype: mii_sql.Movie
-        """
-
-
 
 def get_size(file_name):
     return os.path.getsize(os.path.abspath(file_name))
