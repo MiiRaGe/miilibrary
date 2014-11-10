@@ -91,9 +91,11 @@ class Sorter:
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
-        for whatsnew in mii_sql.WhatsNew.select().order_by('date').limit(10):
-            os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
-
+        for whatsnew in mii_sql.WhatsNew.select().order_by(mii_sql.WhatsNew.date.desc()).limit(10):
+	    if os.path.isdir(whatsnew.path):
+                os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
+	    else:
+		os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.path.split('/')[-1]))
 
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get("MovieHash"))

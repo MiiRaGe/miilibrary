@@ -101,8 +101,11 @@ class OpenSubtitleWrapper:
                                                           "query": movie_name}],
                                                      {"limit": 100})
                 logger.debug(result)
-                result = result.get("data")
-                return result
+                try:
+			result = result.get("data")
+                except:
+			return None
+		return result
             except ProtocolError:
                 logger.info("Result : %s" % result)
                 logger.info("Got rejected by the API, waiting 1minutes")
