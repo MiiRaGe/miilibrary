@@ -76,7 +76,7 @@ class WhatsNew(MiiBase):
 
 
 class Unpacked(MiiBase):
-    filename = CharField()
+    filename = TextField()
 
 
 db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked],

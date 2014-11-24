@@ -61,3 +61,10 @@ MYSQL_PORT = 3306
 MYSQL_USERNAME = 'MiiRaGe'
 MYSQL_PASSWORD = '1234'
 MYSQL_NAME = "media"
+
+"""[RSS Link]"""
+RSS_URL = 'http://www.torrentday.com/torrents/rss?download;l7;u=xxx;tp=xxx'
+TORRENT_WATCHED_FOLDER = '/PATH/TO/WATCHED/FOLDER/'
+RSS_FILTERS = [
+    'the.peoples.couch.*720p'
+]
