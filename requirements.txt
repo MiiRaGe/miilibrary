@@ -13,5 +13,5 @@ pymongo==2.7.2
 simplejson==3.6.2
 unrar==0.2
 wsgiref==0.1.2
-python-daemon
+daemon
 feedparser

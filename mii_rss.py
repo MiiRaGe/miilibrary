@@ -4,9 +4,7 @@ import logging
 import os
 import time
 import re
-import mock
 import urllib
-import unittest
 
 import settings
 
@@ -50,5 +48,5 @@ def main_loop():
         time.sleep(600)
 
 if __name__ == "__main__":
-    # with daemon.DaemonContext():
-    main_loop()
+    with daemon.DaemonContext():
+        main_loop()
