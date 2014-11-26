@@ -68,7 +68,7 @@ class MovieTagging(MiiBase):
 
 class WhatsNew(MiiBase):
     date = DateTimeField()
-    name = CharField()
+    name = CharField(unique=True)
     path = CharField()
 
     class Meta:
@@ -121,25 +121,20 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     :param string serie_path: Path of the file
     :rtype Episode: Episode of the serie
     """
-    try:
-        serie = Serie.get(name=serie_name)
-    except Serie.DoesNotExist:
-        serie = Serie(name=serie_name)
-        serie.save()
 
-    try:
-        season = Season.get(number=serie_season, serie=serie)
-    except Season.DoesNotExist:
-        season = Season(number=serie_season, serie=serie)
-        season.save()
+    serie = Serie.get_or_create(name=serie_name)
+    serie.save()
+
+    season = Season.get_or_create(number=serie_season, serie=serie)
+    season.save()
 
     episode = Episode(number=episode_number, season=season, file_path=serie_path)
     episode.save()
 
-    # Add the movie to the what's new folder
-    wn = WhatsNew(date=datetime.datetime.now(),
-                  path=serie_path,
-                  name='%s S%sE%s' % (serie_name, serie_season, episode_number))
+    # Add the serie to the what's new folder
+    wn = WhatsNew.get_or_create(name='%s S%sE%s' % (serie_name, serie_season, episode_number))
+    wn.date = datetime.datetime.now()
+    wn.path = serie_path
     wn.save()
 
     return episode
@@ -179,7 +174,9 @@ def insert_movie(title, year, path):
     movie.save()
 
     # Add the movie to the what's new folder
-    wn = WhatsNew(date=datetime.datetime.now(), path=path, name='%s (%s)' % (title, year))
+    wn = WhatsNew.get_or_create(name='%s (%s)' % (title, year))
+    wn.date = datetime.datetime.now()
+    wn.path = path
     wn.save()
-
+    
     return movie

@@ -49,7 +49,7 @@ class Sorter:
         logger.info("****************************************")
         logger.info("**********       Sorter       **********")
         logger.info("****************************************")
-        #TODO optimize sorting
+        # TODO optimize sorting
         self.map = {}
         self.hash_array = []
         for media in os.listdir(self.data_dir):
@@ -92,10 +92,10 @@ class Sorter:
         tools.delete_dir(self.whatsnew_dir)
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
         for whatsnew in mii_sql.WhatsNew.select().order_by(mii_sql.WhatsNew.date.desc()).limit(10):
-	    if os.path.isdir(whatsnew.path):
+            if os.path.isdir(whatsnew.path):
                 os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
-	    else:
-		os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.path.split('/')[-1]))
+            else:
+                os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.path.split('/')[-1]))
 
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get("MovieHash"))
@@ -427,7 +427,7 @@ def compare(file_name, api_result):
 def get_best_match(api_result_list, file_name):
     scores = []
     for api_result in api_result_list:
-        #TODO Get the whole list score and return the best one
+        # TODO Get the whole list score and return the best one
         matching, score = compare(file_name.lower(), api_result)
         if matching:
             logger.info("Comparison returned true, moving on")
