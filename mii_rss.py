@@ -12,8 +12,6 @@ from middleware.mii_sql import FeedDownloaded
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
-downloaded_files = {}
-
 
 def download_torrents():
     logging.info('Initializing feed')

@@ -13,10 +13,10 @@ db = None
 the_movie_db = None
 open_subtitle_db = None
 client = MongoClient(host='mongodb://%s:%s@%s:%s/%s' % (settings.MONGO_USER,
-                                                            settings.MONGO_PASSWORD,
-                                                            settings.MONGO_HOST,
-                                                            settings.MONGO_PORT,
-                                                            settings.MONGO_DB_NAME))
+                                                        settings.MONGO_PASSWORD,
+                                                        settings.MONGO_HOST,
+                                                        settings.MONGO_PORT,
+                                                        settings.MONGO_DB_NAME))
 db = client[settings.MONGO_DB_NAME]
 
 
@@ -35,7 +35,7 @@ def do_query(qry, collection):
     existing_data = collection.find_one(qry, {'data': 1, 'date': 1})
     if existing_data:
         logger.info('Result found in mongo')
-        if (datetime.datetime.now() - existing_data['date']).days > 31:
+        if (datetime.datetime.now() - existing_data['date']).days > 90:
             logger.info('Too old, querying new data')
         else:
             return existing_data['data']
