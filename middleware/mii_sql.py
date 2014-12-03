@@ -178,5 +178,5 @@ def insert_movie(title, year, path):
     wn.date = datetime.datetime.now()
     wn.path = path
     wn.save()
-    
+
     return movie

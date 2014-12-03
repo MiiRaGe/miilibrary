@@ -10,6 +10,8 @@ import settings
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
+downloaded_files = {}
+
 
 def download_torrents():
     logging.info('Initializing feed')
@@ -23,12 +25,20 @@ def download_torrents():
     for entry in feed['entries']:
         entry['title'] = entry['title'].lower()
         logging.info('Entry : %s' % entry['title'])
-        if match(entry, settings.RSS_FILTERS):
+        matched, re_filter = match(entry, settings.RSS_FILTERS)
+        if matched:
             file_name = re.search('/([^\/]*\.torrent)\?', entry['link']).group(1)
             logging.info('Torrent filename : %s' % file_name)
             if os.path.exists(os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name)):
                 break
-            urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
+            if 'webrip' in file_name.lower():
+                break
+
+            if not downloaded_files.get(re_filter):
+                downloaded_files[re_filter] = True
+                urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
+            else:
+                logging.info('Skipping %s as already downloaded' % file_name)
 
 
 def match(entry, filters):
@@ -36,8 +46,8 @@ def match(entry, filters):
         logging.info('Filter : %s' % re_filter)
         if re.search(re_filter, entry['title']):
             logging.info('Filter is matching')
-            return True
-    return False
+            return True, re_filter
+    return False, None
 
 
 def main_loop():
