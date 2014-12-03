@@ -62,5 +62,5 @@ def main_loop():
         time.sleep(3600)
 
 if __name__ == "__main__":
-    # with daemon.DaemonContext():
-    main_loop()
+    with daemon.DaemonContext():
+        main_loop()
