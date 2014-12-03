@@ -79,7 +79,13 @@ class Unpacked(MiiBase):
     filename = TextField()
 
 
-db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked],
+class FeedDownloaded(MiiBase):
+    date = DateTimeField(default=datetime.datetime(1900, 1, 1))
+    re_filter = CharField(unique=True)
+
+
+db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked,
+                  FeedDownloaded],
                  safe=True)
 try:
     db.execute_sql("create view summary as "

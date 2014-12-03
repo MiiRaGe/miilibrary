@@ -1,4 +1,5 @@
 import daemon
+import datetime
 import feedparser
 import logging
 import os
@@ -7,6 +8,7 @@ import re
 import urllib
 
 import settings
+from middleware.mii_sql import FeedDownloaded
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
@@ -34,9 +36,11 @@ def download_torrents():
             if 'webrip' in file_name.lower():
                 break
 
-            if not downloaded_files.get(re_filter):
-                downloaded_files[re_filter] = True
+            feed_downloaded = FeedDownloaded.get_or_create(re_filter=re_filter)
+            if (datetime.datetime.now() - feed_downloaded.date).days > 4:
                 urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
+                feed_downloaded.date = datetime.datetime.now()
+                feed_downloaded.save()
             else:
                 logging.info('Skipping %s as already downloaded' % file_name)
 
@@ -55,8 +59,8 @@ def main_loop():
         logging.info('Running Feed update')
         download_torrents()
         logging.info('Sleeping 15min')
-        time.sleep(600)
+        time.sleep(3600)
 
 if __name__ == "__main__":
-    with daemon.DaemonContext():
-        main_loop()
+    # with daemon.DaemonContext():
+    main_loop()
