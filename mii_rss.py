@@ -21,7 +21,7 @@ def already_exists(db_name, title):
             return True
         else:
             return False
-    matched = re.match('.*%s.*S(\d\d)')
+    matched = re.match('.*%s.*S(\d\d)', title)
     if matched and get_serie_season(title, matched.group(1)):
         return True
     return False
