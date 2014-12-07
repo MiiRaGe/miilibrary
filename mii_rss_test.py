@@ -13,10 +13,10 @@ class TestRSS(unittest.TestCase):
             '^star.wars.rebels.*720p',
         }
 
-        self.assertFalse(match(entry, filters))
+        self.assertFalse(match(entry, filters)[0])
 
         entry = {
             'title': 'homeland s04e09 theres something else going on 720p hdtv dd5 1 mpeg2-topkek  [no rar]'
         }
 
-        self.assertTrue(match(entry, filters))
+        self.assertTrue(match(entry, filters)[0])
