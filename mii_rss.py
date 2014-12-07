@@ -8,7 +8,7 @@ import re
 import urllib
 
 import settings
-from middleware.mii_sql import FeedDownloaded, get_serie_episode, get_serie_season
+from middleware.mii_sql import FeedDownloaded, get_serie_episode, get_serie_season, db
 from sorter.sorter import is_serie
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)
@@ -19,13 +19,16 @@ def already_exists(db_name, title):
     if regex_result:
         if get_serie_episode(db_name, regex_result.group(1), regex_result.group(2)):
             return True
+        else:
+            return False
     matched = re.match('.*%s.*S(\d\d)')
-    if matched:
+    if matched and get_serie_season(title, matched.group(1)):
         return True
     return False
 
 
 def download_torrents():
+    db.connect()
     logging.info('Initializing feed')
     feed = feedparser.parse(settings.RSS_URL)
 
@@ -49,7 +52,7 @@ def download_torrents():
                 break
 
             feed_downloaded = FeedDownloaded.get_or_create(re_filter=re_filter)
-            if (datetime.datetime.now() - feed_downloaded.date).days > 4:
+            if (datetime.datetime.now() - feed_downloaded.date).days > 1:
                 urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
                 feed_downloaded.date = datetime.datetime.now()
                 feed_downloaded.save()
@@ -74,5 +77,4 @@ def main_loop():
         time.sleep(3600)
 
 if __name__ == "__main__":
-    with daemon.DaemonContext():
-        main_loop()
+    main_loop()
