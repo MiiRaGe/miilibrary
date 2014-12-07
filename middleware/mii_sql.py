@@ -118,6 +118,24 @@ def get_serie_episode(name, season, episode):
         return False, None
 
 
+def get_serie_season(name, season):
+    """
+    Look for the same season in the db, returns a boolean
+    :param string name: string
+    :param int season: integer
+    :return bool:
+    """
+    try:
+        logger.info('Querying serie table with name=%s and season=%s' % (name, season))
+        season = Season.select().join(Season).join(Serie).where(Season.number == season,
+                                                                Serie.name == name).get()
+        if season:
+            return True
+    except (Serie.DoesNotExist, Season.DoesNotExist) as e:
+        logger.info('Found nothing %s' % repr(e))
+        return False
+
+
 def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     """
     Insert a serie into the sql database following Serie model.

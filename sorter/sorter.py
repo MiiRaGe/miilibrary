@@ -443,7 +443,7 @@ def get_best_match(api_result_list, file_name):
 
 
 def is_serie(name):
-    return re.match(".*[sS]\d\d[Ee]\d\d.*", name)
+    return re.match(".*[sS](\d\d)[Ee](\d\d).*", name)
 
 
 def change_token_to_dot(string):

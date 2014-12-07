@@ -8,9 +8,21 @@ import re
 import urllib
 
 import settings
-from middleware.mii_sql import FeedDownloaded
+from middleware.mii_sql import FeedDownloaded, get_serie_episode, get_serie_season
+from sorter.sorter import is_serie
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)
+
+
+def already_exists(db_name, title):
+    regex_result = is_serie(title)
+    if regex_result:
+        if get_serie_episode(db_name, regex_result.group(1), regex_result.group(2)):
+            return True
+    matched = re.match('.*%s.*S(\d\d)')
+    if matched:
+        return True
+    return False
 
 
 def download_torrents():
@@ -25,13 +37,15 @@ def download_torrents():
     for entry in feed['entries']:
         entry['title'] = entry['title'].lower()
         logging.info('Entry : %s' % entry['title'])
-        matched, re_filter = match(entry, settings.RSS_FILTERS)
+        matched, re_filter = match(entry, settings.RSS_FILTERS.keys())
         if matched:
             file_name = re.search('/([^\/]*\.torrent)\?', entry['link']).group(1)
             logging.info('Torrent filename : %s' % file_name)
             if os.path.exists(os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name)):
                 break
             if 'webrip' in file_name.lower():
+                break
+            if already_exists(settings.RSS_FILTERS[re_filter], entry['title']):
                 break
 
             feed_downloaded = FeedDownloaded.get_or_create(re_filter=re_filter)
