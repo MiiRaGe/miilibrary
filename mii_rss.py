@@ -17,7 +17,7 @@ logging.basicConfig(filename='example.log', level=logging.DEBUG)
 def already_exists(db_name, title):
     regex_result = is_serie(title)
     if regex_result:
-        if get_serie_episode(db_name, regex_result.group(1), regex_result.group(2)):
+        if get_serie_episode(db_name, regex_result.group(1), regex_result.group(2))[0]:
             return True
         else:
             return False
