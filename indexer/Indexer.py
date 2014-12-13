@@ -100,7 +100,11 @@ class Indexer:
 
     def search_index(self, folder_abs, folder):
         current_path = []
-        name = re.match('(^[^\(]*)\(.*', folder).group(1)
+        matched = re.match('(^[^\(]*)\(.*', folder)
+        if matched:
+            name = matched.group(1)
+        else:
+            name = folder
         for letters in [x for x in name if x.isalpha()]:
             current_path += letters
             letter_folder = tools.make_dir(os.path.join(self.search_dir, *current_path))
