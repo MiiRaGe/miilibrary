@@ -39,6 +39,7 @@ class Indexer:
         self.mii_osdb = mii_mongo.MiiOpenSubtitleDB()
         self.source_dir = source_dir
         self.alphabetical_dir = os.path.join(source_dir, "All")
+        self.search_dir = os.path.join(source_dir, "Search")
         self.index_mapping = {
             'genre_dir': (os.path.join(source_dir, 'Genres'), lambda x: x.get('genres')),
             'rating_dir': (os.path.join(source_dir, 'Ratings'), lambda x: [str(int(float(x.get('rating'))))]),
@@ -48,9 +49,9 @@ class Indexer:
         }
 
     def init(self):
-        for dir, _ in self.index_mapping.values():
-            tools.delete_dir(dir)
-            tools.make_dir(dir)
+        for folder, _ in self.index_mapping.values() + [(self.search_dir, None)]:
+            tools.delete_dir(folder)
+            tools.make_dir(folder)
 
     def index(self):
         logger.info("****************************************")
@@ -70,6 +71,7 @@ class Indexer:
                     if id:
                         imdb_file = file
                         break
+                self.search_index(folder_abs, folder)
 
                 if imdb_file:
                     logger.info('Found imdb file %s' % imdb_file)
@@ -95,3 +97,13 @@ class Indexer:
                     os.symlink(folder_abs, os.path.join(self.index_mapping[index_dir][0], value, folder))
             except Exception, e:
                 logger.exception("With exception :%s" % repr(e))
+
+    def search_index(self, folder_abs, folder):
+        current_path = []
+        name = re.match('(^[^\(]*)\(.*', folder).group(1)
+        for letters in [x for x in name if x.isalpha()]:
+            current_path += letters
+            letter_folder = tools.make_dir(os.path.join(self.search_dir, *current_path))
+            result_folder = tools.make_dir(os.path.join(letter_folder, 'Result'))
+            os.symlink(folder_abs, os.path.join(result_folder, folder))
+
