@@ -187,3 +187,7 @@ def print_rec(path, indent=0):
     if os.path.isdir(path):
         for file in sorted(os.listdir(path)):
             print_rec(os.path.join(path, file), indent + 1)
+
+
+def listdir_abs(parent):
+    return [os.path.join(parent, child) for child in os.listdir(parent)]

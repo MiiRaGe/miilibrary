@@ -87,6 +87,8 @@ class Indexer:
                 else:
                     open(os.path.join(folder_abs, '.NO_IMDB_FILE'), 'w')
 
+        self.add_counting(self.search_dir, skipped=True)
+
     def index_values(self, values, folder, folder_abs, index_dir):
         if values:
             logger.info('\tIndexing %s, with %s' % (folder, values))
@@ -98,6 +100,28 @@ class Indexer:
             except Exception, e:
                 logger.exception("With exception :%s" % repr(e))
 
+    def add_counting(self, current_folder, skipped=False):
+        for folder in os.listdir(current_folder):
+            if folder != '--':
+                count = len(os.listdir(os.path.join(current_folder, folder, '--')))
+                self.add_counting(os.path.join(current_folder, folder))
+                os.rename(os.path.join(current_folder, folder),
+                          os.path.join(current_folder, '%s (%s results)' % (folder, count)))
+        if not skipped:
+            count = self._add_counting(current_folder)
+
+    @staticmethod
+    def _add_counting(current_dir):
+        count = len(os.listdir(os.path.join(current_dir, '--')))
+        if count > 1:
+            os.rename(os.path.join(current_dir, '--'), os.path.join(current_dir, '-- (%s results)' % count))
+        else:
+            for folder in tools.listdir_abs(current_dir):
+                if folder.endswith('--'):
+                    os.rename(os.path.join(folder, os.listdir(folder)[0]),
+                              os.path.join(current_dir, os.listdir(folder)[0]))
+                tools.delete_dir(folder)
+
     def search_index(self, folder_abs, folder):
         current_path = []
         matched = re.match('(^[^\(]*)\(.*', folder)
@@ -105,9 +129,9 @@ class Indexer:
             name = matched.group(1)
         else:
             name = folder
-        for letters in [x for x in name if x.isalpha()]:
+        for letters in [x.upper() for x in name if x.isalpha()]:
             current_path += letters
             letter_folder = tools.make_dir(os.path.join(self.search_dir, *current_path))
-            result_folder = tools.make_dir(os.path.join(letter_folder, 'Result'))
+            result_folder = tools.make_dir(os.path.join(letter_folder, '--'))
             os.symlink(folder_abs, os.path.join(result_folder, folder))
 
