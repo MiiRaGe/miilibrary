@@ -5,7 +5,7 @@ import os
 
 import tools
 
-from middleware import mii_mongo
+from middleware import mii_mongo, mii_sql
 
 
 logger = logging.getLogger("NAS")
@@ -41,11 +41,11 @@ class Indexer:
         self.alphabetical_dir = os.path.join(source_dir, "All")
         self.search_dir = os.path.join(source_dir, "Search")
         self.index_mapping = {
-            'genre_dir': (os.path.join(source_dir, 'Genres'), lambda x: x.get('genres')),
-            'rating_dir': (os.path.join(source_dir, 'Ratings'), lambda x: [str(int(float(x.get('rating'))))]),
-            'year_dir': (os.path.join(source_dir, 'Years'), lambda x: [x.get('year')]),
-            'director_dir': (os.path.join(source_dir, 'Directors'), lambda x: x.get('directors', {}).values()),
-            'actor_dir': (os.path.join(source_dir, 'Actors'), lambda x: x.get('cast', {}).values())
+            'genre_dir': (os.path.join(source_dir, 'Genres'), lambda x: x.get('genres'), 'Tag'),
+            'rating_dir': (os.path.join(source_dir, 'Ratings'), lambda x: [str(int(float(x.get('rating'))))], 'Rating'),
+            'year_dir': (os.path.join(source_dir, 'Years'), lambda x: [x.get('year')], 'Year'),
+            'director_dir': (os.path.join(source_dir, 'Directors'), lambda x: x.get('directors', {}).values(), 'Director'),
+            'actor_dir': (os.path.join(source_dir, 'Actors'), lambda x: x.get('cast', {}).values(), 'Actor')
         }
 
     def init(self):
@@ -69,27 +69,31 @@ class Indexer:
                 for file in os.listdir(folder_abs):
                     id = imdb_regex.match(file)
                     if id:
-                        imdb_file = file
+                        logger.info('Found imdb file %s' % file)
                         break
+
                 self.search_index(folder_abs, folder)
 
-                if imdb_file:
-                    logger.info('Found imdb file %s' % imdb_file)
+                #This regex have to match, that's how it's formatted previously.
+                matched = re.match('([^\(]) \((\d{4})\).*')
+                movie_name = matched.group(1)
+                year = matched.group(2)
+                found, movie = mii_sql.get_movie(movie_name, year)
+                if id:
                     imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
+                    movie.imdb_id = id
+                    movie.save()
                     if imdb_data:
                         logger.info('Found imdb data from opensubtitle:')
                         logger.debug("\tData: %s" % imdb_data)
                         for index in self.index_mapping.keys():
-                            self.index_values(self.index_mapping[index][1](imdb_data), folder, folder_abs, index)
-                    else:
-                        # FIXME: Probably need to remove that, not sure what it's for
-                        open(os.path.join(folder_abs, file + '.NO_IMDB_DATA'), 'w')
-                else:
-                    open(os.path.join(folder_abs, '.NO_IMDB_FILE'), 'w')
+                            self.index_values(self.index_mapping[index][1](imdb_data), folder, folder_abs, index,
+                                              instance=movie)
+
 
         self.add_counting(self.search_dir, skipped=True)
 
-    def index_values(self, values, folder, folder_abs, index_dir):
+    def index_values(self, values, folder, folder_abs, index_dir, movie=None):
         if values:
             logger.info('\tIndexing %s, with %s' % (folder, values))
             try:
@@ -97,6 +101,9 @@ class Indexer:
                     value = value.strip()
                     tools.make_dir(os.path.join(self.index_mapping[index_dir][0], value))
                     os.symlink(folder_abs, os.path.join(self.index_mapping[index_dir][0], value, folder))
+                    if movie:
+                        self.link_movie_value(movie, value, self.index_mapping[index_dir][2])
+
             except Exception, e:
                 logger.exception("With exception :%s" % repr(e))
 
@@ -135,3 +142,21 @@ class Indexer:
             result_folder = tools.make_dir(os.path.join(letter_folder, '--'))
             os.symlink(folder_abs, os.path.join(result_folder, folder))
 
+    @staticmethod
+    def link_movie_value(movie, value, link_type):
+        if link_type == 'Tag':
+            tag = mii_sql.Tag.get_or_create(name=value)
+            link = mii_sql.MovieTagging.get_or_create(tag=tag, movie=movie)
+            tag.save()
+            link.save()
+        elif link_type == 'Year':
+            movie.year = value
+            movie.save()
+        elif link_type == 'Rating':
+            movie.rating = value
+            movie.save()
+        elif link_type in ['Actor', 'Director']:
+            person = mii_sql.Person.get_or_create(name=value)
+            link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type )
+            person.save()
+            link.save()

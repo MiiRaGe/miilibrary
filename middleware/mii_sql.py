@@ -34,7 +34,7 @@ class Movie(MiiBase):
 
 
 class Tag(MiiBase):
-    name = CharField()
+    name = CharField(unique=True)
 
 
 class Serie(MiiBase):
@@ -65,6 +65,13 @@ class MovieTagging(MiiBase):
     movie = ForeignKeyField(Movie)
     tag = ForeignKeyField(Tag)
 
+class MovieRelation(MiiBase):
+    movie = ForeignKeyField(Movie)
+    person = ForeignKeyField(Person)
+    type = CharField()
+
+class Person(MiiBase):
+    name = CharField(unique=True)
 
 class WhatsNew(MiiBase):
     date = DateTimeField()
