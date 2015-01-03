@@ -49,7 +49,7 @@ class Indexer:
         }
 
     def init(self):
-        for folder, _ in self.index_mapping.values() + [(self.search_dir, None)]:
+        for folder, _, type in self.index_mapping.values() + [(self.search_dir, None, 'Search')]:
             tools.delete_dir(folder)
             tools.make_dir(folder)
 
@@ -75,22 +75,20 @@ class Indexer:
                 self.search_index(folder_abs, folder)
 
                 #This regex have to match, that's how it's formatted previously.
-                matched = re.match('([^\(]) \((\d{4})\).*')
+                matched = re.match('([^\(]*) \((\d{4})\).*', folder)
                 movie_name = matched.group(1)
                 year = matched.group(2)
                 found, movie = mii_sql.get_movie(movie_name, year)
                 if id:
                     imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
-                    movie.imdb_id = id
+                    movie.imdb_id = id.group(1)
                     movie.save()
                     if imdb_data:
                         logger.info('Found imdb data from opensubtitle:')
                         logger.debug("\tData: %s" % imdb_data)
                         for index in self.index_mapping.keys():
                             self.index_values(self.index_mapping[index][1](imdb_data), folder, folder_abs, index,
-                                              instance=movie)
-
-
+                                              movie=movie)
         self.add_counting(self.search_dir, skipped=True)
 
     def index_values(self, values, folder, folder_abs, index_dir, movie=None):
@@ -115,7 +113,7 @@ class Indexer:
                 os.rename(os.path.join(current_folder, folder),
                           os.path.join(current_folder, '%s (%s results)' % (folder, count)))
         if not skipped:
-            count = self._add_counting(current_folder)
+            self._add_counting(current_folder)
 
     @staticmethod
     def _add_counting(current_dir):
@@ -157,6 +155,6 @@ class Indexer:
             movie.save()
         elif link_type in ['Actor', 'Director']:
             person = mii_sql.Person.get_or_create(name=value)
-            link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type )
+            link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type)
             person.save()
             link.save()

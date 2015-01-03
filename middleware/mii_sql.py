@@ -56,22 +56,20 @@ class Episode(MiiBase):
     file_size = BigIntegerField()
 
 
-class SerieTagging(MiiBase):
-    serie = ForeignKeyField(Serie)
-    tag = ForeignKeyField(Tag)
-
-
 class MovieTagging(MiiBase):
     movie = ForeignKeyField(Movie)
     tag = ForeignKeyField(Tag)
+
+
+class Person(MiiBase):
+    name = CharField(unique=True)
+
 
 class MovieRelation(MiiBase):
     movie = ForeignKeyField(Movie)
     person = ForeignKeyField(Person)
     type = CharField()
 
-class Person(MiiBase):
-    name = CharField(unique=True)
 
 class WhatsNew(MiiBase):
     date = DateTimeField()
@@ -91,16 +89,17 @@ class FeedDownloaded(MiiBase):
     re_filter = CharField(unique=True)
 
 
-db.create_tables([Movie, MovieTagging, Tag, MovieTagging, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked,
-                  FeedDownloaded],
+TABLE_LIST = [Movie, MovieTagging, Tag, MovieTagging, Serie, Episode, Season, WhatsNew, Unpacked,
+              FeedDownloaded, MovieRelation, Person]
+db.create_tables(TABLE_LIST,
                  safe=True)
 try:
     db.execute_sql("create view summary as "
-               "select serie.name as 'Name', season.number as 'Season', episode.number as 'Episode'"
-               "from serie"
-               "     inner join season on season.serie_id = serie.id "
-               "        inner join episode on episode.season_id = season.id "
-               "order by serie.name, season.number, episode.number;")
+                   "select serie.name as 'Name', season.number as 'Season', episode.number as 'Episode'"
+                   "from serie"
+                   "     inner join season on season.serie_id = serie.id "
+                   "        inner join episode on episode.season_id = season.id "
+                   "order by serie.name, season.number, episode.number;")
 except:
     pass
 
@@ -143,7 +142,7 @@ def get_serie_season(name, season):
         return False
 
 
-def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
+def insert_serie_episode(serie_name, serie_season, episode_number, serie_path, size):
     """
     Insert a serie into the sql database following Serie model.
     :param string serie_name: Name of the serie
@@ -159,13 +158,13 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path):
     season = Season.get_or_create(number=serie_season, serie=serie)
     season.save()
 
-    episode = Episode(number=episode_number, season=season, file_path=serie_path)
+    episode = Episode.get_or_create(number=episode_number, season=season, file_path=serie_path, file_size=size)
     episode.save()
 
     # Add the serie to the what's new folder
-    wn = WhatsNew.get_or_create(name='%s S%sE%s' % (serie_name, serie_season, episode_number))
-    wn.date = datetime.datetime.now()
-    wn.path = serie_path
+    wn = WhatsNew.get_or_create(name='%s S%sE%s' % (serie_name, serie_season, episode_number),
+                                date=datetime.datetime.now(),
+                                path=serie_path)
     wn.save()
 
     return episode
@@ -192,7 +191,7 @@ def get_movie(title, year=None):
         return False, None
 
 
-def insert_movie(title, year, path):
+def insert_movie(title, year, path, size):
     """
     Insert a movie into the sql database following Movie model.
     :param string title: Title of the movie
@@ -201,13 +200,11 @@ def insert_movie(title, year, path):
     :return Movie: Movie instance to be modified with additional data
     :rtype Movie: Movie type
     """
-    movie = Movie(title=title, year=year, folder_path=path)
+    movie = Movie.get_or_create(title=title, year=year, folder_path=path, file_size=size)
     movie.save()
 
     # Add the movie to the what's new folder
-    wn = WhatsNew.get_or_create(name='%s (%s)' % (title, year))
-    wn.date = datetime.datetime.now()
-    wn.path = path
+    wn = WhatsNew.get_or_create(name='%s (%s)' % (title, year), date=datetime.datetime.now(), path=path)
     wn.save()
 
     return movie

@@ -165,12 +165,11 @@ class Sorter:
                 return True
             else:
                 if not exists:
-                    serie = mii_sql.insert_serie_episode(name,
-                                                         season,
-                                                         episode_number,
-                                                         os.path.join(season_dir, new_file_name))
-                    serie.file_size = os.path.getsize(file_path)
-                    serie.save()
+                    mii_sql.insert_serie_episode(name,
+                                                 season,
+                                                 episode_number,
+                                                 os.path.join(season_dir, new_file_name),
+                                                 os.path.getsize(file_path))
                     logger.info("Created Serie object %s,S%sE%s" % (name, season, episode_number))
                 else:
                     serie.file_path = os.path.join(season_dir, new_file_name)
@@ -282,9 +281,7 @@ class Sorter:
                 movie.save()
                 logger.info('Existing Movie object updated')
             else:
-                movie = mii_sql.insert_movie(movie_name, year, created_movie_dir)
-                movie.file_size = os.path.getsize(file_path)
-                movie.save()
+                movie = mii_sql.insert_movie(movie_name, year, created_movie_dir, os.path.getsize(file_path))
                 logger.info('Created Movie object')
             if imdb_id:
                 movie.imdb_id = imdb_id

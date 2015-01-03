@@ -25,12 +25,12 @@ settings.SOURCE_FOLDER = '%s/test_input/' % os.path.dirname(__file__)
 settings.DESTINATION_FOLDER = '%s/test_output/' % os.path.dirname(__file__)
 settings.MONGO_DB_NAME += '_test'
 settings.MYSQL_NAME += '_test'
-from middleware.mii_sql import db, Movie, MovieTagging, Serie, SerieTagging, Tag, Episode, Season, WhatsNew, Unpacked
+from middleware.mii_sql import db, TABLE_LIST
 
 if 'test' in db.database:
-    db.drop_tables([Movie, MovieTagging, Tag, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked],
+    db.drop_tables(TABLE_LIST,
                    cascade=True)
-    db.create_tables([Movie, MovieTagging, Tag, Serie, SerieTagging, Episode, Season, WhatsNew, Unpacked],
+    db.create_tables(TABLE_LIST,
                      safe=True)
 
 from mock_osdb import *

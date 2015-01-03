@@ -12,7 +12,7 @@ logger = logging.getLogger('NAS')
 db = None
 the_movie_db = None
 open_subtitle_db = None
-client = MongoClient(host='mongodb://%s:%s@%s:%s/%s' % (settings.MONGO_USER,
+client = MongoClient(host='mongodb://%s:%s@%s:%s/%s' % (settings.MONGO_USERNAME,
                                                         settings.MONGO_PASSWORD,
                                                         settings.MONGO_HOST,
                                                         settings.MONGO_PORT,
