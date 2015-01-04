@@ -90,6 +90,13 @@ class Indexer:
                             self.index_values(self.index_mapping[index][1](imdb_data), folder, folder_abs, index,
                                               movie=movie)
         self.add_counting(self.search_dir, skipped=True)
+        self.remove_single_movie_person()
+
+    def remove_single_movie_person(self):
+        for folder in tools.listdir_abs(self.index_mapping['director_dir'][0]) +\
+                tools.listdir_abs(self.index_mapping['actor_dir'][0]):
+            if len(os.listdir(folder)) <= 1:
+                tools.delete_dir(folder)
 
     def index_values(self, values, folder, folder_abs, index_dir, movie=None):
         if values:
