@@ -81,8 +81,9 @@ class Indexer:
                 found, movie = mii_sql.get_movie(movie_name, year)
                 if id:
                     imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
-                    movie.imdb_id = id.group(1)
-                    movie.save()
+                    if movie:
+                        movie.imdb_id = id.group(1)
+                        movie.save()
                     if imdb_data:
                         logger.info('Found imdb data from opensubtitle:')
                         logger.debug("\tData: %s" % imdb_data)
