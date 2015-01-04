@@ -76,9 +76,10 @@ class Indexer:
 
                 #This regex have to match, that's how it's formatted previously.
                 matched = re.match('([^\(]*) \((\d{4})\).*', folder)
-                movie_name = matched.group(1)
-                year = matched.group(2)
-                found, movie = mii_sql.get_movie(movie_name, year)
+                if matched:
+                    movie_name = matched.group(1)
+                    year = matched.group(2)
+                    found, movie = mii_sql.get_movie(movie_name, year)
                 if id:
                     imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
                     if movie:
