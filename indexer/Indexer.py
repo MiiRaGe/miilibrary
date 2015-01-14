@@ -82,7 +82,7 @@ class Indexer:
                     found, movie = mii_sql.get_movie(movie_name, year)
                 if id:
                     imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
-                    if movie:
+                    if movie and not movie.imdb_id:
                         movie.imdb_id = id.group(1)
                         movie.save()
                     if imdb_data:
@@ -153,8 +153,8 @@ class Indexer:
     def link_movie_value(movie, value, link_type):
         if link_type == 'Tag':
             tag = mii_sql.Tag.get_or_create(name=value)
-            link = mii_sql.MovieTagging.get_or_create(tag=tag, movie=movie)
             tag.save()
+            link = mii_sql.MovieTagging.get_or_create(tag=tag, movie=movie)
             link.save()
         elif link_type == 'Year':
             movie.year = value
@@ -163,7 +163,13 @@ class Indexer:
             movie.rating = value
             movie.save()
         elif link_type in ['Actor', 'Director']:
+            logger.debug('Looking for person %s' % value)
             person = mii_sql.Person.get_or_create(name=value)
-            link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type)
+            logger.debug('Person is found :%s' % person.name)
             person.save()
+            logger.debug('Saved the person :%s' % person.name)
+            logger.debug('Looking for linked :%s,%s,%s' % (person.name, movie.name, link_type))
+            link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type)
+            logger.debug('Link is found :%s,%s,%s' % (link.person.name, link.movie.name, link.type))
             link.save()
+            logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.name, link.type))
