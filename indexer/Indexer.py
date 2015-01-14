@@ -153,9 +153,7 @@ class Indexer:
     def link_movie_value(movie, value, link_type):
         if link_type == 'Tag':
             tag = mii_sql.Tag.get_or_create(name=value)
-            tag.save()
-            link = mii_sql.MovieTagging.get_or_create(tag=tag, movie=movie)
-            link.save()
+            mii_sql.MovieTagging.get_or_create(tag=tag, movie=movie)
         elif link_type == 'Year':
             movie.year = value
             movie.save()
