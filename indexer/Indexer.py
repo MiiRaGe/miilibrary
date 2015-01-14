@@ -161,8 +161,6 @@ class Indexer:
             movie.rating = value
             movie.save()
         elif link_type in ['Actor', 'Director']:
-            logger.debug('Looking for person %s' % value)
             person = mii_sql.Person.get_or_create(name=value)
-            logger.debug('Person is found :%s' % person.name)
             link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type)
             logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.title, link.type))
