@@ -170,6 +170,6 @@ class Indexer:
             logger.debug('Saved the person :%s' % person.name)
             logger.debug('Looking for linked :%s,%s,%s' % (person.name, movie.title, link_type))
             link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type)
-            logger.debug('Link is found :%s,%s,%s' % (link.person.name, link.movie.name, link.type))
+            logger.debug('Link is found :%s,%s,%s' % (link.person.name, link.movie.title, link.type))
             link.save()
-            logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.name, link.type))
+            logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.title, link.type))
