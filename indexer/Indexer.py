@@ -162,5 +162,10 @@ class Indexer:
             movie.save()
         elif link_type in ['Actor', 'Director']:
             person = mii_sql.Person.get_or_create(name=value)
-            link = mii_sql.MovieRelation(person=person, movie=movie, type=link_type)
-            logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.title, link.type))
+            uid = '%s.%s.%s' % (person.id, movie.id, link_type)
+            try:
+                mii_sql.MovieRelation.get(uid=uid)
+            except mii_sql.MovieRelation.DoesNotExist:
+                link = mii_sql.MovieRelation(uid=uid, person=person, movie=movie, type=link_type)
+                logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.title, link.type))
+                link.save()

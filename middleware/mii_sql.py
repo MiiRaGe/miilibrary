@@ -66,6 +66,7 @@ class Person(MiiBase):
 
 
 class MovieRelation(MiiBase):
+    uid = CharField(unique=True)
     movie = ForeignKeyField(Movie)
     person = ForeignKeyField(Person)
     type = CharField()

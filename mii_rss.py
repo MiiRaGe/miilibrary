@@ -66,6 +66,9 @@ def match(entry, filters):
         if re.search(re_filter, entry['title']):
             logging.info('Filter is matching')
             return True, re_filter
+        else:
+            print '%s != %s' % (re_filter, entry['title'])
+
     return False, None
 
 
