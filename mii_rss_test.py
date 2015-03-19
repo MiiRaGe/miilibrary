@@ -11,6 +11,7 @@ class TestRSS(unittest.TestCase):
         filters = {
             '^homeland.*720p',
             '^star.wars.rebels.*720p',
+            '^better.call.saul.*720p'
         }
 
         self.assertFalse(match(entry, filters)[0])
@@ -19,4 +20,9 @@ class TestRSS(unittest.TestCase):
             'title': 'homeland s04e09 theres something else going on 720p hdtv dd5 1 mpeg2-topkek  [no rar]'
         }
 
+        self.assertTrue(match(entry, filters)[0])
+
+        entry = {
+            'title': 'better call saul s01e01 720p hdtv x264-killers [no rar]'
+        }
         self.assertTrue(match(entry, filters)[0])
