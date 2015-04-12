@@ -52,12 +52,9 @@ def download_torrents():
                 break
 
             feed_downloaded = FeedDownloaded.get_or_create(re_filter=re_filter)
-            if (datetime.datetime.now() - feed_downloaded.date).days > 1:
-                urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
-                feed_downloaded.date = datetime.datetime.now()
-                feed_downloaded.save()
-            else:
-                logging.info('Skipping %s as already downloaded' % file_name)
+	    urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
+            feed_downloaded.date = datetime.datetime.now()
+            feed_downloaded.save()
 
 
 def match(entry, filters):
