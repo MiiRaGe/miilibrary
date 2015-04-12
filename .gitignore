@@ -5,3 +5,4 @@ local.py
 .idea/
 .project/
 rating/
+.DS_Store
