@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('#navigation-bar').find('li.active').toggleClass('active');
+        $('#navigation-bar').find('#nav-rate').toggleClass('active');
+        starCaptions = function (val) {
+            return val;
+        };
+        starCaptionClasses = function (val) {
+            if (val <= 3.5) {
+                return 'label label-danger';
+            }
+            else if (val <= 7) {
+                return 'label label-warning';
+            }
+            else {
+                return 'label label-success';
+            }
+        };
+        $('.input-rating').rating({
+            'min': 1,
+            'max': 10,
+            'step': 0.1,
+            'stars': 10,
+            'size': 'sm',
+            'showClear': false,
+            'starCaptions': starCaptions,
+            'starCaptionClasses': starCaptionClasses,
+        });
+    });
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Rate</h1>
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-xs-5 center-block height-40"><h4>{{movie.title}} ({{movie.year}})</h4></div>
+
+            <div class="col-xs-2 center-block">
+                <form method="post" action="./rate">
+                    <input type="hidden" name="action" value="not_seen"/>
+                    <input type="hidden" name="movie_id" value="{{ movie.id }}"/>
+                    <input type="submit" class="btn btn-default height-40" value="Movie not seen"/>
+                </form>
+            </div>
+            <div class="col-xs-2 center-block">
+                <button class="btn btn-default height-40" onclick="window.location.reload()">Skip</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <form method="post" action="./rate">
+            {% for type, question in questions.items() %}
+            <p><label>{{question.question}}</label>
+                <input class='input-rating' name="{{type}}"></p>
+            {% endfor %}
+            <input type="hidden" name="movie_id" value="{{ movie.id}}"/>
+            <input type="hidden" name="action" value="save_movie"/>
+
+            <div class="btn-group" role="group">
+                <input type="submit" class="btn btn-default" value="Save movie questions"/>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
