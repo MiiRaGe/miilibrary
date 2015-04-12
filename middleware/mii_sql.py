@@ -25,6 +25,7 @@ class Movie(MiiBase):
     rating = FloatField(null=True)
     folder_path = CharField()
     file_size = BigIntegerField()
+    seen = BooleanField(default=None, null=True)
 
     class Meta:
         indexes = (
@@ -90,10 +91,33 @@ class FeedDownloaded(MiiBase):
     re_filter = CharField(unique=True)
 
 
-TABLE_LIST = [Movie, MovieTagging, Tag, MovieTagging, Serie, Episode, Season, WhatsNew, Unpacked,
-              FeedDownloaded, MovieRelation, Person]
-db.create_tables(TABLE_LIST,
-                 safe=True)
+class MovieQuestionSet(MiiBase):
+    movie = ForeignKeyField(Movie, unique=True, on_delete='CASCADE')
+
+
+QUESTION_CHOICES = [
+    'actor',
+    'story',
+    'overall',
+    'director',
+]
+
+
+class QuestionAnswer(MiiBase):
+    question_set = ForeignKeyField(MovieQuestionSet, on_delete='CASCADE')
+    answer = FloatField()
+    question_type = CharField(choices=QUESTION_CHOICES)
+
+    class Meta:
+        indexes = (
+            # create a unique on from/to/date
+            (('question_set', 'question_type'), True),
+        )
+
+TABLE_LIST = [Movie, MovieQuestionSet, QuestionAnswer, MovieTagging, Tag, MovieTagging, Serie, Episode, Season,
+              WhatsNew, Unpacked, FeedDownloaded, MovieRelation, Person]
+db.create_tables(TABLE_LIST, safe=True)
+
 try:
     db.execute_sql("create view summary as "
                    "select serie.name as 'Name', season.number as 'Season', episode.number as 'Episode'"
