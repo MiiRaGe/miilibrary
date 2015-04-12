@@ -27,13 +27,14 @@ class MiiNASLibrary:
         self.sorter = sorter.Sorter(self.output_dir)
         self.indexer = Indexer.Indexer(self.movie_dir)
 
-    def run(self, sort_only=False):
+    def run(self, sort_only=False, index_only=False):
         tools.shift_log()
 
         logger.info("---MiiNASLibrary---")
-        if not sort_only:
+        if not sort_only and not index_only:
             self.unpack()
-        self.sort()
+	if not index_only:
+            self.sort()
         logger.info("Analysis Module :")
         # st.analyse(os.path.join(destination_dir,'TVSeries'),os.path.join(destination_dir,'TVStatistics.txt'))
         self.index()

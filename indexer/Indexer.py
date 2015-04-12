@@ -42,7 +42,7 @@ class Indexer:
         self.search_dir = os.path.join(source_dir, "Search")
         self.index_mapping = {
             'genre_dir': (os.path.join(source_dir, 'Genres'), lambda x: x.get('genres'), 'Tag'),
-            'rating_dir': (os.path.join(source_dir, 'Ratings'), lambda x: [str(int(float(x.get('rating'))))], 'Rating'),
+            'rating_dir': (os.path.join(source_dir, 'Ratings'), lambda x: [str(int(float(x.get('rating', 0))))], 'Rating'),
             'year_dir': (os.path.join(source_dir, 'Years'), lambda x: [x.get('year')], 'Year'),
             'director_dir': (os.path.join(source_dir, 'Directors'), lambda x: x.get('directors', {}).values(), 'Director'),
             'actor_dir': (os.path.join(source_dir, 'Actors'), lambda x: x.get('cast', {}).values(), 'Actor')
