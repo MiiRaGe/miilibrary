@@ -1,4 +1,3 @@
-import daemon
 import datetime
 import feedparser
 import logging
@@ -27,13 +26,29 @@ def already_exists(db_name, title):
     return False
 
 
+def already_downloading(db_name, title):
+    regex_result = is_serie(title)
+    if regex_result:
+        try:
+            FeedDownloaded.get(re_filter=db_name, episode=regex_result.group(2), season=regex_result.group(1))
+            return True
+        except FeedDownloaded.DoesNotExists:
+            FeedDownloaded.create(re_filter=db_name, episode=regex_result.group(2), season=regex_result.group(1),
+                                  date=datetime.datetime.now())
+    return False
+
+
 def download_torrents():
     db.connect()
     logging.info('Initializing feed')
-    feed = feedparser.parse(settings.RSS_URL)
-
-    if feed['status'] != 200:
-        logging.error('Server response not 200: %s' % feed['status'])
+    try:
+        feed = feedparser.parse(settings.RSS_URL)
+        logging.error('Server Exception')
+        if feed['status'] != 200:
+            logging.error('Server response not 200: %s' % feed['status'])
+            return
+    except Exception as e:
+        logging.exception('Server exception: %s' % repr(e))
         return
 
     logging.info('Going through the entries')
@@ -50,11 +65,9 @@ def download_torrents():
                 break
             if already_exists(settings.RSS_FILTERS[re_filter], entry['title']):
                 break
-
-            feed_downloaded = FeedDownloaded.get_or_create(re_filter=re_filter)
-	    urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
-            feed_downloaded.date = datetime.datetime.now()
-            feed_downloaded.save()
+            if already_downloading(re_filter, entry['title']):
+                break
+            urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
 
 
 def match(entry, filters):
@@ -75,6 +88,7 @@ def main_loop():
         download_torrents()
         logging.info('Sleeping 15min')
         time.sleep(3600)
+
 
 if __name__ == "__main__":
     main_loop()

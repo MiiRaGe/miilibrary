@@ -2,6 +2,7 @@
     padding-top: 25px;
 }
 
-.height-40 {
-    height: 40px;
+.movie-title {
+    font-size: 24px;
+    vertical-align: middle;
 }

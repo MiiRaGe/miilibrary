@@ -87,7 +87,8 @@ class Unpacked(MiiBase):
 
 
 class FeedDownloaded(MiiBase):
-    date = DateTimeField(default=datetime.datetime(1900, 1, 1))
+    season = IntegerField()
+    episode = IntegerField()
     re_filter = CharField(unique=True)
 
 
