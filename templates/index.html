@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('#navigation-bar').find('li.active').toggleClass('active')
+        $('#navigation-bar').find('#nav-index').toggleClass('active')
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<ul>
+    <li><a href="rate">Rate Movies</a></li>
+    <li><a href="movies">Movies</a></li>
+    <li><a href="series">Series</a></li>
+</ul>
+{% endblock %}

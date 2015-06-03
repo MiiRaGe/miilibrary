@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('#navigation-bar').find('li.active').toggleClass('active');
+        $('#navigation-bar').find('#nav-rate').toggleClass('active');
+        starCaptions = function (val) {
+            return val;
+        };
+        starCaptionClasses = function (val) {
+            if (val <= 3.5) {
+                return 'label label-danger';
+            }
+            else if (val <= 7) {
+                return 'label label-warning';
+            }
+            else {
+                return 'label label-success';
+            }
+        };
+        $('.input-rating').rating({
+            'min': 1,
+            'max': 10,
+            'step': 0.1,
+            'stars': 10,
+            'size': 'sm',
+            'showClear': false,
+            'starCaptions': starCaptions,
+            'starCaptionClasses': starCaptionClasses,
+        });
+
+        var $data = {{ movies_choices_json | safe }};
+    $('#autocomplete-search').autocomplete({
+        source: $data,
+        select: function (event, ui) {
+            event.preventDefault();
+            window.location = "/rate?movie_id=" + ui.item.value;
+        }
+    });
+    })
+    ;
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <span class="h1">Rate</span>
+    <input id='autocomplete-search' class='form-control' type="text"
+                       placeholder="look for a specific movie"/>
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-md-8">
+                <span class="movie-title">{{movie.title}} ({{movie.year}})</span>
+
+                <div class="btn-group" role="group" aria-label="...">
+                    <form id="not_seen_form" method="post" action="./rate">
+                        <input type="hidden" name="action" value="not_seen"/>
+                        <input type="hidden" name="movie_id" value="{{ movie.id }}"/>
+                        <button class="btn btn-default height-40"
+                                onclick="document.getElementById('not_seen_form').submit()">Movie not seen
+                        </button>
+                        <button class="btn btn-default height-40" onclick="window.location.reload()">Skip</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-4">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-3">
+                <ul class="list-group">
+                  <li class="list-group-item">
+                    <h4 class="list-group-item-heading">Director</h4>
+                      {% for director in directors %}
+                        <p class="list-group-item-text">
+                            {{director}}
+                        </p>
+                      {% endfor %}
+                  </li>
+                </ul>
+                <ul class="list-group">
+                  <li class="list-group-item">
+                    <h4 class="list-group-item-heading">Genres</h4>
+                      {% for genre in genres %}
+                        <p class="list-group-item-text">
+                            {{genre}}
+                        </p>
+                      {% endfor %}
+                  </li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <ul class="list-group">
+                  <li class="list-group-item">
+                    <h4 class="list-group-item-heading">Actors</h4>
+                        {% for actor in actors %}
+                        <p class="list-group-item-text">
+                            {{actor}}
+                        </p>
+                        {% endfor %}
+                  </li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <form method="post" action="./rate">
+                    {% for type, question in questions.items() %}
+                    <p><label>{{question.question}}</label><input class='input-rating' name="{{type}}"></p>
+                    {% endfor %}
+                    <input type="hidden" name="movie_id" value="{{ movie.id}}"/>
+                    <input type="hidden" name="action" value="save_movie"/>
+
+                    <div class="btn-group pull-right" role="group">
+                        <input type="submit" class="btn btn-default" value="Save"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('#navigation-bar').find('li.active').toggleClass('active')
+        $('#navigation-bar').find('#nav-movies').toggleClass('active')
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<h1>Movies</h1>
+    <ul>
+    {% for movie in movies %}
+        <li>{{ movie.title }} ({{ movie.year }}) <a href="http://www.imdb.com/title/tt{{movie.imdb_id}}">IMDB Link</a> Rating: {{ movie.rating }}</li>
+    {% endfor %}
+    </ul>
+{% endblock %}
