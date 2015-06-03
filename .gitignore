@@ -4,5 +4,5 @@ __pycache__/
 local.py
 .idea/
 .project/
-rating/
+# rating/
 .DS_Store
