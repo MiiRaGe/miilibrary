@@ -9,6 +9,7 @@ import unittest
 from mock import patch
 
 # Patch the logger file before import any custom file
+
 abs_log_file = '%s/test_log.LOG' % os.path.dirname(__file__)
 try:
     os.remove(abs_log_file)
@@ -37,6 +38,7 @@ from mock_osdb import *
 from mock_tmdb import *
 from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
 from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
+from indexer.Indexer import dict_merge_list_extend
 
 try:
     raise WindowsError
@@ -332,3 +334,20 @@ class TestSorter(unittest.TestCase):
         self.assertEqual(get_best_match(data, serie)['MovieName'],
                          '"The Walking Dead" No Sanctuary')
 
+
+class TestIndexer(unittest.TestCase):
+    def test_dict_merge(self):
+        d1 = {'A': {'B': ['AB'],
+                    'C': ['AC']}}
+        d2 = {'A': {'B': ['AB'],
+                    'D': ['PD'],
+                    'E': {'F': ['AEF']}}}
+        merged_dict = dict_merge_list_extend(d1, d2)
+        self.assertDictEqual(merged_dict, {'A': {'C': ['AC'], 'B': ['AB', 'AB'], 'E': {'F': ['AEF', 'AEF']}, 'D': ['PD', 'PD']}})
+
+    def test_dict_merge_empty(self):
+        d2 = {'--': ['Thor (2011) [720p]'], 'T': {'--': ['Thor (2011) [720p]'], 'H': {'--': ['Thor (2011) [720p]'], 'O': {'--': ['Thor (2011) [720p]'], 'R': {'--': ['Thor (2011) [720p]']}}}}}
+        merged_dict = dict_merge_list_extend({}, d2)
+        self.assertDictEqual(d2, merged_dict)
+        merged_dict = dict_merge_list_extend(d2, {})
+        self.assertDictEqual(d2, merged_dict)

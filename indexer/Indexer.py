@@ -1,5 +1,7 @@
+from collections import defaultdict
+from copy import deepcopy
 import logging
-import platform
+from pprint import pprint
 import re
 import os
 
@@ -9,28 +11,6 @@ from middleware import mii_mongo, mii_sql
 
 
 logger = logging.getLogger("NAS")
-
-if platform.system() == 'Windows':
-    __CSL = None
-
-    def symlink(source, link_name):
-        '''symlink(source, link_name)
-           Creates a symbolic link pointing to source named link_name'''
-        global __CSL
-        if __CSL is None:
-            import ctypes
-
-            csl = ctypes.windll.kernel32.CreateSymbolicLinkW
-            csl.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32)
-            csl.restype = ctypes.c_ubyte
-            __CSL = csl
-        flags = 0
-        if source is not None and os.path.isdir(source):
-            flags = 1
-        if __CSL(link_name, source, flags) == 0:
-            raise ctypes.WinError()
-
-    os.symlink = symlink
 
 
 class Indexer:
@@ -60,6 +40,8 @@ class Indexer:
         self.init()
 
         imdb_regex = re.compile('\.IMDB_ID_(?:tt)?(\d+)$')
+        index = {}
+        search_index_dict = {}
         for folder in os.listdir(self.alphabetical_dir):
             logger.info('------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
@@ -72,27 +54,28 @@ class Indexer:
                         logger.info('Found imdb file %s' % file)
                         break
 
-                self.search_index(folder_abs, folder)
-
-                #This regex have to match, that's how it's formatted previously.
-                matched = re.match('([^\(]*) \((\d{4})\).*', folder)
-                if matched:
-                    movie_name = matched.group(1)
-                    year = matched.group(2)
-                    found, movie = mii_sql.get_movie(movie_name, year)
-                if id:
-                    imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
-                    if movie and not movie.imdb_id:
-                        movie.imdb_id = id.group(1)
-                        movie.save()
-                    if imdb_data:
-                        logger.info('Found imdb data from opensubtitle:')
-                        logger.debug("\tData: %s" % imdb_data)
-                        for index in self.index_mapping.keys():
-                            self.index_values(self.index_mapping[index][1](imdb_data), folder, folder_abs, index,
-                                              movie=movie)
-        self.add_counting(self.search_dir, skipped=True)
-        self.remove_single_movie_person()
+                search_index_dict.update(dict_merge_list_extend(search_index_dict, search_index(folder)))
+        add_number_and_simplify(search_index_dict)
+        pprint(search_index_dict)
+                # #This regex have to match, that's how it's formatted previously.
+                # matched = re.match('([^\(]*) \((\d{4})\).*', folder)
+                # if matched:
+                #     movie_name = matched.group(1)
+                #     year = matched.group(2)
+                #     found, movie = mii_sql.get_movie(movie_name, year)
+                # if id:
+                #     imdb_data = self.mii_osdb.get_imdb_information(int(id.group(1)))
+                #     if movie and not movie.imdb_id:
+                #         movie.imdb_id = id.group(1)
+                #         movie.save()
+                #     if imdb_data:
+                #         logger.info('Found imdb data from opensubtitle:')
+                #         logger.debug("\tData: %s" % imdb_data)
+                #         for index in self.index_mapping.keys():
+                #             self.index_values(self.index_mapping[index][1](imdb_data), folder, folder_abs, index,
+                #                               movie=movie)
+        # self.add_counting(self.search_dir, skipped=True)
+        # self.remove_single_movie_person()
 
     def remove_single_movie_person(self):
         for folder in tools.listdir_abs(self.index_mapping['director_dir'][0]) +\
@@ -136,19 +119,6 @@ class Indexer:
                               os.path.join(current_dir, os.listdir(folder)[0]))
                 tools.delete_dir(folder)
 
-    def search_index(self, folder_abs, folder):
-        current_path = []
-        matched = re.match('(^[^\(]*)\(.*', folder)
-        if matched:
-            name = matched.group(1)
-        else:
-            name = folder
-        for letters in [x.upper() for x in name if x.isalpha()]:
-            current_path += letters
-            letter_folder = tools.make_dir(os.path.join(self.search_dir, *current_path))
-            result_folder = tools.make_dir(os.path.join(letter_folder, '--'))
-            os.symlink(folder_abs, os.path.join(result_folder, folder))
-
     @staticmethod
     def link_movie_value(movie, value, link_type):
         if link_type == 'Tag':
@@ -166,6 +136,54 @@ class Indexer:
             try:
                 mii_sql.MovieRelation.get(uid=uid)
             except mii_sql.MovieRelation.DoesNotExist:
-                link = mii_sql.MovieRelation(uid=uid, person=person, movie=movie, type=link_type)
+                link = mii_sql.MovieRelation.create(uid=uid, person=person, movie=movie, type=link_type)
                 logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.title, link.type))
-                link.save()
+
+
+def search_index(folder):
+    matched = re.match('(^[^\(]*)\(.*', folder)
+    if matched:
+        name = matched.group(1)
+    else:
+        name = folder
+    return get_tree_from_list([x.upper() for x in name if x.isalpha()], folder)
+
+
+def get_tree_from_list(remaining_letters, folder):
+    if not remaining_letters:
+        return {'--': [folder]}
+    return {remaining_letters[0]: get_tree_from_list(remaining_letters[1:], folder),
+            '--': [folder]}
+
+    os.symlink(folder_abs, os.path.join(result_folder, folder))
+
+
+def dict_merge_list_extend(d1, d2):
+    for key, value in d2.items():
+        if not d1.get(key):
+            d1[key] = value
+            continue
+        if isinstance(d1.get(key), list):
+            d1[key].extend(value)
+        else:
+            d1[key] = dict_merge_list_extend(d1[key], value)
+    return d1
+
+
+def add_number_and_simplify(d1):
+    for key in d1.keys():
+        count = get_count(d1[key])
+        new_value = d1.pop(key)
+        if count == 1:
+            d1[key + ' (1)'] = new_value if key == '--' else new_value['--']
+        else:
+            d1[key + ' (%s)' % count] = new_value
+            if key != '--':
+                add_number_and_simplify(new_value)
+
+
+def get_count(d1):
+    if isinstance(d1, list):
+        return len(d1)
+    else:
+        return len(d1.get('--', []))
