@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 from os import listdir
+from mii_unpacker.models import Unpacked
 
 import settings
 from middleware import mii_sql
@@ -72,9 +73,9 @@ class RecursiveUnrarer:
 
     def unrar(self, archive_file):
         try:
-            mii_sql.Unpacked.get(filename=archive_file)
+            Unpacked.get(filename=archive_file)
             return
-        except mii_sql.Unpacked.DoesNotExist:
+        except Unpacked.DoesNotExist:
             pass
 
         logger.debug("Processing extraction...")
@@ -87,7 +88,7 @@ class RecursiveUnrarer:
                                        stdout=stdout)
         if not return_value:
             logger.debug("Extraction OK!")
-            mii_sql.Unpacked(filename=archive_file).save()
+            Unpacked(filename=archive_file).save()
             self.extracted += 1
         else:
             logger.error("Extraction failed")
@@ -115,10 +116,10 @@ class RecursiveUnrarer:
         source_file = source_path + os.path.sep + file_to_link
         destination_file = self.destination_dir + os.path.sep + file_to_link
         try:
-            mii_sql.Unpacked.get(filename=source_file)
+            Unpacked.get(filename=source_file)
             logger.error("Not linking, same file exist (weight wise)")
             return False
-        except mii_sql.Unpacked.DoesNotExist:
+        except Unpacked.DoesNotExist:
             pass
 
         if os.path.exists(destination_file):
@@ -129,7 +130,7 @@ class RecursiveUnrarer:
                 except AttributeError:
                     shutil.copy(source_file, destination_file)
                 self.linked += 1
-                mii_sql.Unpacked(filename=source_file).save()
+                Unpacked(filename=source_file).save()
                 return True
             else:
                 logger.error("Not linking, same file exist (weight wise)")
@@ -139,7 +140,7 @@ class RecursiveUnrarer:
                 os.link(source_file, destination_file)
             except AttributeError:
                 shutil.copy(source_file, destination_file)
-            mii_sql.Unpacked(filename=source_file).save()
+            Unpacked(filename=source_file).save()
             self.linked += 1
             return True
 

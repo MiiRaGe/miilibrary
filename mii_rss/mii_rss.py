@@ -7,7 +7,9 @@ import re
 import urllib
 
 import settings
-from middleware.mii_sql import FeedDownloaded, get_serie_episode, get_serie_season, db
+from middleware.mii_sql import get_serie_season, db
+from mii_sorter.models import get_serie_episode, get_serie_season
+from mii_rss.models import FeedDownloaded
 from sorter.sorter import is_serie
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)

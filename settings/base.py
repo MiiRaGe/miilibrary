@@ -1,3 +1,5 @@
+from django import *
+
 #MiiNASLibrary configuration file
 
 """Configuration file"""
@@ -68,3 +70,8 @@ TORRENT_WATCHED_FOLDER = '/PATH/TO/WATCHED/FOLDER/'
 RSS_FILTERS = [
     'the.peoples.couch.*720p'
 ]
+
+DATABASES['default']['NAME'] = ''
+DATABASES['default']['USER'] = ''
+DATABASES['default']['PASSWORD'] = ''
+DATABASES['default']['HOST'] = ''

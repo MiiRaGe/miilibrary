@@ -1,39 +1,33 @@
 import json
-from flask import Flask, render_template, request
-from peewee import fn, DoesNotExist
+from django.shortcuts import render
 
-from middleware.mii_sql import Movie, Serie, MovieTagging, Tag, MovieRelation
-from rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
-
-app = Flask(__name__)
+from mii_indexer.models import Tag, MovieTagging, MovieRelation
+from mii_sorter.models import Movie, Serie
+from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
 
 
-@app.route("/")
-def index():
+def index(request):
+    return render(request, 'mii_interface/index.html')
+
+
+def movies(request):
     try:
-        return render_template('/index.html')
+        return render(request, 'mii_interface/movie.html', dict(movies=[x for x in Movie.select()]))
     except Exception as e:
         return repr(e)
 
 
-@app.route("/movies")
-def movies():
+def series(request):
     try:
-        return render_template('/movie.html', movies=[x for x in Movie.select()])
+        return render(request, 'mii_interface/serie.html', dict(series=[x for x in Serie.select()]))
     except Exception as e:
         return repr(e)
 
-@app.route("/series")
-def series():
-    try:
-        return render_template('/serie.html', series=[x for x in Serie.select()])
-    except Exception as e:
-        return repr(e)
 
-@app.route("/rate", methods=['GET', 'POST'])
-def rate():
+def rate(request):
     questions = get_questions()
     movie = Movie.select().where(Movie.seen == None).order_by(fn.Rand()).limit(1)[0]
+    movie = []
 
     if request.method == 'POST':
         data = request.form
@@ -54,9 +48,5 @@ def rate():
     genres = [x.tag.name for x in MovieTagging.filter(movie=movie)]
     actors = [x.person.name for x in MovieRelation.filter(movie=movie, type='Actor')]
     directors = [x.person.name for x in MovieRelation.filter(movie=movie, type='Director')]
-    return render_template('/rate.html', questions=questions, movie=movie, movies_choices_json=movies_choices_json,
-                           genres=genres, actors=actors, directors=directors)
-
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+    return render(request, 'mii_interface/rate.html', dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
+                           genres=genres, actors=actors, directors=directors))

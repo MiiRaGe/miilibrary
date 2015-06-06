@@ -1,13 +1,15 @@
-from collections import defaultdict
-from copy import deepcopy
 import logging
-from pprint import pprint
 import re
 import os
 
-import tools
+from collections import defaultdict
+from copy import deepcopy
+from pprint import pprint
 
-from middleware import mii_mongo, mii_sql
+from mii_common import tools
+
+from middleware import mii_mongo
+from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 
 
 logger = logging.getLogger("NAS")
@@ -122,8 +124,8 @@ class Indexer:
     @staticmethod
     def link_movie_value(movie, value, link_type):
         if link_type == 'Tag':
-            tag = mii_sql.Tag.get_or_create(name=value)
-            mii_sql.MovieTagging.get_or_create(tag=tag, movie=movie)
+            tag = Tag.get_or_create(name=value)
+            MovieTagging.get_or_create(tag=tag, movie=movie)
         elif link_type == 'Year':
             movie.year = value
             movie.save()
@@ -131,12 +133,12 @@ class Indexer:
             movie.rating = value
             movie.save()
         elif link_type in ['Actor', 'Director']:
-            person = mii_sql.Person.get_or_create(name=value)
+            person = Person.get_or_create(name=value)
             uid = '%s.%s.%s' % (person.id, movie.id, link_type)
             try:
-                mii_sql.MovieRelation.get(uid=uid)
-            except mii_sql.MovieRelation.DoesNotExist:
-                link = mii_sql.MovieRelation.create(uid=uid, person=person, movie=movie, type=link_type)
+                MovieRelation.get(uid=uid)
+            except MovieRelation.DoesNotExist:
+                link = MovieRelation.create(uid=uid, person=person, movie=movie, type=link_type)
                 logger.debug('Link is saved :%s,%s,%s' % (link.person.name, link.movie.title, link.type))
 
 

@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie
 
 import movieinfo.hashTool as ht
 import settings
@@ -91,7 +92,7 @@ class Sorter:
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
-        for whatsnew in mii_sql.WhatsNew.select().order_by(mii_sql.WhatsNew.date.desc()).limit(10):
+        for whatsnew in WhatsNew.select().order_by(WhatsNew.date.desc()).limit(10):
             if os.path.isdir(whatsnew.path):
                 os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
             else:
@@ -144,7 +145,7 @@ class Sorter:
         result_dir = tools.make_dir(os.path.join(self.serie_dir, name))
         season_dir = tools.make_dir(os.path.join("%s/Season %s" % (result_dir, season)))
         try:
-            exists, serie = mii_sql.get_serie_episode(name, int(season), int(episode_number))
+            exists, serie = get_serie_episode(name, int(season), int(episode_number))
             existing_episode = get_episode(season_dir, name, episode_number)
             file_path = os.path.join(self.data_dir, file_name)
 
@@ -165,7 +166,7 @@ class Sorter:
                 return True
             else:
                 if not exists:
-                    mii_sql.insert_serie_episode(name,
+                    insert_serie_episode(name,
                                                  season,
                                                  episode_number,
                                                  os.path.join(season_dir, new_file_name),
@@ -254,7 +255,7 @@ class Sorter:
         movie_name = re.sub("[\*\:]", "-", movie_name)
         file_path = os.path.join(self.data_dir, filename)
         try:
-            exist, movie = mii_sql.get_movie(movie_name, year=year)
+            exist, movie = get_movie(movie_name, year=year)
             if exist and os.path.exists(movie.folder_path):
                 if movie.file_size > os.path.getsize(file_path):
                     logger.info('Do not sort as already existing bigger movie exists')
@@ -281,7 +282,7 @@ class Sorter:
                 movie.save()
                 logger.info('Existing Movie object updated')
             else:
-                movie = mii_sql.insert_movie(movie_name, year, created_movie_dir, os.path.getsize(file_path))
+                movie = insert_movie(movie_name, year, created_movie_dir, os.path.getsize(file_path))
                 logger.info('Created Movie object')
             if imdb_id:
                 movie.imdb_id = imdb_id

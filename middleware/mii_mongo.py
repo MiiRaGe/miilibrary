@@ -1,11 +1,10 @@
 import datetime
 import logging
 
+from django.conf import settings
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
 
-import settings
-import tools
+from mii_common import tools
 
 logger = logging.getLogger('NAS')
 

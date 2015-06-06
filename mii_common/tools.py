@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 
-import settings
+from django.conf import settings
 from movieinfo import the_movie_db_wrapper, opensubtitle_wrapper
 
 

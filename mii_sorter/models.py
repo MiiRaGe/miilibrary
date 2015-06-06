@@ -1,133 +1,54 @@
 import datetime
 import logging
 
-from peewee import *
+from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
+    DateTimeField
 
-import settings
-
-db = MySQLDatabase(settings.MYSQL_NAME,
-                   host=settings.MYSQL_HOST,
-                   port=settings.MYSQL_PORT,
-                   user=settings.MYSQL_USERNAME,
-                   password=settings.MYSQL_PASSWORD)
-logger = logging.getLogger('NAS')
+logger = logging.getLogger(__name__)
 
 
-class MiiBase(Model):
-    class Meta:
-        database = db
-
-
-class Movie(MiiBase):
-    title = CharField()
+class Movie(Model):
+    title = CharField(max_length=100)
     year = IntegerField(null=True, default=1900)
-    imdb_id = CharField(null=True)
+    imdb_id = CharField(null=True, max_length=15)
     rating = FloatField(null=True)
-    folder_path = CharField()
+    folder_path = CharField(max_length=400)
     file_size = BigIntegerField()
-    seen = BooleanField(default=None, null=True)
+    seen = NullBooleanField(default=None, null=True)
 
     class Meta:
-        indexes = (
-            (('title', 'year'), True),
-        )
-        order_by = ('year', 'title')
+        index_together = [
+            ['title', 'year']
+        ]
+        ordering = ['year', 'title']
 
 
-class Tag(MiiBase):
-    name = CharField(unique=True)
-
-
-class Serie(MiiBase):
-    name = CharField()
+class Serie(Model):
+    name = CharField(max_length=50)
 
     class Meta:
-        order_by = ('name',)
+        ordering = ['name']
 
 
-class Season(MiiBase):
+class Season(Model):
     number = IntegerField()
-    serie = ForeignKeyField(Serie, related_name='seasons', on_delete='CASCADE')
+    serie = ForeignKey(Serie, related_name='seasons', on_delete='CASCADE')
 
 
-class Episode(MiiBase):
+class Episode(Model):
     number = IntegerField()
-    season = ForeignKeyField(Season, related_name='episodes', on_delete='CASCADE')
-    file_path = CharField()
+    season = ForeignKey(Season, related_name='episodes', on_delete='CASCADE')
+    file_path = CharField(max_length=400)
     file_size = BigIntegerField()
 
 
-class MovieTagging(MiiBase):
-    movie = ForeignKeyField(Movie)
-    tag = ForeignKeyField(Tag)
-
-
-class Person(MiiBase):
-    name = CharField(unique=True)
-
-
-class MovieRelation(MiiBase):
-    uid = CharField(unique=True)
-    movie = ForeignKeyField(Movie)
-    person = ForeignKeyField(Person)
-    type = CharField()
-
-
-class WhatsNew(MiiBase):
+class WhatsNew(Model):
     date = DateTimeField()
-    name = CharField(unique=True)
-    path = CharField()
+    name = CharField(unique=True, max_length=70)
+    path = CharField(max_length=400)
 
     class Meta:
-        order_by = ('date', )
-
-
-class Unpacked(MiiBase):
-    filename = TextField()
-
-
-class FeedDownloaded(MiiBase):
-    season = IntegerField()
-    episode = IntegerField()
-    re_filter = CharField(unique=True)
-
-
-class MovieQuestionSet(MiiBase):
-    movie = ForeignKeyField(Movie, unique=True, on_delete='CASCADE')
-
-
-QUESTION_CHOICES = [
-    'actor',
-    'story',
-    'overall',
-    'director',
-]
-
-
-class QuestionAnswer(MiiBase):
-    question_set = ForeignKeyField(MovieQuestionSet, on_delete='CASCADE')
-    answer = FloatField()
-    question_type = CharField(choices=QUESTION_CHOICES)
-
-    class Meta:
-        indexes = (
-            # create a unique on from/to/date
-            (('question_set', 'question_type'), True),
-        )
-
-TABLE_LIST = [Movie, MovieQuestionSet, QuestionAnswer, MovieTagging, Tag, MovieTagging, Serie, Episode, Season,
-              WhatsNew, Unpacked, FeedDownloaded, MovieRelation, Person]
-db.create_tables(TABLE_LIST, safe=True)
-
-try:
-    db.execute_sql("create view summary as "
-                   "select serie.name as 'Name', season.number as 'Season', episode.number as 'Episode'"
-                   "from serie"
-                   "     inner join season on season.serie_id = serie.id "
-                   "        inner join episode on episode.season_id = season.id "
-                   "order by serie.name, season.number, episode.number;")
-except:
-    pass
+        ordering = ['date']
 
 
 def get_serie_episode(name, season, episode):
