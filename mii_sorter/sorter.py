@@ -1,26 +1,20 @@
 import logging
 import os
 import re
+
+import movieinfo.hash_tool as ht
+
+from django.conf import settings
+from middleware import mii_mongo
+from mii_common import tools
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie
 
-import movieinfo.hashTool as ht
-import settings
-import tools
 
-from middleware import mii_mongo, mii_sql
-
-""" Sorter Module """
-logger = logging.getLogger("NAS")
-
-try:
-    raise WindowsError
-except NameError:
-    WindowsError = None
-except Exception:
-    pass
+logger = logging.getLogger(__name__)
 
 
 class Sorter:
+    """ Sorter Module """
     def __init__(self, media_dir):
         self.hash_array = []
         self.map = {}
@@ -92,7 +86,7 @@ class Sorter:
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
-        for whatsnew in WhatsNew.select().order_by(WhatsNew.date.desc()).limit(10):
+        for whatsnew in WhatsNew.objects.select().order_by(WhatsNew.date.desc()).limit(10):
             if os.path.isdir(whatsnew.path):
                 os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
             else:
@@ -167,10 +161,10 @@ class Sorter:
             else:
                 if not exists:
                     insert_serie_episode(name,
-                                                 season,
-                                                 episode_number,
-                                                 os.path.join(season_dir, new_file_name),
-                                                 os.path.getsize(file_path))
+                                         season,
+                                         episode_number,
+                                         os.path.join(season_dir, new_file_name),
+                                         os.path.getsize(file_path))
                     logger.info("Created Serie object %s,S%sE%s" % (name, season, episode_number))
                 else:
                     serie.file_path = os.path.join(season_dir, new_file_name)
@@ -178,7 +172,7 @@ class Sorter:
                 logger.info("Moving the episode to the correct folder...%s" % new_file_name)
                 os.rename(file_path, os.path.join(season_dir, new_file_name))
                 return True
-        except (WindowsError, OSError):
+        except OSError:
             logger.error(("Can't move %s" % file_path))
             return False
 
@@ -247,7 +241,7 @@ class Sorter:
                 os.rename(os.path.join(file_dir, file_name), os.path.join(self.unsorted_dir, file_name_ext))
             else:
                 os.rename(file_dir, os.path.join(self.unsorted_dir, file_name_ext))
-        except (WindowsError, OSError):
+        except OSError:
             logger.error("Can't create %s" % file_name)
 
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
@@ -292,7 +286,7 @@ class Sorter:
             logger.info("Moving %s, with new name %s" % (filename, new_name))
             os.rename(file_path, os.path.join(created_movie_dir, new_name))
             return True
-        except (WindowsError, OSError):
+        except OSError:
             logger.error("Can't create %s" % custom_movie_dir)
         except Exception, e:
             logger.exception('Found an exception when moving movie : %s' % repr(e))

@@ -1,4 +1,3 @@
-import datetime
 import feedparser
 import logging
 import os
@@ -6,11 +5,12 @@ import time
 import re
 import urllib
 
-import settings
-from middleware.mii_sql import get_serie_season, db
+from datetime import datetime
+
+from django.conf import settings
 from mii_sorter.models import get_serie_episode, get_serie_season
-from mii_rss.models import FeedDownloaded
-from sorter.sorter import is_serie
+from .models import FeedDownloaded
+from mii_sorter.sorter import is_serie
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
@@ -36,12 +36,11 @@ def already_downloading(db_name, title):
             return True
         except FeedDownloaded.DoesNotExists:
             FeedDownloaded.create(re_filter=db_name, episode=regex_result.group(2), season=regex_result.group(1),
-                                  date=datetime.datetime.now())
+                                  date=datetime.now())
     return False
 
 
 def download_torrents():
-    db.connect()
     logging.info('Initializing feed')
     try:
         feed = feedparser.parse(settings.RSS_URL)

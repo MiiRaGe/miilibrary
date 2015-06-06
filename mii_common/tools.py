@@ -1,13 +1,13 @@
 import commands
-import datetime
 import logging
 import os
 import shutil
 import subprocess
-import sys
 
 from django.conf import settings
 from movieinfo import the_movie_db_wrapper, opensubtitle_wrapper
+
+logger = logging.getLogger(__name__)
 
 
 #Create the directory @param(path) and return the path after creation [Error safe]
@@ -31,58 +31,6 @@ def remove(path):
 #Initialise Wrappers :
 MovieDBWrapper = the_movie_db_wrapper.TheMovieDBWrapper()
 OpensubtitleWrapper = opensubtitle_wrapper.OpenSubtitleWrapper()
-
-########### LOG #############
-
-global handler
-logger = logging.getLogger('NAS')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-
-
-def init_log():
-
-    #Creating the log directory
-    log_dir = os.path.join(settings.DESTINATION_FOLDER, 'log')
-    try:
-        os.makedirs(log_dir)
-    except OSError, e:
-        pass
-
-    try:
-        os.makedirs('%s/extractions/' % log_dir)
-    except OSError, e:
-        pass
-
-    timestamp = datetime.datetime.now().strftime("%d_%m_%y.%H-%M")
-    global handler
-    handler = logging.FileHandler(os.path.join(log_dir, 'miiNasLibrary.%s.LOG' % timestamp))
-    logger.addHandler(handler)
-
-    handler.setFormatter(formatter)
-
-    #Amount of information in the tool
-    logger.setLevel(logging.DEBUG)
-
-
-def remove_handler():
-    #Removing the handler
-    logger.removeHandler(handler)
-    handler.close()
-
-
-#Shift the logs file in order to have different runs of the script (0->1,1->2) etc...
-def shift_log():
-    remove_handler()
-
-    #Timestamp for the logfile
-    timestamp = datetime.datetime.now().strftime("%y_%m_%d.%H-%M")
-
-    log_dir = os.path.join(settings.DESTINATION_FOLDER, 'log')
-    handler2 = logging.FileHandler(os.path.join(log_dir, 'miiNasLibrary.%s.LOG' % timestamp))
-    handler2.setFormatter(formatter)
-
-    #Readding the handler
-    logger.addHandler(handler2)
 
 
 def validate_settings():
@@ -116,28 +64,14 @@ def validate_settings():
                isinstance(settings.SOURCE_CLEANUP, bool)])
 
 
-mswindows = (sys.platform == "win32")
-
-
 def getstatusoutput(cmd):
     """Return (status, output) of executing cmd in a shell."""
-    if not mswindows:
-        return commands.getstatusoutput(cmd)
-    pipe = os.popen('%s 2>&1' % cmd, 'r')
-    text = pipe.read()
-    sts = pipe.close()
-    if sts is None:
-        sts = 0
-    if text[-1:] == '\n': text = text[:-1]
-    return sts, text
+    return commands.getstatusoutput(cmd)
 
 
 def delete_dir(path):
     """deletes the path entirely"""
-    if mswindows:
-        cmd = "RMDIR \"%s\" /s /q" % path
-    else:
-        cmd = "rm -rf \"%s\"" % path
+    cmd = "rm -rf \"%s\"" % path
     output = getstatusoutput(cmd)
     if output[0]:
         raise RuntimeError(output[1])
@@ -145,15 +79,9 @@ def delete_dir(path):
 
 def delete_file(path):
     """deletes the file entirely"""
-    if mswindows:
-        cmd = "ERASE \"%s\" /s /q" % path
-        output = getstatusoutput(cmd)
-        if output[0]:
-            raise RuntimeError(output[1])
-    else:
-        return_value = subprocess.call("rm \"%s\"" % path, shell=True)
-        if return_value:
-            raise RuntimeError("Rm failed for %s" % path)
+    return_value = subprocess.call("rm \"%s\"" % path, shell=True)
+    if return_value:
+        raise RuntimeError("Rm failed for %s" % path)
 
 
 def cleanup_rec(source):

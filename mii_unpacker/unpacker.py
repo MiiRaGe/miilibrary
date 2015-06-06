@@ -3,20 +3,13 @@ import os
 import re
 import shutil
 import subprocess
+
 from os import listdir
+from django.conf import settings
+
 from mii_unpacker.models import Unpacked
 
-import settings
-from middleware import mii_sql
-
-try:
-    raise WindowsError
-except NameError:
-    WindowsError = None
-except Exception:
-    pass
-
-logger = logging.getLogger("NAS")
+logger = logging.getLogger(__name__)
 
 
 class RecursiveUnrarer:
@@ -43,62 +36,57 @@ class RecursiveUnrarer:
 
         logger.debug("%sEntering : %s" % (indent, current_directory))
         indent += "\t"
-        try:
-            for data_file in listdir(current_directory):
-                full_file_path = os.path.join(current_directory, data_file)
-                if os.path.isfile(full_file_path):
-                    if data_file.endswith(".part01.rar"):
-                        logger.debug("%sExtracting :%s" % (indent, data_file))
-                        self.unrar(full_file_path)
+        for data_file in listdir(current_directory):
+            full_file_path = os.path.join(current_directory, data_file)
+            if os.path.isfile(full_file_path):
+                if data_file.endswith(".part01.rar"):
+                    logger.debug("%sExtracting :%s" % (indent, data_file))
+                    self.unrar(full_file_path)
 
-                    elif re.match(".*\.part[0-9]*\.rar$", data_file):
-                        logger.debug("%sBypassing :%s" % (indent, data_file))
+                elif re.match(".*\.part[0-9]*\.rar$", data_file):
+                    logger.debug("%sBypassing :%s" % (indent, data_file))
 
-                    elif data_file.endswith(".rar"):
-                        logger.debug("%sExtracting :%s" % (indent, data_file))
-                        self.unrar(full_file_path)
+                elif data_file.endswith(".rar"):
+                    logger.debug("%sExtracting :%s" % (indent, data_file))
+                    self.unrar(full_file_path)
 
-                    elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
-                                    os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 1000000:
-                        #Moving every movie type, cleanup later
-                        if self.link_video(current_directory, data_file):
-                            logger.debug("%sMoving :%s to the data folder..." % (indent, data_file))
+                elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
+                                os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 1000000:
+                    # Moving every movie type, cleanup later
+                    if self.link_video(current_directory, data_file):
+                        logger.debug("%sMoving :%s to the data folder..." % (indent, data_file))
 
-                elif os.path.isdir(full_file_path) and full_file_path is not self.destination_dir:
-                    self.level += 1
-                    self.recursive_unrar_and_link(full_file_path)
-                    self.level -= 1
-        except WindowsError:
-            logger.debug("%sDirectory empty :%s:" % (indent, current_directory))
+            elif os.path.isdir(full_file_path) and full_file_path is not self.destination_dir:
+                self.level += 1
+                self.recursive_unrar_and_link(full_file_path)
+                self.level -= 1
 
     def unrar(self, archive_file):
         try:
-            Unpacked.get(filename=archive_file)
+            Unpacked.objects.get(filename=archive_file)
             return
         except Unpacked.DoesNotExist:
             pass
 
         logger.debug("Processing extraction...")
 
-        stdout = open("%s/log/extractions/%s.extraction.LOG" % (settings.DESTINATION_FOLDER,
-                                                                archive_file.split('/')[-1]),
-                      "wb")
-        return_value = subprocess.call('unrar e -y %s %s' % (archive_file, self.destination_dir),
-                                       shell=True,
-                                       stdout=stdout)
-        if not return_value:
+        try:
+            output = subprocess.check_output('unrar e -y %s %s' % (archive_file, self.destination_dir),
+                                                       shell=True)
+            # TODO : Do something with execution_result.output.
+            # TODO : Log in a table
             logger.debug("Extraction OK!")
-            Unpacked(filename=archive_file).save()
+            Unpacked.objects.create(filename=archive_file)
             self.extracted += 1
-        else:
-            logger.error("Extraction failed")
+        except subprocess.CalledProcessError as cpe:
+            logger.error("Extraction failed code=%s, output=%s", cpe.returnvalue, cpe.output)
         return
 
     def cleanup(self):
         logger.info("-------------Clean-up data Folder-------------")
         self.removed = 0
         for media_file in os.listdir(self.destination_dir):
-            #If it's not a movie media_file or if the size < MINIMUM_SIZE Mo (samples)
+            # If it's not a movie media_file or if the size < MINIMUM_SIZE Mo (samples)
             logger.debug("Reading (cleanup):%s" % media_file)
             if not re.match(".*\.(mkv|avi|mp4|mpg)", media_file):
                 logger.debug("Removing (Reason : not a movie):")
@@ -116,7 +104,7 @@ class RecursiveUnrarer:
         source_file = source_path + os.path.sep + file_to_link
         destination_file = self.destination_dir + os.path.sep + file_to_link
         try:
-            Unpacked.get(filename=source_file)
+            Unpacked.objects.get(filename=source_file)
             logger.error("Not linking, same file exist (weight wise)")
             return False
         except Unpacked.DoesNotExist:
@@ -130,7 +118,7 @@ class RecursiveUnrarer:
                 except AttributeError:
                     shutil.copy(source_file, destination_file)
                 self.linked += 1
-                Unpacked(filename=source_file).save()
+                Unpacked.objects.create(filename=source_file)
                 return True
             else:
                 logger.error("Not linking, same file exist (weight wise)")
@@ -140,7 +128,7 @@ class RecursiveUnrarer:
                 os.link(source_file, destination_file)
             except AttributeError:
                 shutil.copy(source_file, destination_file)
-            Unpacked(filename=source_file).save()
+            Unpacked.objects.create(filename=source_file)
             self.linked += 1
             return True
 
