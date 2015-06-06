@@ -24,7 +24,7 @@ class Movie(Model):
 
 
 class Serie(Model):
-    name = CharField(max_length=50)
+    name = CharField(unique=True, max_length=50)
 
     class Meta:
         ordering = ['name']
@@ -34,12 +34,22 @@ class Season(Model):
     number = IntegerField()
     serie = ForeignKey(Serie, related_name='seasons', on_delete='CASCADE')
 
+    class Meta:
+        unique_together = [
+            ['number', 'serie']
+        ]
+
 
 class Episode(Model):
     number = IntegerField()
     season = ForeignKey(Season, related_name='episodes', on_delete='CASCADE')
     file_path = CharField(max_length=400)
     file_size = BigIntegerField()
+
+    class Meta:
+        unique_together = [
+            ['number', 'season']
+        ]
 
 
 class WhatsNew(Model):

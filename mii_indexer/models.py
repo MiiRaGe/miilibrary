@@ -12,6 +12,11 @@ class MovieTagging(Model):
     movie = ForeignKey(Movie)
     tag = ForeignKey(Tag)
 
+    class Meta:
+        unique_together = [
+            'movie', 'tag'
+        ]
+
 
 class Person(Model):
     name = CharField(unique=True, max_length=100)
