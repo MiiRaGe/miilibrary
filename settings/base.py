@@ -79,7 +79,9 @@ DATABASES['default']['HOST'] = ''
 
 #Set them equal to local_root if not using a nas
 LOCAL_ROOT = '/mnt/smb_folder/'
-# If NAS_IP or NAS_USERNAME is empty, then normal os.link/symlink operation will be used, else, ssh connection and remote execution
+
+#Those parameter will ssh log and link files remotely.
+REMOTE_FILE_OPERATION_ENABLED = False
 NAS_IP = ''
 NAS_USERNAME = 'foo'
 NAS_ROOT = '/share/MD0_DATA/'

@@ -4,7 +4,7 @@ import spur
 from django.conf import settings
 
 shell = None
-if settings.NAS_IP and settings.NAS_USERNAME:
+if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
     shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME)
 
 

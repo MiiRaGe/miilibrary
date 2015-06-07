@@ -21,7 +21,7 @@ from miinaslibrary import MiiNASLibrary
 logger = logging.getLogger(__name__)
 
 
-@override_settings(MINIMUM_SIZE=0.2)
+@override_settings(MINIMUM_SIZE=0.2, NAS_IP=None, NAS_USERNAME=None)
 class TestMain(TestCase):
     def setUp(self):
         logger.info("*** Building environment ***")
@@ -94,6 +94,17 @@ class TestMain(TestCase):
         mnl.index()
 
         tools.print_rec(self.DESTINATION_FOLDER, 0)
+
+    def test_rpc_unpack(self):
+        import ipdb; ipdb.set_trace()
+        response = self.client.get('mii_unpacker/rpc/unpack')
+        self.assertEqual(response.status_code, 200)
+
+    def test_rpc_sort(self):
+        pass
+
+    def test_rpc_index(self):
+        pass
 
 
 @override_settings(CUSTOM_RENAMING={'BARNABY': 'Barbie'})

@@ -1,6 +1,6 @@
 from local import *
 
-
+REMOTE_FILE_OPERATION_ENABLED = False
 LOCAL_ROOT = ''
 NAS_ROOT = ''
 

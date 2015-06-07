@@ -8,3 +8,4 @@ wsgiref==0.1.2
 feedparser
 django==1.8
 mysql-python
+celery==3.1.18

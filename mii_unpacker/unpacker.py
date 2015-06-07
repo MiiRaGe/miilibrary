@@ -116,7 +116,6 @@ class RecursiveUnrarer:
             if os.path.getsize(destination_file) < os.path.getsize(source_file):
                 os.remove(destination_file)
                 try:
-                    import ipdb; ipdb.set_trace()
                     link(source_file, destination_file)
                 except AttributeError:
                     shutil.copy(source_file, destination_file)
@@ -128,7 +127,6 @@ class RecursiveUnrarer:
                 return False
         else:
             try:
-                import ipdb; ipdb.set_trace()
                 link(source_file, destination_file)
             except AttributeError:
                 shutil.copy(source_file, destination_file)
