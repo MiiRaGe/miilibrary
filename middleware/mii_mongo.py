@@ -3,8 +3,9 @@ import logging
 
 from django.conf import settings
 from pymongo import MongoClient
+from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
+from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
 
-from mii_common import tools
 
 logger = logging.getLogger('NAS')
 
@@ -79,9 +80,10 @@ class MiiMongoStored(object):
 
 
 class MiiTheMovieDB(MiiMongoStored):
+    the_movie_db_wrapper = TheMovieDBWrapper()
     mapping = {
-        'get_movie_imdb_id': tools.MovieDBWrapper.get_movie_imdb_id,
-        'get_movie_name': tools.MovieDBWrapper.get_movie_name,
+        'get_movie_imdb_id': the_movie_db_wrapper.get_movie_imdb_id,
+        'get_movie_name': the_movie_db_wrapper.get_movie_name,
     }
     collection = db.tmdb if db else None
 
@@ -106,11 +108,12 @@ class MiiTheMovieDB(MiiMongoStored):
 
 
 class MiiOpenSubtitleDB(MiiMongoStored):
+    open_subtitle_wrapper = OpenSubtitleWrapper()
     mapping = {
-        'get_imdb_information': tools.OpensubtitleWrapper.get_imdb_information,
-        'get_movie_names': tools.OpensubtitleWrapper.get_movie_names,
-        'get_movie_names2': tools.OpensubtitleWrapper.get_movie_names2,
-        'get_subtitles': tools.OpensubtitleWrapper.get_subtitles,
+        'get_imdb_information': open_subtitle_wrapper.get_imdb_information,
+        'get_movie_names': open_subtitle_wrapper.get_movie_names,
+        'get_movie_names2': open_subtitle_wrapper.get_movie_names2,
+        'get_subtitles': open_subtitle_wrapper.get_subtitles,
     }
     collection = db.osdb if db else None
 

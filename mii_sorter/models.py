@@ -1,5 +1,6 @@
-import datetime
 import logging
+
+from datetime import datetime
 
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
     DateTimeField
@@ -71,9 +72,7 @@ def get_serie_episode(name, season, episode):
     """
     try:
         logger.info('Querying serie table with name=%s, season=%s and episode=%s' % (name, season, episode))
-        episode = Episode.select().join(Season).join(Serie).where(Season.number == season,
-                                                                  Episode.number == episode,
-                                                                  Serie.name == name).get()
+        episode = Episode.objects.get(season__number=season, number=episode, season__serie__name=name)
         if episode:
             return True, episode
     except (Serie.DoesNotExist, Season.DoesNotExist, Episode.DoesNotExist) as e:
@@ -90,8 +89,7 @@ def get_serie_season(name, season):
     """
     try:
         logger.info('Querying serie table with name=%s and season=%s' % (name, season))
-        season = Season.select().join(Season).join(Serie).where(Season.number == season,
-                                                                Serie.name == name).get()
+        season = Season.objects.get(number=season, serie__name=name)
         if season:
             return True
     except (Serie.DoesNotExist, Season.DoesNotExist) as e:
@@ -109,21 +107,16 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path, s
     :rtype Episode: Episode of the serie
     """
 
-    serie = Serie.get_or_create(name=serie_name)
-    serie.save()
+    serie, created = Serie.objects.get_or_create(name=serie_name)
 
-    season = Season.get_or_create(number=serie_season, serie=serie)
-    season.save()
+    season, created = Season.objects.get_or_create(number=serie_season, serie=serie)
 
-    episode = Episode.get_or_create(number=episode_number, season=season, file_path=serie_path, file_size=size)
-    episode.save()
+    episode, created = Episode.objects.get_or_create(number=episode_number, season=season, file_path=serie_path, file_size=size)
 
     # Add the serie to the what's new folder
-    wn = WhatsNew.get_or_create(name='%s S%sE%s' % (serie_name, serie_season, episode_number),
-                                date=datetime.datetime.now(),
-                                path=serie_path)
-    wn.save()
-
+    wn, created = WhatsNew.objects.get_or_create(name='%s S%sE%s' % (serie_name, serie_season, episode_number),
+                                                 date=datetime.now(),
+                                                 path=serie_path)
     return episode
 
 
@@ -138,9 +131,9 @@ def get_movie(title, year=None):
     try:
         logger.info('Querying movie table with name=%s and year=%s' % (title, year))
         if year:
-            movie = Movie.get(title=title, year=year)
+            movie = Movie.objects.get(title=title, year=year)
         else:
-            movie = Movie.get(title=title)
+            movie = Movie.objects.get(title=title)
         logger.info('Found movie')
         return True, movie
     except Movie.DoesNotExist as e:
@@ -157,11 +150,8 @@ def insert_movie(title, year, path, size):
     :return Movie: Movie instance to be modified with additional data
     :rtype Movie: Movie type
     """
-    movie = Movie.get_or_create(title=title, year=year, folder_path=path, file_size=size)
-    movie.save()
+    movie, created = Movie.objects.get_or_create(title=title, year=year, folder_path=path, file_size=size)
 
     # Add the movie to the what's new folder
-    wn = WhatsNew.get_or_create(name='%s (%s)' % (title, year), date=datetime.datetime.now(), path=path)
-    wn.save()
-
+    wn, created = WhatsNew.objects.get_or_create(name='%s (%s)' % (title, year), date=datetime.now(), path=path)
     return movie

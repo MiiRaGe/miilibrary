@@ -4,7 +4,7 @@ import time
 
 from xmlrpclib import ProtocolError, ServerProxy
 
-import settings
+from django.conf import settings
 
 logger = logging.getLogger("NAS")
 
@@ -33,7 +33,7 @@ class OpenSubtitleWrapper:
                 if status.startswith('200'):
                     self.login_successful = True
                     return
-            except (ProtocolError):
+            except ProtocolError:
                 logger.debug("Response : %s" % result)
                 logger.info("Got rejected by the API, waiting 1minutes")
             except (socket.gaierror, socket.timeout):

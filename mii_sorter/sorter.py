@@ -86,7 +86,7 @@ class Sorter:
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
-        for whatsnew in WhatsNew.objects.select().order_by(WhatsNew.date.desc()).limit(10):
+        for whatsnew in WhatsNew.objects.all().order_by('-date')[:12]:
             if os.path.isdir(whatsnew.path):
                 os.symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
             else:

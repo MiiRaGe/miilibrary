@@ -4,22 +4,19 @@ import logging
 import os
 import shutil
 import tempfile
-import unittest
+import mock
 
-from mock import patch
 from django.conf import settings
 from django.test import override_settings, TestCase
 
 from settings.utils import relative
 from mock_osdb import *
 from mock_tmdb import *
-from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
-from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
-
 from mii_indexer.indexer import dict_merge_list_extend
 from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
 from mii_common import tools
+from miinaslibrary import MiiNASLibrary
 
 logger = logging.getLogger(__name__)
 
@@ -51,18 +48,16 @@ class TestMain(TestCase):
         tools.cleanup_rec(abs_output)
         logger.info("*** Environment Torn Down***")
 
-
-    @patch.multiple(OpenSubtitleWrapper,
-                    get_movie_names=mock_get_movie_names,
-                    get_subtitles=mock_get_movie_names,
-                    get_movie_names2=mock_get_movie_names2,
-                    get_imdb_information=mock_get_imdb_information)
-    @patch.multiple(TheMovieDBWrapper,
-                    get_movie_name=mock_get_movie_name,
-                    get_movie_imdb_id=mock_get_movie_imdb_id)
+    @mock.patch('movieinfo.opensubtitle_wrapper.OpenSubtitleWrapper',
+                new=mock.MagicMock(get_movie_names=mock_get_movie_names,
+                                   get_subtitles=mock_get_movie_names,
+                                   get_movie_names2=mock_get_movie_names2,
+                                   get_imdb_information=mock_get_imdb_information,
+                                   log_in=mock.MagicMock()))
+    @mock.patch('movieinfo.the_movie_db_wrapper.TheMovieDBWrapper',
+                new=mock.MagicMock(get_movie_name=mock_get_movie_name,
+                                   get_movie_imdb_id=mock_get_movie_imdb_id))
     def test_main(self):
-        from miinaslibrary import MiiNASLibrary
-
         logger.info("== Testing validate_settings ==")
 
         self.assertTrue(tools.validate_settings())
@@ -70,16 +65,14 @@ class TestMain(TestCase):
         logger.info("== Testing doUnpack ==")
         mnl = MiiNASLibrary()
         mnl.unpack()
-        import ipdb; ipdb.set_trace()
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
         mnl.sort()
 
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 2)
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')),
-                         2)
-
+        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 2)
+        import pdb; pdb.set_trace()
         self.assertIn('.IMDB_ID_tt0800369', os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]'))
         self.assertIn('.IMDB_ID_tt1981115',
                       os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)'))

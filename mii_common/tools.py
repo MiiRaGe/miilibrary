@@ -28,10 +28,6 @@ def remove(path):
     except OSError as e:
         logger.warning("Exception in remove, %s" % repr(e))
 
-#Initialise Wrappers :
-MovieDBWrapper = the_movie_db_wrapper.TheMovieDBWrapper()
-OpensubtitleWrapper = opensubtitle_wrapper.OpenSubtitleWrapper()
-
 
 def validate_settings():
     if settings.SOURCE_FOLDER == '':
