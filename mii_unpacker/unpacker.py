@@ -6,6 +6,7 @@ import subprocess
 
 from os import listdir
 from django.conf import settings
+from middleware.remote_execution import link
 
 from mii_unpacker.models import Unpacked
 
@@ -48,7 +49,7 @@ class RecursiveUnrarer:
 
                 elif data_file.endswith(".rar"):
                     logger.debug("%sExtracting :%s" % (indent, data_file))
-                    self.unrar(full_file_path)
+                    self.unrar(full_file_path, data_file)
 
                 elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
                                 os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 1000000:
@@ -61,9 +62,9 @@ class RecursiveUnrarer:
                 self.recursive_unrar_and_link(full_file_path)
                 self.level -= 1
 
-    def unrar(self, archive_file):
+    def unrar(self, archive_file, file_name):
         try:
-            Unpacked.objects.get(filename=archive_file)
+            Unpacked.objects.get(filename=file_name)
             return
         except Unpacked.DoesNotExist:
             pass
@@ -76,7 +77,7 @@ class RecursiveUnrarer:
             # TODO : Do something with execution_result.output.
             # TODO : Log in a table
             logger.debug("Extraction OK!")
-            Unpacked.objects.create(filename=archive_file)
+            Unpacked.objects.create(filename=file_name)
             self.extracted += 1
         except subprocess.CalledProcessError as cpe:
             logger.error("Extraction failed code=%s, output=%s", cpe.returnvalue, cpe.output)
@@ -93,7 +94,8 @@ class RecursiveUnrarer:
                 os.remove(self.destination_dir + os.path.sep + media_file)
                 self.removed += 1
             else:
-                if os.path.getsize(self.destination_dir + os.path.sep + media_file) < settings.MINIMUM_SIZE * 1000000:
+                if os.path.getsize(self.destination_dir + os.path.sep + media_file) < settings.MINIMUM_SIZE * 1000000\
+                        or 'sample' in media_file:
                     logger.debug("Removing (Reason : size < %sMo): %s" % (settings.MINIMUM_SIZE, media_file))
                     os.remove(self.destination_dir + os.path.sep + media_file)
                     self.removed += 1
@@ -104,7 +106,7 @@ class RecursiveUnrarer:
         source_file = source_path + os.path.sep + file_to_link
         destination_file = self.destination_dir + os.path.sep + file_to_link
         try:
-            Unpacked.objects.get(filename=source_file)
+            Unpacked.objects.get(filename=file_to_link)
             logger.error("Not linking, same file exist (weight wise)")
             return False
         except Unpacked.DoesNotExist:
@@ -114,21 +116,23 @@ class RecursiveUnrarer:
             if os.path.getsize(destination_file) < os.path.getsize(source_file):
                 os.remove(destination_file)
                 try:
-                    os.link(source_file, destination_file)
+                    import ipdb; ipdb.set_trace()
+                    link(source_file, destination_file)
                 except AttributeError:
                     shutil.copy(source_file, destination_file)
                 self.linked += 1
-                Unpacked.objects.create(filename=source_file)
+                Unpacked.objects.create(filename=file_to_link)
                 return True
             else:
                 logger.error("Not linking, same file exist (weight wise)")
                 return False
         else:
             try:
-                os.link(source_file, destination_file)
+                import ipdb; ipdb.set_trace()
+                link(source_file, destination_file)
             except AttributeError:
                 shutil.copy(source_file, destination_file)
-            Unpacked.objects.create(filename=source_file)
+            Unpacked.objects.create(filename=file_to_link)
             self.linked += 1
             return True
 
