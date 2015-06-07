@@ -1,7 +1,7 @@
 import logging
 import os
 
-import settings
+from django.conf import settings
 
 from mii_common import tools
 from mii_indexer.indexer import Indexer

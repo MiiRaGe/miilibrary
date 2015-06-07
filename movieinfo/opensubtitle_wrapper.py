@@ -15,7 +15,7 @@ class OpenSubtitleWrapper:
         self.token = None
         self.server = None  # server initialized in log_in to avoid program not running offline
 
-    def log_in(self, retry=False, max_retries=10):
+    def log_in(self, retry=False, max_retries=5):
         self.server = ServerProxy(settings.OPENSUBTITLE_API_URL)
         result = None
         go_on = True
@@ -102,10 +102,10 @@ class OpenSubtitleWrapper:
                                                      {"limit": 100})
                 logger.debug(result)
                 try:
-			result = result.get("data")
+                    result = result.get("data")
                 except:
-			return None
-		return result
+                    return None
+                return result
             except ProtocolError:
                 logger.info("Result : %s" % result)
                 logger.info("Got rejected by the API, waiting 1minutes")

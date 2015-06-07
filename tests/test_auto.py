@@ -48,15 +48,14 @@ class TestMain(TestCase):
         tools.cleanup_rec(abs_output)
         logger.info("*** Environment Torn Down***")
 
-    @mock.patch('movieinfo.opensubtitle_wrapper.OpenSubtitleWrapper',
-                new=mock.MagicMock(get_movie_names=mock_get_movie_names,
-                                   get_subtitles=mock_get_movie_names,
-                                   get_movie_names2=mock_get_movie_names2,
-                                   get_imdb_information=mock_get_imdb_information,
-                                   log_in=mock.MagicMock()))
-    @mock.patch('movieinfo.the_movie_db_wrapper.TheMovieDBWrapper',
-                new=mock.MagicMock(get_movie_name=mock_get_movie_name,
-                                   get_movie_imdb_id=mock_get_movie_imdb_id))
+    @mock.patch('middleware.mii_mongo.MiiOpenSubtitleDB.mapping',
+                new={'get_movie_names': mock_get_movie_names,
+                     'get_subtitles': mock_get_movie_names,
+                     'get_movie_names2': mock_get_movie_names2,
+                     'get_imdb_information': mock_get_imdb_information})
+    @mock.patch('middleware.mii_mongo.MiiTheMovieDB.mapping',
+                new={'get_movie_name': mock_get_movie_name,
+                     'get_movie_imdb_id': mock_get_movie_imdb_id})
     def test_main(self):
         logger.info("== Testing validate_settings ==")
 
@@ -275,7 +274,12 @@ class TestIndexer(TestCase):
         self.assertDictEqual(merged_dict, {'A': {'C': ['AC'], 'B': ['AB', 'AB'], 'E': {'F': ['AEF']}, 'D': ['PD']}})
 
     def test_dict_merge_empty(self):
-        d2 = {'--': ['Thor (2011) [720p]'], 'T': {'--': ['Thor (2011) [720p]'], 'H': {'--': ['Thor (2011) [720p]'], 'O': {'--': ['Thor (2011) [720p]'], 'R': {'--': ['Thor (2011) [720p]']}}}}}
+        d2 = {'--': ['Thor (2011) [720p]'], 'T': {'--': ['Thor (2011) [720p]'], 'H': {'--': ['Thor (2011) [720p]'],
+                                                                                      'O': {
+                                                                                          '--': ['Thor (2011) [720p]'],
+                                                                                          'R': {
+                                                                                              '--': [
+                                                                                                  'Thor (2011) [720p]']}}}}}
         merged_dict = dict_merge_list_extend({}, d2)
         self.assertDictEqual(d2, merged_dict)
         merged_dict = dict_merge_list_extend(d2, {})
