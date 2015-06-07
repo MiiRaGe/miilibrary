@@ -72,7 +72,7 @@ class TestMain(TestCase):
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 2)
-        import pdb; pdb.set_trace()
+
         self.assertIn('.IMDB_ID_tt0800369', os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]'))
         self.assertIn('.IMDB_ID_tt1981115',
                       os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)'))
@@ -97,7 +97,7 @@ class TestMain(TestCase):
         tools.print_rec(self.DESTINATION_FOLDER, 0)
 
 
-@override_settings(CUSTOMER_RENAMING={'BARNABY': 'Barbie'})
+@override_settings(CUSTOM_RENAMING={'BARNABY': 'Barbie'})
 class TestSorter(TestCase):
     def test_is_serie(self):
         self.assertFalse(is_serie('23name,asefjklS03esfsjkdlS05E1'))
@@ -272,7 +272,7 @@ class TestIndexer(TestCase):
                     'D': ['PD'],
                     'E': {'F': ['AEF']}}}
         merged_dict = dict_merge_list_extend(d1, d2)
-        self.assertDictEqual(merged_dict, {'A': {'C': ['AC'], 'B': ['AB', 'AB'], 'E': {'F': ['AEF', 'AEF']}, 'D': ['PD', 'PD']}})
+        self.assertDictEqual(merged_dict, {'A': {'C': ['AC'], 'B': ['AB', 'AB'], 'E': {'F': ['AEF']}, 'D': ['PD']}})
 
     def test_dict_merge_empty(self):
         d2 = {'--': ['Thor (2011) [720p]'], 'T': {'--': ['Thor (2011) [720p]'], 'H': {'--': ['Thor (2011) [720p]'], 'O': {'--': ['Thor (2011) [720p]'], 'R': {'--': ['Thor (2011) [720p]']}}}}}
