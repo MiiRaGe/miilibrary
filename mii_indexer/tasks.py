@@ -1,12 +1,15 @@
+from __future__ import absolute_import
+
 import os
 
+from celery import task
+
 from django.conf import settings
-from celery import app
 
 from mii_indexer.indexer import Indexer
 
 
-@app.task()
+@task
 def index_movies():
     indexer = Indexer(os.path.join(settings.DESTINATION_FOLDER, 'Movies'))
     indexer.index()

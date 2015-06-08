@@ -1,5 +1,5 @@
 # Django settings for miilibrary project.
-from settings.utils import relative
+from .utils import relative
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -149,6 +149,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'djcelery',
     'mii_interface',
     'mii_unpacker',
     'mii_rss',
@@ -185,3 +186,10 @@ LOGGING = {
         },
     }
 }
+
+CELERY_IMPORTS = (
+    'mii_sorter.tasks',
+    'mii_unpacker.tasks',
+    'mii_indexer.tasks',
+)
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'

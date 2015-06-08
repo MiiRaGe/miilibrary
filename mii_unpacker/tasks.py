@@ -1,13 +1,16 @@
+from __future__ import absolute_import
+
 import os
 
-from celery import app
+from celery import task
+
 from django.conf import settings
 
 from mii_common import tools
 from mii_unpacker.unpacker import RecursiveUnrarer
 
 
-@app.task()
+@task
 def unpack():
     output_dir = settings.DESTINATION_FOLDER
     data_dir = tools.make_dir(os.path.join(output_dir, 'data'))

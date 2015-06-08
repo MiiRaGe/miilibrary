@@ -96,8 +96,7 @@ class TestMain(TestCase):
         tools.print_rec(self.DESTINATION_FOLDER, 0)
 
     def test_rpc_unpack(self):
-        import ipdb; ipdb.set_trace()
-        response = self.client.get('mii_unpacker/rpc/unpack')
+        response = self.client.get('/rpc/unpack')
         self.assertEqual(response.status_code, 200)
 
     def test_rpc_sort(self):

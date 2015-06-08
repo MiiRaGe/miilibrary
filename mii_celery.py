@@ -9,12 +9,12 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
 from django.conf import settings
 
-app = Celery('miilibrary')
+app = Celery('mii_celery')
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
 app.config_from_object('django.conf:settings')
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+app.autodiscover_tasks(settings.INSTALLED_APPS)
 
 
 @app.task(bind=True)

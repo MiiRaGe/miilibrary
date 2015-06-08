@@ -3,5 +3,5 @@ from mii_unpacker.tasks import unpack
 
 
 def start_unpacker(request):
-    unpack().delay()
+    unpack.delay()
     return HttpResponse()

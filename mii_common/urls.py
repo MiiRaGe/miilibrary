@@ -2,16 +2,14 @@ from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+
 admin.autodiscover()
 
-urlpatterns = patterns('',
-    # Examples:
+urlpatterns = patterns(
+    '',
     url(r'^$', 'mii_interface.views.index', name='home'),
-    # url(r'^mii_server/', include('miilibrary.foo.urls')),
-
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
+    url(r'^rpc/index$', 'mii_indexer.views.start_index', name='start_index'),
+    url(r'^rpc/sort$', 'mii_sorter.views.start_sort', name='start_sort'),
+    url(r'^rpc/unpack$', 'mii_unpacker.views.start_unpacker', name='start_unpacker'),
     url(r'^admin/', include(admin.site.urls)),
 )
