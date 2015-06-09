@@ -42,5 +42,6 @@ def rate(request):
     genres = [x.tag.name for x in MovieTagging.filter(movie=movie)]
     actors = [x.person.name for x in MovieRelation.filter(movie=movie, type='Actor')]
     directors = [x.person.name for x in MovieRelation.filter(movie=movie, type='Director')]
-    return render(request, 'mii_interface/rate.html', dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
-                           genres=genres, actors=actors, directors=directors))
+    return render(request, 'mii_interface/rate.html',
+                  dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
+                       genres=genres, actors=actors, directors=directors))

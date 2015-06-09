@@ -1,7 +1,5 @@
 from django.db.models import Model, IntegerField, CharField
 
-__author__ = 'MiiRaGe'
-
 
 class FeedDownloaded(Model):
     season = IntegerField()

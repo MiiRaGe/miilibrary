@@ -9,7 +9,7 @@ from datetime import datetime
 
 from django.conf import settings
 from mii_sorter.models import get_serie_episode, get_serie_season
-from .models import FeedDownloaded
+from mii_rss.models import FeedDownloaded
 from mii_sorter.sorter import is_serie
 
 logging.basicConfig(filename='example.log', level=logging.DEBUG)

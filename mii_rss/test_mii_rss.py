@@ -1,9 +1,9 @@
-import unittest
+from django.test import TestCase
 
-from mii_rss import match
+from mii_rss_watcher import match
 
 
-class TestRSS(unittest.TestCase):
+class TestRSS(TestCase):
     def test_match(self):
         entry = {
             'title': 'homeland s04e09 theres something else going on 1080i hdtv dd5 1 mpeg2-topkek  [no rar]'

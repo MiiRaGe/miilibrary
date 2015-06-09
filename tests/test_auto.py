@@ -95,22 +95,30 @@ class TestMain(TestCase):
 
         tools.print_rec(self.DESTINATION_FOLDER, 0)
 
-    def test_rpc_unpack(self):
+    @mock.patch('mii_unpacker.views.unpack')
+    def test_rpc_unpack(self, unpack):
         response = self.client.get('/rpc/unpack')
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
+        assert unpack.delay.called == True
 
-    def test_rpc_sort(self):
-        pass
+    @mock.patch('mii_sorter.views.sort')
+    def test_rpc_sort(self, sort):
+        response = self.client.get('/rpc/sort')
+        assert response.status_code == 200
+        assert sort.delay.called == True
 
-    def test_rpc_index(self):
-        pass
+    @mock.patch('mii_indexer.views.index_movies')
+    def test_rpc_index(self, index):
+        response = self.client.get('/rpc/index')
+        assert response.status_code == 200
+        assert index.delay.called == True
 
 
 @override_settings(CUSTOM_RENAMING={'BARNABY': 'Barbie'})
 class TestSorter(TestCase):
     def test_is_serie(self):
-        self.assertFalse(is_serie('23name,asefjklS03esfsjkdlS05E1'))
-        self.assertTrue(is_serie('23name,asefjklS03esfsjkdlS05e10'))
+        assert not is_serie('23name,asefjklS03esfsjkdlS05E1')
+        assert is_serie('23name,asefjklS03esfsjkdlS05e10')
 
     def test_customer_renaming(self):
         serie1 = 'my name is BARNABYS S03E02'
@@ -118,18 +126,18 @@ class TestSorter(TestCase):
         serie3 = 'my name is BARNABS S03E02'
         serie4 = 'my name is barnabys S03E02'
 
-        self.assertNotEqual(serie1, apply_custom_renaming(serie1))
-        self.assertNotEqual(serie2, apply_custom_renaming(serie2))
-        self.assertEqual(serie3, apply_custom_renaming(serie3))
-        self.assertEqual(apply_custom_renaming(serie1), apply_custom_renaming(serie4))
+        assert serie1 != apply_custom_renaming(serie1)
+        assert serie2 != apply_custom_renaming(serie2)
+        assert serie3 == apply_custom_renaming(serie3)
+        assert apply_custom_renaming(serie1) == apply_custom_renaming(serie4)
 
     def test_format_serie_name(self):
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/....?'
-        self.assertEqual('The Walking Dead', format_serie_name(serie_name1))
+        assert 'The Walking Dead' == format_serie_name(serie_name1)
 
     def test_change_token_to_dot(self):
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/.'
-        self.assertEqual('The.Walking.Dead.', change_token_to_dot(serie_name1))
+        assert 'The.Walking.Dead.' == change_token_to_dot(serie_name1)
 
     def test_compare(self):
         api_result = {
@@ -138,58 +146,58 @@ class TestSorter(TestCase):
         }
 
         serie1 = 'Dragons.defenders.of.berk.S05e10.fap'
-        self.assertFalse(compare(serie1, api_result)[0])
+        assert not compare(serie1, api_result)[0]
 
         api_result['MovieKind'] = 'web series'
         api_result['SeriesSeason'] = '5'
         api_result['SeriesEpisode'] = '9'
-        self.assertFalse(compare(serie1, api_result)[0])
+        assert not compare(serie1, api_result)[0]
 
         api_result['SeriesSeason'] = '4'
         api_result['SeriesEpisode'] = '10'
-        self.assertFalse(compare(serie1, api_result)[0])
+        assert not compare(serie1, api_result)[0]
 
         api_result['SeriesSeason'] = '5'
         api_result['SeriesEpisode'] = '10'
-        self.assertTrue(compare(serie1, api_result)[0])
+        assert compare(serie1, api_result)[0]
 
         serie1 = 'Dragons.riders.of.berk.S05e10.fap'
-        self.assertTrue(compare(serie1, api_result)[0])
+        assert compare(serie1, api_result)[0]
 
         api_result['MovieName'] = 'Dragons.riders.of.berk'
         api_result['MovieKind'] = 'movie'
         api_result['MovieYear'] = '2014'
         movie1 = 'Dragons.defenders.of.berk (2014)'
-        self.assertTrue(compare(movie1, api_result)[0])
+        assert compare(movie1, api_result)[0]
 
         api_result['MovieYear'] = '2013'
-        self.assertFalse(compare(movie1, api_result)[0])
+        assert not compare(movie1, api_result)[0]
 
         movie1 = 'Dragons.defenders.of.berk'
-        self.assertTrue(compare(movie1, api_result)[0])
+        assert compare(movie1, api_result)[0]
 
     def test_letter_coverage(self):
         limit = 65
         str1 = 'Dragons riders of berk'
 
         str2 = 'Dragons defenders of berk'
-        self.assertGreaterEqual(letter_coverage(str1, str2), limit)
+        assert letter_coverage(str1, str2) >= limit
 
         str1 = 'Anchorman 2 The Legend Continues'
         str2 = 'Anchorman The Legend of Ron Burgundy'
-        self.assertLessEqual(letter_coverage(str1, str2), limit)
+        assert letter_coverage(str1, str2) <= limit
 
         str1 = 'How to Train Your Dragon'
         str2 = 'House of Flying Daggers'
-        self.assertLessEqual(letter_coverage(str1, str2), limit)
+        assert letter_coverage(str1, str2) <= limit
 
         str1 = 'friends.'
         str2 = 'New Girl'
-        self.assertLessEqual(letter_coverage(str1, str2), limit)
+        assert letter_coverage(str1, str2) <= limit
 
     def test_rename_serie(self):
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/..25x15..?'
-        self.assertEqual('The.Walking.Dead.S25E15.', rename_serie(serie_name1))
+        assert 'The.Walking.Dead.S25E15.' == rename_serie(serie_name1)
 
     def test_get_episode(self):
         tmp_dir = tempfile.mkdtemp()
@@ -198,9 +206,9 @@ class TestSorter(TestCase):
         f2 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E02.mkv')
         f3 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E05.mkv')
 
-        self.assertIsNone(get_episode(tmp_dir, 'useless arg', '01'))
-        self.assertIsNotNone(get_episode(tmp_dir, 'useless arg', '02'))
-        self.assertIsNone(get_episode(tmp_dir, 'useless arg', '03'))
+        assert not get_episode(tmp_dir, 'useless arg', '01')
+        assert get_episode(tmp_dir, 'useless arg', '02')
+        assert not get_episode(tmp_dir, 'useless arg', '03')
 
     def test_get_quality(self):
         name = 'serie de malade 720p 1080p DTS AC3 BLU-ray webrip'

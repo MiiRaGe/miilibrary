@@ -5,4 +5,4 @@ from mii_sorter.tasks import sort
 
 def start_sort(request):
     sort.delay()
-    return HttpResponse()
+    return HttpResponse('OK, sort started')
