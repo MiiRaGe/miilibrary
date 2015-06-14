@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class Sorter:
+    mii_tmdb = mii_mongo.MiiTheMovieDB()
+    mii_osdb = mii_mongo.MiiOpenSubtitleDB()
+
     """ Sorter Module """
     def __init__(self, media_dir):
         self.hash_array = []
@@ -27,8 +30,6 @@ class Sorter:
         self.unsorted_dir = os.path.join(media_dir, "unsorted")
         self.alphabetical_movie_dir = os.path.join(self.movie_dir, "All")
         self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
-        self.mii_tmdb = mii_mongo.MiiTheMovieDB()
-        self.mii_osdb = mii_mongo.MiiOpenSubtitleDB()
         tools.make_dir(self.serie_dir)
         tools.make_dir(self.movie_dir)
         tools.make_dir(self.alphabetical_movie_dir)

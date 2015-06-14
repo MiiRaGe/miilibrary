@@ -4,4 +4,4 @@ __author__ = 'MiiRaGe'
 
 
 class Unpacked(Model):
-    filename = TextField(max_length='400')
+    filename = TextField(max_length='400', unique=True)

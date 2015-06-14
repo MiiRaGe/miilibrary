@@ -20,8 +20,21 @@ from miinaslibrary import MiiNASLibrary
 
 logger = logging.getLogger(__name__)
 
+mii_osdb_mock = mock.MagicMock()
+mii_osdb_mock.get_movie_name = mock_get_movie_names2
+mii_osdb_mock.get_imdb_information = mock_get_imdb_information
+mii_osdb_mock.get_movie_names = mock_get_movie_names
+mii_osdb_mock.get_subtitles = mock_get_movie_names
+
+mii_tmdb_mock = mock.MagicMock()
+mii_tmdb_mock.get_movie_name = mock_get_movie_name
+mii_tmdb_mock.get_movie_imdb_id = mock_get_movie_imdb_id
+
 
 @override_settings(MINIMUM_SIZE=0.2, NAS_IP=None, NAS_USERNAME=None)
+@mock.patch('mii_indexer.indexer.Indexer.mii_osdb', new=mii_osdb_mock)
+@mock.patch('mii_sorter.sorter.Sorter.mii_tmdb', new=mii_tmdb_mock)
+@mock.patch('mii_sorter.sorter.Sorter.mii_osdb', new=mii_osdb_mock)
 class TestMain(TestCase):
     def setUp(self):
         logger.info("*** Building environment ***")
@@ -48,14 +61,6 @@ class TestMain(TestCase):
         tools.cleanup_rec(abs_output)
         logger.info("*** Environment Torn Down***")
 
-    @mock.patch('middleware.mii_mongo.MiiOpenSubtitleDB.mapping',
-                new={'get_movie_names': mock_get_movie_names,
-                     'get_subtitles': mock_get_movie_names,
-                     'get_movie_names2': mock_get_movie_names2,
-                     'get_imdb_information': mock_get_imdb_information})
-    @mock.patch('middleware.mii_mongo.MiiTheMovieDB.mapping',
-                new={'get_movie_name': mock_get_movie_name,
-                     'get_movie_imdb_id': mock_get_movie_imdb_id})
     def test_main(self):
         logger.info("== Testing validate_settings ==")
 
@@ -99,19 +104,19 @@ class TestMain(TestCase):
     def test_rpc_unpack(self, unpack):
         response = self.client.get('/rpc/unpack')
         assert response.status_code == 200
-        assert unpack.delay.called == True
+        assert unpack.delay.called
 
     @mock.patch('mii_sorter.views.sort')
     def test_rpc_sort(self, sort):
         response = self.client.get('/rpc/sort')
         assert response.status_code == 200
-        assert sort.delay.called == True
+        assert sort.delay.called
 
     @mock.patch('mii_indexer.views.index_movies')
     def test_rpc_index(self, index):
         response = self.client.get('/rpc/index')
         assert response.status_code == 200
-        assert index.delay.called == True
+        assert index.delay.called
 
 
 @override_settings(CUSTOM_RENAMING={'BARNABY': 'Barbie'})

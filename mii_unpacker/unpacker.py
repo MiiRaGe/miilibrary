@@ -80,7 +80,7 @@ class RecursiveUnrarer:
             Unpacked.objects.create(filename=file_name)
             self.extracted += 1
         except subprocess.CalledProcessError as cpe:
-            logger.error("Extraction failed code=%s, output=%s", cpe.returnvalue, cpe.output)
+            logger.error("Extraction failed code=%s, output=%s", cpe.returncode, cpe.output)
         return
 
     def cleanup(self):
