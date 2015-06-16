@@ -11,3 +11,6 @@ mysql-python
 celery==3.1.18
 django-celery
 spur
+pytest
+pytest-cache
+pytest-django

@@ -59,12 +59,6 @@ MONGO_USERNAME = 'MiiRaGe'
 MONGO_PASSWORD = '1234'
 MONGO_DB_NAME = 'miilibrary'
 
-MYSQL_HOST = 'localhost'
-MYSQL_PORT = 3306
-MYSQL_USERNAME = 'MiiRaGe'
-MYSQL_PASSWORD = '1234'
-MYSQL_NAME = "media"
-
 """[RSS Link]"""
 RSS_URL = 'http://www.torrentday.com/torrents/rss?download;l7;u=xxx;tp=xxx'
 TORRENT_WATCHED_FOLDER = '/PATH/TO/WATCHED/FOLDER/'
@@ -72,10 +66,10 @@ RSS_FILTERS = [
     'the.peoples.couch.*720p'
 ]
 
-DATABASES['default']['NAME'] = ''
-DATABASES['default']['USER'] = ''
-DATABASES['default']['PASSWORD'] = ''
-DATABASES['default']['HOST'] = ''
+DATABASES['default']['NAME'] = 'media'
+DATABASES['default']['USER'] = 'MiiRaGe'
+DATABASES['default']['PASSWORD'] = '1234'
+DATABASES['default']['HOST'] = 'localhost'
 
 #Set them equal to local_root if not using a nas
 LOCAL_ROOT = '/mnt/smb_folder/'
