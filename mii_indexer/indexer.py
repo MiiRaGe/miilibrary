@@ -71,7 +71,7 @@ class Indexer:
                                                                     movie=movie)
                             index_dict[value[0]].update(dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
 
-        index_dict['Search'] = add_number_and_simplify(index_dict['Search'])
+        add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
         pprint(index_dict)
 
