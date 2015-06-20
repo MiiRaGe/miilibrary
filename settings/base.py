@@ -48,7 +48,7 @@ CUSTOM_RENAMING = {
 }
 
 """[OpenSubtitle]"""
-OPENSUBTITLE_API_URL = "http://api.opensubtitles.org/xml-rpc"
+OPENSUBTITLE_API_URL = "https://api.opensubtitles.org/xml-rpc"
 OPENSUBTITLE_LOGIN = ''
 OPENSUBTITLE_PASSWORD = ''
 
