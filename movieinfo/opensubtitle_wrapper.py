@@ -5,6 +5,7 @@ import time
 from xmlrpclib import ProtocolError, ServerProxy, SafeTransport, GzipDecodedResponse
 
 from django.conf import settings
+from pyexpat import ExpatError
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +26,19 @@ class CustomTransport(SafeTransport):
         p, u = self.getparser()
 
         while 1:
+
             data = stream.read(1024)
             data = data.strip()
             if not data:
                 break
             if self.verbose:
                 print "body:", repr(data)
-            p.feed(data)
+            try:
+                p.feed(data)
+            except ExpatError as e:
+                import pdb; pdb.set_trace()
+                print repr(e)
+                pass
 
         if stream is not response:
             stream.close()
