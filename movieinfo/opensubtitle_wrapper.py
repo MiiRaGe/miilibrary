@@ -27,7 +27,6 @@ class OpenSubtitleWrapper:
                 password = settings.OPENSUBTITLE_PASSWORD
                 logger.warning('Trying to login')
                 result = self.server.LogIn(username, password, "gb", "miinaslibraryUA")
-                logger.warning('Still Trying to login')
                 self.token = result.get("token")
                 status = result.get("status")
                 if status.startswith('200'):
@@ -100,6 +99,7 @@ class OpenSubtitleWrapper:
                                                           "moviebytesize": movie_size,
                                                           "query": movie_name}],
                                                      {"limit": 100})
+                import pdb; pdb.set_trace()
                 logger.debug(result)
                 try:
                     result = result.get("data")
