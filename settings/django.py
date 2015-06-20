@@ -145,11 +145,9 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
     'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
     'djcelery',
+    'djsupervisor',
     'mii_interface',
     'mii_unpacker',
     'mii_rss',
