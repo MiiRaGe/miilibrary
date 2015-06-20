@@ -1,4 +1,5 @@
 import os
+import subprocess
 import spur
 
 from django.conf import settings
@@ -22,6 +23,14 @@ def symlink(source_file, destination_file):
         result = shell.run(["ln", "-s", map_to_nas(source_file), map_to_nas(destination_file)])
         return result.return_code
     return os.symlink(source_file, destination_file)
+
+
+def unrar(source_file, destination_dir):
+    # Source file is the destination of the link and destionation_file is the new link path
+    if shell:
+        result = shell.run(["unrar", "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
+        return result.return_code
+    return subprocess.check_output('unrar e -y %s %s' % (source_file, destination_dir))
 
 
 def map_to_nas(local_path):

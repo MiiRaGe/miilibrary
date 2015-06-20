@@ -6,7 +6,7 @@ import subprocess
 
 from os import listdir
 from django.conf import settings
-from middleware.remote_execution import link
+from middleware.remote_execution import link, unrar
 
 from mii_unpacker.models import Unpacked
 
@@ -68,8 +68,7 @@ class RecursiveUnrarer:
         logger.debug("Processing extraction...")
 
         try:
-            output = subprocess.check_output('unrar e -y %s %s' % (archive_file, self.destination_dir),
-                                                       shell=True)
+            output = unrar(archive_file, self.destination_dir)
             # TODO : Do something with execution_result.output.
             # TODO : Log in a table
             logger.debug("Extraction OK!")
