@@ -42,7 +42,7 @@ class RecursiveUnrarer:
             if os.path.isfile(full_file_path):
                 if data_file.endswith(".part01.rar"):
                     logger.debug("%sExtracting :%s" % (indent, data_file))
-                    self.unrar(full_file_path)
+                    self.unrar(full_file_path, data_file)
 
                 elif re.match(".*\.part[0-9]*\.rar$", data_file):
                     logger.debug("%sBypassing :%s" % (indent, data_file))

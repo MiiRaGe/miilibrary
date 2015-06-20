@@ -6,7 +6,7 @@ from django.conf import settings
 
 shell = None
 if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
-    shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME, connect_timeout=600)
+    shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME, connect_timeout=900)
 
 
 def link(source_file, destination_file):
