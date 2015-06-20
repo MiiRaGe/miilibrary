@@ -47,7 +47,7 @@ class OpenSubtitleWrapper:
         self.server = None  # server initialized in log_in to avoid program not running offline
 
     def log_in(self, retry=False, max_retries=5):
-        self.server = ServerProxy(settings.OPENSUBTITLE_API_URL, transport=CustomTransport)
+        self.server = ServerProxy(settings.OPENSUBTITLE_API_URL, transport=CustomTransport())
         result = None
         go_on = True
         fail_count = 0
