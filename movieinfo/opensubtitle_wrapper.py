@@ -2,11 +2,42 @@ import logging
 import socket
 import time
 
-from xmlrpclib import ProtocolError, ServerProxy
+from xmlrpclib import ProtocolError, ServerProxy, SafeTransport, GzipDecodedResponse
 
 from django.conf import settings
 
-logger = logging.getLogger("NAS")
+logger = logging.getLogger(__name__)
+
+
+class CustomTransport(SafeTransport):
+    def parse_response(self, response):
+        # read response data from httpresponse, and parse it
+
+        # Check for new http response object, else it is a file object
+        if hasattr(response,'getheader'):
+            if response.getheader("Content-Encoding", "") == "gzip":
+                stream = GzipDecodedResponse(response)
+            else:
+                stream = response
+        else:
+            stream = response
+
+        p, u = self.getparser()
+
+        while 1:
+            data = stream.read(1024)
+            data = data.strip()
+            if not data:
+                break
+            if self.verbose:
+                print "body:", repr(data)
+            p.feed(data)
+
+        if stream is not response:
+            stream.close()
+        p.close()
+
+        return u.close()
 
 
 class OpenSubtitleWrapper:
@@ -16,7 +47,7 @@ class OpenSubtitleWrapper:
         self.server = None  # server initialized in log_in to avoid program not running offline
 
     def log_in(self, retry=False, max_retries=5):
-        self.server = ServerProxy(settings.OPENSUBTITLE_API_URL)
+        self.server = ServerProxy(settings.OPENSUBTITLE_API_URL, transport=CustomTransport)
         result = None
         go_on = True
         fail_count = 0
@@ -110,6 +141,11 @@ class OpenSubtitleWrapper:
                 logger.info("Result : %s" % result)
                 logger.info("Got rejected by the API, waiting 1minutes")
                 time.sleep(60)
+            except Exception as e:
+                import pdb; pdb.set_trace()
+                logger.exception(repr(e))
+
+
 
     def exit(self):
         return self.server.LogOut()
