@@ -63,12 +63,8 @@ class RecursiveUnrarer:
                 self.level -= 1
 
     def unrar(self, archive_file, file_name):
-        try:
-            Unpacked.objects.get(filename=file_name)
+        if Unpacked.objects.filter(filename=file_name).exists():
             return
-        except Unpacked.DoesNotExist:
-            pass
-
         logger.debug("Processing extraction...")
 
         try:
