@@ -10,45 +10,6 @@ from pyexpat import ExpatError
 logger = logging.getLogger(__name__)
 
 
-class CustomTransport(SafeTransport):
-    def parse_response(self, response):
-        # read response data from httpresponse, and parse it
-
-        # Check for new http response object, else it is a file object
-        if hasattr(response, 'getheader'):
-            if response.getheader("Content-Encoding", "") == "gzip":
-                stream = GzipDecodedResponse(response)
-            else:
-                stream = response
-        else:
-            stream = response
-
-        p, u = self.getparser()
-
-        while 1:
-
-            data = stream.read(1024)
-            data = data.strip()
-            if not data:
-                break
-            if self.verbose:
-                print "body:", repr(data)
-            try:
-                p.feed(data)
-            except ExpatError as e:
-                import pdb;
-
-                pdb.set_trace()
-                print repr(e)
-                pass
-
-        if stream is not response:
-            stream.close()
-        p.close()
-
-        return u.close()
-
-
 class OpenSubtitleWrapper:
     def __init__(self):
         self.login_successful = False
@@ -56,7 +17,7 @@ class OpenSubtitleWrapper:
         self.server = None  # server initialized in log_in to avoid program not running offline
 
     def log_in(self, retry=False, max_retries=5):
-        self.server = ServerProxy(settings.OPENSUBTITLE_API_URL, transport=CustomTransport())
+        self.server = ServerProxy(settings.OPENSUBTITLE_API_URL)
         result = None
         go_on = True
         fail_count = 0
@@ -96,7 +57,7 @@ class OpenSubtitleWrapper:
             try:
                 result = self.server.GetIMDBMovieDetails(self.token, imdb_id)
                 return result.get("data")
-            except (ProtocolError):
+            except ProtocolError:
                 logger.info("Result :" + str(result))
                 logger.info("Got rejected by the API, waiting 1minutes")
                 time.sleep(60)
@@ -119,7 +80,7 @@ class OpenSubtitleWrapper:
             try:
                 result = self.server.CheckMovieHash2(self.token, movie_hashes)
                 return result.get("data")
-            except (ProtocolError):
+            except ProtocolError:
                 logger.info("Result : %s" % result)
                 logger.info("Got rejected by the API, waiting 1minutes")
                 time.sleep(60)
@@ -151,10 +112,8 @@ class OpenSubtitleWrapper:
                 logger.info("Got rejected by the API, waiting 1minutes")
                 time.sleep(60)
             except Exception as e:
-                import pdb; pdb.set_trace()
                 logger.exception(repr(e))
                 return None
-
 
     def exit(self):
         return self.server.LogOut()
