@@ -5,9 +5,9 @@ import time
 import re
 import urllib
 
-from datetime import datetime
 
 from django.conf import settings
+from django.utils import timezone
 from mii_sorter.models import get_serie_episode, get_serie_season
 from mii_rss.models import FeedDownloaded
 from mii_sorter.sorter import is_serie
@@ -36,7 +36,7 @@ def already_downloading(db_name, title):
             return True
         except FeedDownloaded.DoesNotExists:
             FeedDownloaded.create(re_filter=db_name, episode=regex_result.group(2), season=regex_result.group(1),
-                                  date=datetime.now())
+                                  date=timezone.now())
     return False
 
 

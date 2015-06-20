@@ -1,7 +1,7 @@
-import datetime
 import logging
 
 from django.conf import settings
+from django.utils import timezone
 from pymongo import MongoClient
 from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
 from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
@@ -35,10 +35,7 @@ def do_query(qry, collection):
     existing_data = collection.find_one(qry, {'data': 1, 'date': 1})
     if existing_data:
         logger.info('Result found in mongo')
-        if (datetime.datetime.now() - existing_data['date']).days > 90:
-            logger.info('Too old, querying new data')
-        else:
-            return existing_data['data']
+        return existing_data['data']
 
 
 def do_insert(data, collection):
@@ -74,7 +71,7 @@ class MiiMongoStored(object):
         result = self.mapping[method_name](*args)
 
         qry = self.qry
-        qry.update(data=result, date=datetime.datetime.now())
+        qry.update(data=result, date=timezone.now())
         do_insert(qry, self.collection)
         return result
 

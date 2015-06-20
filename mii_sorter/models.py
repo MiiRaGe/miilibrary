@@ -1,7 +1,6 @@
 import logging
 
-from datetime import datetime
-
+from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
     DateTimeField
 
@@ -115,7 +114,7 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path, s
 
     # Add the serie to the what's new folder
     wn, created = WhatsNew.objects.get_or_create(name='%s S%sE%s' % (serie_name, serie_season, episode_number),
-                                                 date=datetime.now(),
+                                                 date=timezone.now(),
                                                  path=serie_path)
     return episode
 
@@ -153,5 +152,5 @@ def insert_movie(title, year, path, size):
     movie, created = Movie.objects.get_or_create(title=title, year=year, folder_path=path, file_size=size)
 
     # Add the movie to the what's new folder
-    wn, created = WhatsNew.objects.get_or_create(name='%s (%s)' % (title, year), date=datetime.now(), path=path)
+    wn, created = WhatsNew.objects.get_or_create(name='%s (%s)' % (title, year), date=timezone.now(), path=path)
     return movie
