@@ -101,12 +101,9 @@ class RecursiveUnrarer:
     def link_video(self, source_path, file_to_link):
         source_file = source_path + os.path.sep + file_to_link
         destination_file = self.destination_dir + os.path.sep + file_to_link
-        try:
-            Unpacked.objects.get(filename=file_to_link)
+        if Unpacked.objects.filter(filename=file_to_link).exists():
             logger.error("Not linking, same file exist (weight wise)")
             return False
-        except Unpacked.DoesNotExist:
-            pass
 
         if os.path.exists(destination_file):
             if os.path.getsize(destination_file) < os.path.getsize(source_file):
