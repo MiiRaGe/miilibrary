@@ -283,7 +283,6 @@ class Sorter:
             if imdb_id:
                 movie.imdb_id = imdb_id
                 movie.save()
-                open(os.path.join(created_movie_dir, ".IMDB_ID_%s" % imdb_id), "w")
             new_name = re.sub(".*(\.[a-zA-Z0-9]*)$", "%s\g<1>" % re.sub(" ", ".", custom_movie_dir), filename)
             logger.info("Moving %s, with new name %s" % (filename, new_name))
             os.rename(file_path, os.path.join(created_movie_dir, new_name))
