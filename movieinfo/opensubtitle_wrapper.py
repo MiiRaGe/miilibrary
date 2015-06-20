@@ -15,7 +15,7 @@ class CustomTransport(SafeTransport):
         # read response data from httpresponse, and parse it
 
         # Check for new http response object, else it is a file object
-        if hasattr(response,'getheader'):
+        if hasattr(response, 'getheader'):
             if response.getheader("Content-Encoding", "") == "gzip":
                 stream = GzipDecodedResponse(response)
             else:
@@ -36,7 +36,9 @@ class CustomTransport(SafeTransport):
             try:
                 p.feed(data)
             except ExpatError as e:
-                import pdb; pdb.set_trace()
+                import pdb;
+
+                pdb.set_trace()
                 print repr(e)
                 pass
 
@@ -133,11 +135,11 @@ class OpenSubtitleWrapper:
             try:
                 result = self.server.SearchSubtitles(self.token,
                                                      [
-                                                         {"moviehash": movie_hash,
-                                                          "moviebytesize": movie_size,
-                                                          "query": movie_name}],
-                                                     {"limit": 100})
-                import pdb; pdb.set_trace()
+                                                         {'moviehash': movie_hash,
+                                                          'moviebytesize': movie_size,
+                                                          'sublanguageid': 'eng,fra,ger',
+                                                          'query': movie_name}],
+                                                     {'limit': 100})
                 logger.debug(result)
                 try:
                     result = result.get("data")
@@ -151,7 +153,7 @@ class OpenSubtitleWrapper:
             except Exception as e:
                 import pdb; pdb.set_trace()
                 logger.exception(repr(e))
-
+                return None
 
 
     def exit(self):
