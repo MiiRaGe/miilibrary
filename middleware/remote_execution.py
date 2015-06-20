@@ -28,6 +28,7 @@ def symlink(source_file, destination_file):
 def unrar(source_file, destination_dir):
     # Source file is the archive file and destionation_dir is the extraction directory
     if shell:
+        # TODO : Remove hardcoded unrar command
         result = shell.run(["/usr/local/sbin/unrar", "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
     return subprocess.check_output('unrar e -y %s %s' % (source_file, destination_dir))
