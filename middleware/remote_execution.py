@@ -6,7 +6,7 @@ from django.conf import settings
 
 shell = None
 if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
-    shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME)
+    shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME, connect_timeout=600)
 
 
 def link(source_file, destination_file):
@@ -26,9 +26,9 @@ def symlink(source_file, destination_file):
 
 
 def unrar(source_file, destination_dir):
-    # Source file is the destination of the link and destionation_file is the new link path
+    # Source file is the archive file and destionation_dir is the extraction directory
     if shell:
-        result = shell.run(["unrar", "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
+        result = shell.run(["/usr/local/sbin/unrar", "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
     return subprocess.check_output('unrar e -y %s %s' % (source_file, destination_dir))
 
