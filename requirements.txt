@@ -10,6 +10,7 @@ django==1.8
 mysql-python
 celery==3.1.18
 django-celery
+django-supervisor
 spur
 pytest
 pytest-cache
