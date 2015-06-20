@@ -1,12 +1,12 @@
-def mock_get_movie_names(_, *args, **kwargs):
+def mock_get_movie_names(*args, **kwargs):
     return {}
 
 
-def mock_get_movie_names2(_, *args, **kwargs):
+def mock_get_movie_names2(*args, **kwargs):
     return {}
 
 
-def mock_get_imdb_information(_, id):
+def mock_get_imdb_information(id):
     data = {
         '1981115': {'rating': '9.5', 'kind': 'movie', 'votes': '240548', 'language': ['English'],
                     'imdb_status': 'Cached',
@@ -44,7 +44,7 @@ def mock_get_imdb_information(_, id):
                             'Vietnam (alternative title) (Thor 2: The Gioi Bong Toi)'],
                     'trivia': 'The stone creature Thor fights is a Kronan, an alien being that appeared in Thor\'s first comic, "Journey Into Mystery" #83. See more >>',
                     'id': '1981115'},
-        '800369': {'rating': '7.0', 'kind': 'movie', 'votes': '360424', 'language': ['English'],
+        '0800369': {'rating': '7.0', 'kind': 'movie', 'votes': '360424', 'language': ['English'],
                    'imdb_status': 'Cached',
                    'plot': 'The powerful but arrogant god Thor is cast out of Asgard to live amongst humans in Midgard (Earth), where he soon becomes one of their finest defenders.',
                    'country': ['USA'], 'title': 'Thor',
@@ -72,4 +72,4 @@ def mock_get_imdb_information(_, id):
                    'trivia': "Tom Hiddleston was chosen after previously collaborating with Kenneth Branagh on the theatrical play 'Ivanov' and the TV series Wallander (2008). See more >>",
                    'id': '0800369'},
     }
-    return data[str(id)]
+    return data[id.replace('t', '')]
