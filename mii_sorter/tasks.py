@@ -9,5 +9,5 @@ from mii_sorter.sorter import Sorter
 
 @task
 def sort():
-    sorter = Sorter(settings.DESTINATION_FOLDER)
+    sorter = Sorter()
     sorter.sort()

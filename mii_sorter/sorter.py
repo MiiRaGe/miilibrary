@@ -19,15 +19,15 @@ class Sorter:
     mii_osdb = mii_mongo.MiiOpenSubtitleDB()
 
     """ Sorter Module """
-    def __init__(self, media_dir):
+    def __init__(self):
         self.hash_array = []
         self.map = {}
-        self.media_dir = media_dir
-        self.data_dir = os.path.join(media_dir, "data")
+        self.media_dir = settings.DESTINATION_FOLDER
+        self.data_dir = os.path.join(self.media_dir, "data")
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
-        self.serie_dir = os.path.join(media_dir, "TVSeries")
-        self.movie_dir = os.path.join(media_dir, "Movies")
-        self.unsorted_dir = os.path.join(media_dir, "unsorted")
+        self.serie_dir = os.path.join(self.media_dir, "TVSeries")
+        self.movie_dir = os.path.join(self.media_dir, "Movies")
+        self.unsorted_dir = os.path.join(self.media_dir, "unsorted")
         self.alphabetical_movie_dir = os.path.join(self.movie_dir, "All")
         self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
         tools.make_dir(self.serie_dir)
