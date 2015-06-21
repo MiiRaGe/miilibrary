@@ -3,6 +3,7 @@ import json
 from django.shortcuts import render
 
 from mii_indexer.models import MovieTagging, MovieRelation
+from mii_interface.models import Report
 from mii_sorter.models import Movie, Serie
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
 
@@ -45,3 +46,8 @@ def rate(request):
     return render(request, 'mii_interface/rate.html',
                   dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
                        genres=genres, actors=actors, directors=directors))
+
+
+def report(request):
+    report = Report.objects.filter()[0]
+    return render(request, 'mii_interface/reports.html', {'report': report})

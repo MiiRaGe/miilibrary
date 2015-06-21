@@ -1,0 +1,13 @@
+{% extends 'mii_interface/base.html' %}
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('#navigation-bar').find('li.active').toggleClass('active')
+        $('#navigation-bar').find('#nav-reports').toggleClass('active')
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+{{ report|safe }}
+{% endblock %}

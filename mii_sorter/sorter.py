@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from pyreport.reporter import Report
 from middleware.remote_execution import symlink
 
 import movieinfo.hash_tool as ht
@@ -8,11 +9,12 @@ import movieinfo.hash_tool as ht
 from django.conf import settings
 from middleware import mii_mongo
 from mii_common import tools
-from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie
+from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, \
+    insert_sorting_report
 
 
-logger = logging.getLogger(__name__)
-
+# logger = logging.getLogger(__name__)
+logger = Report()
 
 class Sorter:
     mii_tmdb = mii_mongo.MiiTheMovieDB()
@@ -20,6 +22,7 @@ class Sorter:
 
     """ Sorter Module """
     def __init__(self):
+        logger.create_report()
         self.hash_array = []
         self.map = {}
         self.media_dir = settings.DESTINATION_FOLDER
@@ -84,6 +87,7 @@ class Sorter:
                     self.sort_movie_from_name(file_name)
 
         self.update_whatsnew()
+        insert_sorting_report(logger.finalize_report())
 
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)

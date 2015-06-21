@@ -3,6 +3,7 @@ import logging
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
     DateTimeField
+from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
 
@@ -165,3 +166,7 @@ def insert_movie(title, year, path, size):
     # Add the movie to the what's new folder
     wn, created = WhatsNew.objects.get_or_create(name='%s (%s)' % (title, year), date=timezone.now(), path=path)
     return movie
+
+
+def insert_sorting_report(report_html):
+    Report.objects.create(report_type='sorting', report_html=report_html, date=timezone.now())
