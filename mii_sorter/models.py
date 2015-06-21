@@ -29,6 +29,9 @@ class Serie(Model):
     class Meta:
         ordering = ['name']
 
+    def __unicode__(self):
+        return self.name
+
 
 class Season(Model):
     number = IntegerField()
@@ -38,6 +41,10 @@ class Season(Model):
         unique_together = [
             ['number', 'serie']
         ]
+        ordering = ('serie__name', 'number')
+
+    def __unicode__(self):
+        return '%s S%s' % (self.serie.name, self.number)
 
 
 class Episode(Model):
@@ -50,6 +57,10 @@ class Episode(Model):
         unique_together = [
             ['number', 'season']
         ]
+        ordering = ('season__serie__name', 'season__number', 'number')
+
+    def __unicode__(self):
+        return '%s S%sE%s' % (self.season.serie.name, self.season.number, self.number)
 
 
 class WhatsNew(Model):
