@@ -37,6 +37,10 @@ class Indexer:
             tools.make_dir(folder)
 
     def index(self):
+        dict_index = self.get_dict_index()
+        return dict_index
+
+    def get_dict_index(self):
         logger.info("****************************************")
         logger.info("**********      Indexer       **********")
         logger.info("****************************************")
@@ -73,7 +77,7 @@ class Indexer:
 
         add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
-        pprint(index_dict)
+        return index_dict
 
     def index_values(self, values, folder, folder_abs, index_type, movie=None):
         if values:
