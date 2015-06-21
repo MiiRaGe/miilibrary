@@ -1,13 +1,12 @@
-from collections import defaultdict
 import logging
 import re
 import os
 
-from pprint import pprint
-
-from mii_common import tools
+from collections import defaultdict
+from django.conf import settings
 
 from middleware import mii_mongo
+from mii_common import tools
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie
 
@@ -18,11 +17,11 @@ logger = logging.getLogger("NAS")
 class Indexer:
     mii_osdb = mii_mongo.MiiOpenSubtitleDB()
 
-    def __init__(self, source_dir):
+    def __init__(self):
         # All directory is always created by sorter and contains all movie sorted alphabetically
-        self.source_dir = source_dir
-        self.alphabetical_dir = os.path.join(source_dir, "All")
-        self.search_dir = os.path.join(source_dir, "Search")
+        self.source_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies')
+        self.alphabetical_dir = os.path.join(self.source_dir, "All")
+        self.search_dir = os.path.join(self.source_dir, "Search")
         self.index_mapping = {
             'genre_dir': ('Genres', lambda x: x.get('genres'), 'Tag'),
             'rating_dir': ('Ratings', lambda x: [str(int(float(x.get('rating', 0))))], 'Rating'),
@@ -33,8 +32,8 @@ class Indexer:
 
     def init(self):
         for folder, _, type in self.index_mapping.values() + [(self.search_dir, None, 'Search')]:
-            tools.delete_dir(folder)
-            tools.make_dir(folder)
+            tools.delete_dir(os.path.join(self.source_dir, folder))
+            tools.make_dir(os.path.join(self.source_dir, folder))
 
     def index(self):
         dict_index = self.get_dict_index()

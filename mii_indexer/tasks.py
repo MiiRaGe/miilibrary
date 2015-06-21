@@ -11,5 +11,5 @@ from mii_indexer.indexer import Indexer
 
 @task
 def index_movies():
-    indexer = Indexer(os.path.join(settings.DESTINATION_FOLDER, 'Movies'))
+    indexer = Indexer()
     indexer.index()
