@@ -2,16 +2,48 @@
 {% block js %}
 <script>
     $(document).ready(function () {
-        $('#navigation-bar').find('li.active').toggleClass('active')
-        $('#navigation-bar').find('#nav-reports').toggleClass('active')
+        var nav_bar = $('#navigation-bar').find('li.active').toggleClass('active');
+        nav_bar.find('#nav-reports').toggleClass('active');
+        $('p.info').addClass('bg-success');
+        $('p.debug').addClass('bg-info');
+        $('p.critical').addClass('bg-danger');
+        $('p.warning').addClass('bg-warning');
+        $('p.exception').addClass('bg-danger');
+        $('p.error').addClass('bg-danger');
+        var logging_level = $('.logging-level');
+        logging_level.find('.btn-success').click(function() { $('p.info').toggle()});
+        logging_level.find('.btn-info').click(function() { $('p.debug').toggle()});
+        logging_level.find('.btn-danger').click(function() { $('p.critical').toggle()});
+        logging_level.find('.btn-warning').click(function() { $('p.warning').toggle()});
+        logging_level.find('.btn-danger').click(function() { $('p.error').toggle()});
     });
 </script>
 {% endblock %}
 
 {% block content %}
 {% if report %}
-    {{ report.report_html }}
+    <span>Logging level enabled :</span>
+<div class="btn-group logging-level" data-toggle="buttons">
+  <label class="btn btn-success active">
+    <input type="checkbox" autocomplete="off"> INFO
+  </label>
+  <label class="btn btn-warning active">
+    <input type="checkbox" autocomplete="off"> WARNING
+  </label>
+  <label class="btn btn-danger active">
+    <input type="checkbox" autocomplete="off"> ERROR
+  </label>
+  <label class="btn btn-info active">
+    <input type="checkbox" autocomplete="off"> DEBUG
+  </label>
+</div>
+<h3>Report</h3>
+<div>
+    {{ report.report_html|safe }}
+</div>
 {% else %}
-Report not found
+<div>
+    Report not found
+</div>
 {% endif %}
 {% endblock %}

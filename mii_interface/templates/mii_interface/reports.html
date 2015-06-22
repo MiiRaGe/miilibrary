@@ -9,8 +9,9 @@
 {% endblock %}
 
 {% block content %}
+<ul>
 {% for report in reports %}
-{{report.date}}
-<a href="{% url 'report' report.pk %}"> {{ report.date|date:"D d M Y H:i" }} {{ report.report_type }}</a>
+<li><a href="{% url 'report' report.pk %}">{{ report.date|date:"d/m/Y H:i" }} - {{ report.report_type }}</a></li>
 {% endfor %}
+</ul>
 {% endblock %}

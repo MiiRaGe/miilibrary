@@ -18,8 +18,8 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
-    <link rel="stylesheet" href="./static/mii_library.css">
-    <link rel="stylesheet" href="./static/star-rating.min.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}/mii_library.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}/star-rating.min.css">
     <script src="/static/star-rating.min.js"></script>
 </head>
 <body>
@@ -37,10 +37,10 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul id="navigation-bar" class="nav navbar-nav">
-            <li id="nav-movies"><a href="movies">Movies</a></li>
-            <li id="nav-series"><a href="series">Series</a></li>
-            <li id="nav-rate"><a href="rate">Rate</a></li>
-            <li id="nav-reports"><a href="reports">Reports</a></li>
+            <li id="nav-movies"><a href="/movies">Movies</a></li>
+            <li id="nav-series"><a href="/series">Series</a></li>
+            <li id="nav-rate"><a href="/rate">Rate</a></li>
+            <li id="nav-reports"><a href="/reports">Reports</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

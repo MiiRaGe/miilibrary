@@ -56,7 +56,7 @@ def reports(request):
 
 def report(request, report_id):
     try:
-        report = Report.objects.get(iid=report_id)
+        report = Report.objects.get(pk=report_id)
     except ObjectDoesNotExist:
         report = None
     return render(request, 'mii_interface/report.html', {'report': report})

@@ -6,3 +6,8 @@
     font-size: 24px;
     vertical-align: middle;
 }
+
+p.info, p.debug, p.warning, p.critical, p.exception {
+    padding: 0px;
+    margin: 0px;
+}
