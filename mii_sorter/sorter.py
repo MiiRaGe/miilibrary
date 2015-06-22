@@ -16,6 +16,7 @@ from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode,
 # logger = logging.getLogger(__name__)
 logger = Report()
 
+
 class Sorter:
     mii_tmdb = mii_mongo.MiiTheMovieDB()
     mii_osdb = mii_mongo.MiiOpenSubtitleDB()

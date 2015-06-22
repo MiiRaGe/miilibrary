@@ -169,4 +169,4 @@ def insert_movie(title, year, path, size):
 
 
 def insert_sorting_report(report_html):
-    Report.objects.create(report_type='sorting', report_html=report_html, date=timezone.now())
+    Report.objects.create(report_type='sorting', report_html=report_html)

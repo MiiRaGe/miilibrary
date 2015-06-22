@@ -9,8 +9,9 @@
 {% endblock %}
 
 {% block content %}
-{% for report in reports %}
-{{report.date}}
-<a href="{% url 'report' report.pk %}"> {{ report.date|date:"D d M Y H:i" }} {{ report.report_type }}</a>
-{% endfor %}
+{% if report %}
+    {{ report.report_html }}
+{% else %}
+Report not found
+{% endif %}
 {% endblock %}

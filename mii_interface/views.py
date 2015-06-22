@@ -1,4 +1,5 @@
 import json
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.shortcuts import render
 
@@ -48,6 +49,14 @@ def rate(request):
                        genres=genres, actors=actors, directors=directors))
 
 
-def report(request):
-    report = Report.objects.filter()[0]
-    return render(request, 'mii_interface/reports.html', {'report': report})
+def reports(request):
+    reports = Report.objects.all().order_by('date')
+    return render(request, 'mii_interface/reports.html', {'reports': reports})
+
+
+def report(request, report_id):
+    try:
+        report = Report.objects.get(iid=report_id)
+    except ObjectDoesNotExist:
+        report = None
+    return render(request, 'mii_interface/report.html', {'report': report})
