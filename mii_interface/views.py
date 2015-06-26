@@ -7,6 +7,7 @@ from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
 from mii_sorter.models import Movie, Serie
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
+from mii_interface.tasks import unpack_sort_index
 
 
 def index(request):
