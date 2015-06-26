@@ -37,7 +37,7 @@ def rate(request):
         movie_id = request.args.get('movie_id')
         try:
             movie = Movie.objects.get(id=movie_id)
-        except Movie.DoesNotExist:
+        except ObjectDoesNotExist:
             pass
 
     movies_choices_json = json.dumps([{'label': x.title, 'value': x.id} for x in Movie.select()])

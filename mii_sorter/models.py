@@ -1,4 +1,5 @@
 import logging
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
@@ -86,7 +87,7 @@ def get_serie_episode(name, season, episode):
         episode = Episode.objects.get(season__number=season, number=episode, season__serie__name=name)
         if episode:
             return True, episode
-    except (Serie.DoesNotExist, Season.DoesNotExist, Episode.DoesNotExist) as e:
+    except ObjectDoesNotExist as e:
         logger.info('Found nothing %s' % repr(e))
         return False, None
 
@@ -103,7 +104,7 @@ def get_serie_season(name, season):
         season = Season.objects.get(number=season, serie__name=name)
         if season:
             return True
-    except (Serie.DoesNotExist, Season.DoesNotExist) as e:
+    except ObjectDoesNotExist as e:
         logger.info('Found nothing %s' % repr(e))
         return False
 
@@ -147,7 +148,7 @@ def get_movie(title, year=None):
             movie = Movie.objects.get(title=title)
         logger.info('Found movie')
         return True, movie
-    except Movie.DoesNotExist as e:
+    except ObjectDoesNotExist as e:
         logger.info('Found nothing %s' % repr(e))
         return False, None
 

@@ -1,4 +1,5 @@
 import json
+from django.core.exceptions import ObjectDoesNotExist
 import feedparser
 import os
 import re
@@ -35,7 +36,7 @@ def get_or_create_downloading_object(db_name, title):
         try:
             FeedDownloaded.objects.get(re_filter=db_name, episode=regex_result.group(2), season=regex_result.group(1))
             return False
-        except FeedDownloaded.DoesNotExists:
+        except ObjectDoesNotExist:
             FeedDownloaded.objects.create(re_filter=db_name, episode=regex_result.group(2),
                                           season=regex_result.group(1), date=timezone.now())
     return True
