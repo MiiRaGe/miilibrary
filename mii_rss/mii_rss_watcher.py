@@ -1,6 +1,5 @@
 import json
 import feedparser
-import logging
 import os
 import re
 import urllib
@@ -8,12 +7,13 @@ import urllib
 
 from django.conf import settings
 from django.utils import timezone
-from mii_sorter.models import get_serie_episode, get_serie_season
+from pyreport.reporter import Report
+from mii_sorter.models import get_serie_episode, get_serie_season, insert_report
 from mii_rss.models import FeedDownloaded, FeedEntries
 from mii_sorter.sorter import is_serie
 from mii_celery import app
 
-logger = logging.getLogger(__name__)
+logger = Report()
 
 
 def already_exists(db_name, title):
@@ -72,6 +72,7 @@ def check_feed_and_download_torrents():
             if not created:
                 break
             urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
+    insert_report(logger.finalize_report(), report_type='rss')
 
 
 def match(entry, filters):
