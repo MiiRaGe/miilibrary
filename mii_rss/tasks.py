@@ -51,7 +51,7 @@ def check_feed_and_download_torrents():
         logger.error('Server response not 200: %s' % feed['status'])
         return
     
-    FeedEntries.objects.create(json_entries=json.dumps(feed))
+    FeedEntries.objects.create(json_entries=json.dumps(dict(feed['entries'])))
 
     logger.info('Going through the entries')
     for entry in feed['entries']:
