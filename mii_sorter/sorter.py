@@ -10,7 +10,7 @@ from django.conf import settings
 from middleware import mii_mongo
 from mii_common import tools
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, \
-    insert_sorting_report
+    insert_report
 
 
 # logger = logging.getLogger(__name__)
@@ -88,7 +88,7 @@ class Sorter:
                     self.sort_movie_from_name(file_name)
 
         self.update_whatsnew()
-        insert_sorting_report(logger.finalize_report(), report_type='sorting')
+        insert_report(logger.finalize_report(), report_type='sorting')
 
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)
