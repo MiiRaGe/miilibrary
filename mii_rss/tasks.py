@@ -51,7 +51,7 @@ def check_feed_and_download_torrents():
         logger.error('Server response not 200: %s' % feed['status'])
         return
     
-    FeedEntries.objects.create(json_entries=json.dumps(dict(feed['entries'])))
+    FeedEntries.objects.create(json_entries=json.dumps(get_dict_from_feeds(feed['entries'])))
 
     logger.info('Going through the entries')
     for entry in feed['entries']:
@@ -73,6 +73,13 @@ def check_feed_and_download_torrents():
                 break
             urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
     insert_report(logger.finalize_report(), report_type='rss')
+
+
+def get_dict_from_feeds(entry_feeds):
+    entries_dict = {'entries': []}
+    for entry in entry_feeds:
+        entries_dict.append({'title': entry['title'], 'link': entry['link']})
+    return entries_dict
 
 
 def match(entry, filters):
