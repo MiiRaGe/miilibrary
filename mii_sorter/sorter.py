@@ -88,7 +88,7 @@ class Sorter:
                     self.sort_movie_from_name(file_name)
 
         self.update_whatsnew()
-        insert_sorting_report(logger.finalize_report())
+        insert_sorting_report(logger.finalize_report(), report_type='sorting')
 
     def update_whatsnew(self):
         tools.delete_dir(self.whatsnew_dir)

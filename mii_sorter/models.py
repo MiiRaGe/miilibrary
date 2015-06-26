@@ -168,5 +168,5 @@ def insert_movie(title, year, path, size):
     return movie
 
 
-def insert_sorting_report(report_html):
-    Report.objects.create(report_type='sorting', report_html=report_html)
+def insert_report(report_html, report_type=''):
+    Report.objects.create(report_type=report_type, report_html=report_html)

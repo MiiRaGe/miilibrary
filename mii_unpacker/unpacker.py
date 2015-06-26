@@ -1,16 +1,17 @@
-import logging
 import os
 import re
 import shutil
 import subprocess
 
-from os import listdir
+from pyreport import reporter
 from django.conf import settings
 from middleware.remote_execution import link, unrar
+from os import listdir
+from mii_sorter.models import insert_report
 
 from mii_unpacker.models import Unpacked
 
-logger = logging.getLogger(__name__)
+logger = reporter.Report()
 
 
 class RecursiveUnrarer:
@@ -23,6 +24,7 @@ class RecursiveUnrarer:
         self.linked = 0
 
     def unrar_and_link(self):
+        logger.create_report()
         logger.info("****************************************")
         logger.info("**********      Unpacker      **********")
         logger.info("****************************************")
@@ -131,4 +133,5 @@ class RecursiveUnrarer:
         logger.info("Extracted : %s" % self.extracted)
         logger.info("Linked : %s" % self.linked)
         logger.info("Removed : %s" % self.removed)
+        insert_report(logger.finalize_report(), report_type='unpacker')
 
