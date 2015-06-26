@@ -78,7 +78,7 @@ def check_feed_and_download_torrents():
 def get_dict_from_feeds(entry_feeds):
     entries_dict = {'entries': []}
     for entry in entry_feeds:
-        entries_dict.append({'title': entry['title'], 'link': entry['link']})
+        entries_dict['entries'].append({'title': entry['title'], 'link': entry['link']})
     return entries_dict
 
 
