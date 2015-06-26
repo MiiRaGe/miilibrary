@@ -1,5 +1,6 @@
 import json
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse
 
 from django.shortcuts import render
 
@@ -65,3 +66,4 @@ def report(request, report_id):
 
 def start_unpack_sort_indexer(request):
     unpack_sort_index.delay()
+    return HttpResponse('OK, unpack sort index started')
