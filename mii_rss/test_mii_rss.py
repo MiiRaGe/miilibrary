@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from mii_rss_watcher import match
+from tasks import match
 
 
 class TestRSS(TestCase):
