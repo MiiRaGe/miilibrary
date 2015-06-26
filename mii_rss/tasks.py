@@ -38,7 +38,7 @@ def get_or_create_downloading_object(db_name, title):
             return False
         except ObjectDoesNotExist:
             FeedDownloaded.objects.create(re_filter=db_name, episode=regex_result.group(2),
-                                          season=regex_result.group(1), date=timezone.now())
+                                          season=regex_result.group(1))
     return True
 
 
