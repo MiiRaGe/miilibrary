@@ -17,5 +17,6 @@ urlpatterns = patterns(
     url(r'^rpc/sort$', 'mii_sorter.views.start_sort', name='start_sort'),
     url(r'^rpc/unpack$', 'mii_unpacker.views.start_unpacker', name='start_unpacker'),
     url(r'^rpc/rss', 'mii_rss.views.check_feeds', name='check_feeds'),
+    url(r'^rpc/unpack_sort_index', 'mii_interface.views.start_unpack_sort_index', name='unpack_sort_index'),
     url(r'^admin/', include(admin.site.urls)),
 )

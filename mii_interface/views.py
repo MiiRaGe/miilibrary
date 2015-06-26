@@ -60,3 +60,7 @@ def report(request, report_id):
     except ObjectDoesNotExist:
         report = None
     return render(request, 'mii_interface/report.html', {'report': report})
+
+
+def start_unpack_sort_indexer(request):
+    unpack_sort_index.delay()
