@@ -47,7 +47,6 @@ def check_feed_and_download_torrents():
     logger.create_report()
     logger.info('Initializing feed')
     feed = feedparser.parse(settings.RSS_URL)
-    logger.error('Server Exception')
     if feed['status'] != 200:
         logger.error('Server response not 200: %s' % feed['status'])
         return
