@@ -38,7 +38,7 @@ def unrar(source_file, destination_dir):
 def remove_dir(path):
     # This method is extremely dangerous as it will delete everything rm -rf
     if shell:
-        result = shell.run(["rm", "-rf", path])
+        result = shell.run(["rm", "-rf", map_to_nas(path)])
         return result.return_code
     return delete_dir(path)
 
