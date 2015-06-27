@@ -8,7 +8,9 @@ from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
 from mii_sorter.models import Movie, Serie
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
-from mii_interface.tasks import unpack_sort_index
+from mii_unpacker.tasks import unpack
+from mii_sorter.tasks import sort
+from mii_indexer.tasks import index_movies
 
 
 def index(request):
@@ -65,5 +67,5 @@ def report(request, report_id):
 
 
 def start_unpack_sort_indexer(request):
-    unpack_sort_index.delay()
+    (unpack.si() | sort.si() | index_movies.si()).delay()
     return HttpResponse('OK, unpack sort index started')
