@@ -3,10 +3,11 @@ import subprocess
 import spur
 
 from django.conf import settings
+from mii_common.tools import delete_dir
 
 shell = None
 if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
-    shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME, connect_timeout=2400)
+    shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME, connect_timeout=3600)
 
 
 def link(source_file, destination_file):
@@ -32,6 +33,14 @@ def unrar(source_file, destination_dir):
         result = shell.run(["/usr/local/sbin/unrar", "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
     return subprocess.check_output('unrar e -y %s %s' % (source_file, destination_dir))
+
+
+def remove_dir(path):
+    # This method is extremely dangerous as it will delete everything rm -rf
+    if shell:
+        result = shell.run(["rm", "-rf", path])
+        return result.return_code
+    return delete_dir(path)
 
 
 def map_to_nas(local_path):
