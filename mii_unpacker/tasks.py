@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import os
+from time import sleep
 
 from celery import task
 
@@ -14,6 +15,8 @@ from mii_unpacker.unpacker import RecursiveUnrarer
 @task
 @single_instance_task(60*60)
 def unpack():
+
+    sleep(10)
     output_dir = settings.DESTINATION_FOLDER
     data_dir = tools.make_dir(os.path.join(output_dir, 'data'))
     unpacker = RecursiveUnrarer(settings.SOURCE_FOLDER, data_dir)
