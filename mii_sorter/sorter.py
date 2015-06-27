@@ -1,7 +1,7 @@
 import os
 import re
 from pyreport.reporter import Report
-from middleware.remote_execution import symlink
+from middleware.remote_execution import symlink, remove_dir
 
 import movieinfo.hash_tool as ht
 
@@ -89,7 +89,7 @@ class Sorter:
         insert_report(logger.finalize_report(), report_type='sorting')
 
     def update_whatsnew(self):
-        tools.delete_dir(self.whatsnew_dir)
+        remove_dir(self.whatsnew_dir)
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:12]:
             if os.path.isdir(whatsnew.path):
