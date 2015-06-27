@@ -1,3 +1,5 @@
+import requests
+
 from mii_celery import app
 from mii_unpacker.tasks import unpack
 from mii_sorter.tasks import sort
@@ -8,3 +10,4 @@ def unpack_sort_index():
     unpack()
     sort()
     index_movies()
+    requests.get('http://192.168..0.2:9000/rpc/rescan')
