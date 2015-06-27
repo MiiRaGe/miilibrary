@@ -1,5 +1,5 @@
 import functools
-from django.utils import cache
+from django.core.cache import cache
 
 
 def single_instance_task(timeout):
