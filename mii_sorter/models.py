@@ -66,7 +66,7 @@ class Episode(Model):
 
 
 class WhatsNew(Model):
-    date = DateTimeField()
+    date = DateTimeField(default=timezone.now)
     name = CharField(unique=True, max_length=70)
     path = CharField(max_length=400)
 

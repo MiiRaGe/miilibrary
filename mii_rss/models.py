@@ -15,7 +15,7 @@ class FeedDownloaded(Model):
 
 class FeedEntries(Model):
     json_entries = TextField()
-    date = DateTimeField(default=timezone.now())
+    date = DateTimeField(default=timezone.now)
 
     class Meta:
         get_latest_by = 'date'
