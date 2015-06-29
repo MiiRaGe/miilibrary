@@ -201,8 +201,8 @@ CELERY_IMPORTS = (
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
-CELERY_TASK_SERIALIZER = 'json',
-CELERY_ACCEPT_CONTENT = ['json'],  # Ignore other content
-CELERY_RESULT_SERIALIZER = 'json',
-CELERY_TIMEZONE = 'Europe/London',
-CELERY_ENABLE_UTC = True,
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']  # Ignore other content
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/London'
+CELERY_ENABLE_UTC = True
