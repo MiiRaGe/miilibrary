@@ -122,6 +122,7 @@ class TestMain(TestCase):
 @override_settings(CUSTOM_RENAMING={'BARNABY': 'Barbie'})
 class TestSorter(TestCase):
     def test_is_serie(self):
+        assert is_serie('downton_abbey.5x08.720p_hdtv_x264-fov.mkv')
         assert not is_serie('23name,asefjklS03esfsjkdlS05E1')
         assert is_serie('23name,asefjklS03esfsjkdlS05e10')
 
