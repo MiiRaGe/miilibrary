@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class Movie(Model):
-    title = CharField(max_length=100)
-    year = IntegerField(null=True, default=1900)
+    title = CharField(max_length=100, db_index=True)
+    year = IntegerField(null=True, default=1900, db_index=True)
     imdb_id = CharField(null=True, max_length=15)
     rating = FloatField(null=True)
     folder_path = CharField(max_length=400)

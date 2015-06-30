@@ -102,6 +102,8 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'devserver.middleware.DevServerMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -162,6 +164,8 @@ INSTALLED_APPS = (
     'mii_sorter',
     'mii_rating',
     'mii_indexer',
+    'debug_toolbar',
+    'devserver',
 )
 
 # A sample logging configuration. The only tangible logging
