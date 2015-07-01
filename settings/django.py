@@ -156,6 +156,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'djcelery',
     'djsupervisor',
+    'dbbackup',
     'mii_interface',
     'mii_unpacker',
     'mii_rss',
