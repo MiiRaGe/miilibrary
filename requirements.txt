@@ -3,6 +3,7 @@ anyjson==0.3.3
 argh==0.26.1
 billiard==3.3.0.20
 blessings==1.6
+boto==2.38.0
 bpython==0.14.2
 celery==3.1.18
 cffi==1.1.2
@@ -11,6 +12,7 @@ curtsies==0.1.19
 DateTime==4.0.1
 Django==1.8
 django-celery==3.1.16
+django-dbbackup==2.0.4
 django-pytest==0.2.0
 django-supervisor==0.3.2
 ecdsa==0.13
@@ -36,6 +38,7 @@ pycrypto==2.6.1
 Pygments==2.0.2
 pymongo==2.7.2
 pyOpenSSL==0.15.1
+pysftp==0.2.8
 pytest==2.7.1
 pytest-cache==1.0
 pytest-django==2.8.0
