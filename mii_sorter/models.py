@@ -20,9 +20,9 @@ class Movie(Model):
 
     class Meta:
         index_together = [
-            ['title', 'year']
+            ['year', 'title']
         ]
-        ordering = ['year', 'title']
+        ordering = ['title']
 
 
 class Serie(Model):

@@ -11,8 +11,8 @@
 {% block content %}
 <h1>Movies</h1>
     <ul>
-    {% for movie in movies %}
-        <li>{{ movie.title }} ({{ movie.year }}) <a href="http://www.imdb.com/title/tt{{movie.imdb_id}}">IMDB Link</a> Rating: {{ movie.rating }}</li>
+    {% for title, year, rating in movies %}
+        <li>{{ title }} ({{ year }}) <a href="http://www.imdb.com/title/tt{{movie.imdb_id}}">IMDB Link</a> Rating: {{ rating }}</li>
     {% endfor %}
     </ul>
 {% endblock %}

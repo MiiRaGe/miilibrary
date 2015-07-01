@@ -18,7 +18,7 @@ def index(request):
 
 
 def movies(request):
-    return render(request, 'mii_interface/movie.html', dict(movies=[x for x in Movie.objects.all()]))
+    return render(request, 'mii_interface/movie.html', dict(movies=Movie.objects.all().values_list('title', 'year', 'rating')))
 
 
 def series(request):
