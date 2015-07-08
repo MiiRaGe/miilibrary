@@ -159,6 +159,7 @@ INSTALLED_APPS = (
     'djcelery',
     'djsupervisor',
     'dbbackup',
+    'middleware',
     'mii_interface',
     'mii_unpacker',
     'mii_rss',
