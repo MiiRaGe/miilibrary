@@ -1,4 +1,5 @@
 import os
+import shlex
 import subprocess
 import spur
 
@@ -32,7 +33,7 @@ def unrar(source_file, destination_dir):
         # TODO : Remove hardcoded unrar command
         result = shell.run(["/usr/local/sbin/unrar", "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
-    return subprocess.check_output('unrar e -y %s %s' % (source_file, destination_dir))
+    return subprocess.check_output(shlex.split('unrar e -y %s %s' % (source_file, destination_dir)))
 
 
 def remove_dir(path):

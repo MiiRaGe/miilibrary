@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.utils import timezone
 from pymongo import MongoClient
+from middleware.models import JSONKeyValue
 from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
 from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
 
@@ -25,7 +26,7 @@ def do_query(qry, collection):
     """
 
     :param qry: dict
-    :param collection: collection
+    :param collection: type
     :return: dict
     """
     if not db:
@@ -42,7 +43,7 @@ def do_insert(data, collection):
     """
     Insert the API result in mongo
     :param data: dict
-    :param collection: collection
+    :param collection: type
     """
     if db:
         collection.insert(data)
@@ -50,9 +51,9 @@ def do_insert(data, collection):
 
 
 class MiiMongoStored(object):
-    qry = {}
+    key = {}
     mapping = {}
-    collection = None
+    type = None
 
     def get_or_sync(self, method_name, *args):
         """
@@ -63,16 +64,14 @@ class MiiMongoStored(object):
         """
         logger.info('get_or_sync, %s(%s)' % (method_name, args))
 
-        result = do_query(self.qry, self.collection)
-        if result:
+        result = JSONKeyValue.get(self.type, self.key)
+        if result != 0:
             return result
 
         logger.info('Querying the API')
         result = self.mapping[method_name](*args)
+        JSONKeyValue.set(self.type, self.key, result)
 
-        qry = self.qry
-        qry.update(data=result, date=timezone.now())
-        do_insert(qry, self.collection)
         return result
 
 
@@ -82,7 +81,7 @@ class MiiTheMovieDB(MiiMongoStored):
         'get_movie_imdb_id': the_movie_db_wrapper.get_movie_imdb_id,
         'get_movie_name': the_movie_db_wrapper.get_movie_name,
     }
-    collection = db.tmdb if db else None
+    type = db.tmdb if db else None
 
     def get_movie_name(self, name, year):
         """
@@ -91,7 +90,7 @@ class MiiTheMovieDB(MiiMongoStored):
         :param integer year: year of the movie
         :return dict: JSON returned by the API with information about the movie
         """
-        self.qry = {'name': name, 'year': year}
+        self.key = {'name': name, 'year': year}
         return self.get_or_sync('get_movie_name', name, year)
 
     def get_movie_imdb_id(self, tmdb_id):
@@ -100,7 +99,7 @@ class MiiTheMovieDB(MiiMongoStored):
         :param string tmdb_id: The Movie Database ID (gotten from name/year query)
         :return dict: JSON returned by the API with the IMDB ID of the movie
         """
-        self.qry = {'id': tmdb_id}
+        self.key = {'id': tmdb_id}
         return self.get_or_sync('get_movie_imdb_id', tmdb_id)
 
 
@@ -112,7 +111,7 @@ class MiiOpenSubtitleDB(MiiMongoStored):
         'get_movie_names2': open_subtitle_wrapper.get_movie_names2,
         'get_subtitles': open_subtitle_wrapper.get_subtitles,
     }
-    collection = db.osdb if db else None
+    type = db.osdb if db else None
 
     def get_imdb_information(self, imdb_id):
         """
@@ -120,7 +119,7 @@ class MiiOpenSubtitleDB(MiiMongoStored):
         :param string imdb_id: IMDB ID to get the information on
         :return dict: All the information about a movie from IMDB
         """
-        self.qry = {'id': imdb_id}
+        self.key = {'id': imdb_id}
         return self.get_or_sync('get_imdb_information', imdb_id)
 
     def get_movie_name(self, movie_hash, number=''):
@@ -130,7 +129,7 @@ class MiiOpenSubtitleDB(MiiMongoStored):
         :param integer number: Type of API method to call (can be either '' or '2' differences are unknown)
         :return dict: Return the movie information as JSON
         """
-        self.qry = {'movie_hash': movie_hash}
+        self.key = {'movie_hash': movie_hash}
         return self.get_or_sync('get_movie_names%s' % number, [movie_hash])
 
     def get_subtitles(self, movie_hash, file_size):
@@ -140,6 +139,6 @@ class MiiOpenSubtitleDB(MiiMongoStored):
         :param int file_size: Size of the movie
         :return dict: Return the JSON containing information about different available subtitles
         """
-        self.qry = {'movie_hash': movie_hash, 'file_size': file_size}
+        self.key = {'movie_hash': movie_hash, 'file_size': file_size}
         return self.get_or_sync('get_subtitles', movie_hash, file_size, '')
 

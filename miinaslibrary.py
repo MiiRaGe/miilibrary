@@ -22,8 +22,8 @@ class MiiNASLibrary:
 
         # #### Modules Initialisation #####
         self.recursive_unrarer = RecursiveUnrarer(self.source_dir, self.data_dir)
-        self.sorter = Sorter(self.output_dir)
-        self.indexer = Indexer(self.movie_dir)
+        self.sorter = Sorter()
+        self.indexer = Indexer()
 
     def run(self, sort_only=False, index_only=False):
         logger.info("---MiiNASLibrary---")
