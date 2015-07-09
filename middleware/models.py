@@ -28,7 +28,7 @@ class JSONKeyValue(Model):
         '''
         hashed_key = JSONKeyValue._get_hashed_key(key)
         binary_value = JSONKeyValue._get_json_data(value)
-        JSONKeyValue.objects.update_or_create(type=type, key=hashed_key, date=timezone.now(), value=binary_value)
+        JSONKeyValue.objects.update_or_create(type=type, key=hashed_key, defaults={'date': timezone.now(), 'value': binary_value})
 
     @staticmethod
     def get(type, key):

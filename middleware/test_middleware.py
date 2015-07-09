@@ -27,3 +27,7 @@ class TestJSONKeyValue(TestCase):
         JSONKeyValue.set(self.type2, self.key1, self.data2)
         self.assertEqual(JSONKeyValue.get(self.type1, self.key1), self.data1)
         self.assertEqual(JSONKeyValue.get(self.type2, self.key1), self.data2)
+
+    def test_set_duplicate(self):
+        JSONKeyValue.set(self.type1, self.key1, self.data1)
+        JSONKeyValue.set(self.type1, self.key1, self.data2)
