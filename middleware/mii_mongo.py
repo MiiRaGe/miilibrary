@@ -53,7 +53,7 @@ def do_insert(data, collection):
 class MiiMongoStored(object):
     key = {}
     mapping = {}
-    type = None
+    type = ''
 
     def get_or_sync(self, method_name, *args):
         """
@@ -64,7 +64,7 @@ class MiiMongoStored(object):
         """
         logger.info('get_or_sync, %s(%s)' % (method_name, args))
 
-        result = JSONKeyValue.get(self.type, self.key)
+        result = JSONKeyValue.get('%s.%s' % (self.type, method_name), self.key)
         if result != 0:
             return result
 
@@ -81,7 +81,7 @@ class MiiTheMovieDB(MiiMongoStored):
         'get_movie_imdb_id': the_movie_db_wrapper.get_movie_imdb_id,
         'get_movie_name': the_movie_db_wrapper.get_movie_name,
     }
-    type = db.tmdb if db else None
+    type = 'tmdb'
 
     def get_movie_name(self, name, year):
         """
@@ -111,7 +111,7 @@ class MiiOpenSubtitleDB(MiiMongoStored):
         'get_movie_names2': open_subtitle_wrapper.get_movie_names2,
         'get_subtitles': open_subtitle_wrapper.get_subtitles,
     }
-    type = db.osdb if db else None
+    type = 'osbd'
 
     def get_imdb_information(self, imdb_id):
         """
