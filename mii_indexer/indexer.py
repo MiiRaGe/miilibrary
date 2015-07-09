@@ -160,19 +160,20 @@ def get_tree_from_list(remaining_letters, folder):
             '--': [folder]}
 
     tools.make_dir(os.path.join(self.index_mapping[index_type][0], value))
-    os.symlink(folder_abs, os.path.join(self.index_mapping[index_type][0], value, folder))
-    os.symlink(folder_abs, os.path.join(result_folder, folder))
 
 
 def dict_merge_list_extend(d1, d2):
-    for key, value in d2.items():
-        if not d1.get(key):
-            d1[key] = value
-            continue
-        if isinstance(d1.get(key), list):
-            d1[key].extend(value)
-        else:
-            d1[key] = dict_merge_list_extend(d1[key], value)
+    try:
+        for key, value in d2.items():
+            if not d1.get(key):
+                d1[key] = value
+                continue
+            if isinstance(d1.get(key), list):
+                d1[key].extend(value)
+            else:
+                d1[key] = dict_merge_list_extend(d1[key], value)
+    except AttributeError:
+        pass
     return d1
 
 
