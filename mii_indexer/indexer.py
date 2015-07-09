@@ -6,6 +6,7 @@ from collections import defaultdict
 from django.conf import settings
 
 from middleware import mii_mongo
+from middleware.remote_execution import symlink
 from mii_common import tools
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie
@@ -37,7 +38,19 @@ class Indexer:
 
     def index(self):
         dict_index = self.get_dict_index()
+        self.apply_dict_index_to_file_system(dict_index)
         return dict_index
+
+
+    def apply_dict_index_to_file_system(self, dict_index):
+        current_path_root = self.source_dir
+        for index_type, index_content in dict_index.items():
+            current_path = tools.make_dir(os.path.join(current_path_root, index_type))
+            for index_choice, movie_list in index_content.items():
+                current_choice = tools.make_dir(os.path.join(current_path, index_choice))
+                for movie_folder, movie_abs_folder in movie_list:
+                    symlink(movie_abs_folder, os.path.join(current_choice, movie_folder))
+
 
     def get_dict_index(self):
         logger.info("****************************************")
@@ -53,7 +66,7 @@ class Indexer:
                 imdb_file = None
                 id = None
 
-                index_dict['Search'].update(dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
+                # index_dict['Search'].update(dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
                 matched = re.match('([^\(]*) \((\d{4})\).*', folder)
                 if matched:
                     movie_name = matched.group(1)
@@ -74,7 +87,7 @@ class Indexer:
                                                                     movie=movie)
                             index_dict[value[0]].update(dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
 
-        add_number_and_simplify(index_dict['Search'])
+        # add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
         return index_dict
 
