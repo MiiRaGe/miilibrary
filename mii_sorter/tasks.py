@@ -7,7 +7,7 @@ from middleware.decorators import single_instance_task
 from mii_sorter.sorter import Sorter
 
 
-@task
+@task(serializer='json')
 @single_instance_task(60*30)
 def sort():
     sorter = Sorter()

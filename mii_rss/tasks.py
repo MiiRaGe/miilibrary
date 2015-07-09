@@ -42,7 +42,7 @@ def get_or_create_downloading_object(db_name, title):
     return True
 
 
-@app.task()
+@app.task(serializer='json')
 def check_feed_and_download_torrents():
     logger.create_report()
     logger.info('Initializing feed')

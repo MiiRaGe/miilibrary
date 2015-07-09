@@ -12,7 +12,7 @@ from mii_common import tools
 from mii_unpacker.unpacker import RecursiveUnrarer
 
 
-@task
+@task(serializer='json')
 @single_instance_task(60*60)
 def unpack():
 

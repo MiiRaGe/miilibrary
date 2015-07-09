@@ -6,7 +6,7 @@ from middleware.decorators import single_instance_task
 from mii_indexer.indexer import Indexer
 
 
-@task
+@task(serializer='json')
 @single_instance_task(60*30)
 def index_movies():
     indexer = Indexer()
