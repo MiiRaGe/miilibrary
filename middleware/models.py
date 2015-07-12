@@ -11,6 +11,7 @@ __author__ = 'MiiRaGe'
 class JSONKeyValue(Model):
     type = CharField(max_length=40)
     key = CharField(max_length=50)
+    key_text = CharField(max_length=200, default='')
     date = DateTimeField()
     value = BinaryField()
 
@@ -26,9 +27,11 @@ class JSONKeyValue(Model):
         :param value:
         :return:
         '''
-        hashed_key = JSONKeyValue._get_hashed_key(key)
+        hashed_key, json_key = JSONKeyValue._get_hashed_key(key)
         binary_value = JSONKeyValue._get_json_data(value)
-        JSONKeyValue.objects.update_or_create(type=type, key=hashed_key, defaults={'date': timezone.now(), 'value': binary_value})
+        JSONKeyValue.objects.update_or_create(type=type, key=hashed_key, defaults={'date': timezone.now(),
+                                                                                   'value': binary_value,
+                                                                                   })
 
     @staticmethod
     def get(type, key):
@@ -39,7 +42,7 @@ class JSONKeyValue(Model):
         :param value:
         :return:
         '''
-        hashed_key = JSONKeyValue._get_hashed_key(key)
+        hashed_key, json_key = JSONKeyValue._get_hashed_key(key)
         try:
             obj = JSONKeyValue.objects.get(type=type, key=hashed_key)
             return json.loads(obj.value)
@@ -48,7 +51,8 @@ class JSONKeyValue(Model):
 
     @staticmethod
     def _get_hashed_key(key):
-        return hashlib.sha1(json.dumps(key)).hexdigest()
+        key_json = json.dumps(key)
+        return hashlib.sha1(key_json).hexdigest(), key_json
 
     @staticmethod
     def _get_json_data(value):
