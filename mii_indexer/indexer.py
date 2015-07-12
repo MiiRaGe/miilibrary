@@ -1,18 +1,19 @@
-import logging
 import re
 import os
 
 from collections import defaultdict
 from django.conf import settings
+from pyreport.reporter import Report
+from spur import RunProcessError
 
 from middleware import mii_mongo
 from middleware.remote_execution import symlink, remove_dir
 from mii_common import tools
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
-from mii_sorter.models import get_movie
+from mii_sorter.models import get_movie, insert_report
 
 
-logger = logging.getLogger("NAS")
+logger = Report()
 
 
 class Indexer:
@@ -30,6 +31,7 @@ class Indexer:
             'director_dir': ('Directors', lambda x: x.get('directors', {}).values(), 'Director'),
             'actor_dir': ('Actors', lambda x: x.get('cast', {}).values(), 'Actor')
         }
+        logger.create_report()
 
     def init(self):
         for folder, _, type in self.index_mapping.values() + [(self.search_dir, None, 'Search')]:
@@ -39,7 +41,7 @@ class Indexer:
     def index(self):
         dict_index = self.get_dict_index()
         self.apply_dict_index_to_file_system(dict_index)
-        return dict_index
+        insert_report(logger.finalize_report(), report_type='indexer')
 
     def apply_dict_index_to_file_system(self, dict_index):
         current_path_root = self.source_dir
@@ -48,7 +50,13 @@ class Indexer:
             for index_choice, movie_list in index_content.items():
                 current_choice = tools.make_dir(os.path.join(current_path, index_choice))
                 for movie_folder, movie_abs_folder in movie_list:
-                    symlink(movie_abs_folder, os.path.join(current_choice, movie_folder))
+                    try:
+                        symlink(movie_abs_folder, os.path.join(current_choice, movie_folder))
+                    except (RunProcessError, OSError):
+                        logger.exception('Tried to symlink: %s to %s/%s/%s' % (movie_abs_folder,
+                                                                               index_type,
+                                                                               index_choice,
+                                                                               movie_folder))
 
     def get_dict_index(self):
         logger.info("****************************************")
@@ -99,8 +107,8 @@ class Indexer:
                     index_dict[value] = [(folder, folder_abs)]
                     if movie:
                         self.link_movie_value(movie, value, self.index_mapping[index_type][0])
-            except Exception, e:
-                logger.exception("With exception :%s" % repr(e))
+            except Exception as e:
+                logger.exception("\tFailed with exception :%s" % repr(e))
             return index_dict
 
     def add_counting(self, current_folder, skipped=False):
@@ -156,8 +164,6 @@ def get_tree_from_list(remaining_letters, folder):
         return {'--': [folder]}
     return {remaining_letters[0]: get_tree_from_list(remaining_letters[1:], folder),
             '--': [folder]}
-
-    tools.make_dir(os.path.join(self.index_mapping[index_type][0], value))
 
 
 def dict_merge_list_extend(d1, d2):
