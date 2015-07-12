@@ -41,7 +41,6 @@ class Indexer:
         self.apply_dict_index_to_file_system(dict_index)
         return dict_index
 
-
     def apply_dict_index_to_file_system(self, dict_index):
         current_path_root = self.source_dir
         for index_type, index_content in dict_index.items():
@@ -50,7 +49,6 @@ class Indexer:
                 current_choice = tools.make_dir(os.path.join(current_path, index_choice))
                 for movie_folder, movie_abs_folder in movie_list:
                     symlink(movie_abs_folder, os.path.join(current_choice, movie_folder))
-
 
     def get_dict_index(self):
         logger.info("****************************************")

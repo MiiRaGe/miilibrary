@@ -33,7 +33,7 @@ class TestJSONKeyValue(TestCase):
         JSONKeyValue.set(self.type1, self.key1, self.data1)
         JSONKeyValue.set(self.type1, self.key1, self.data2)
 
-    def test_set_data_type(self):
+    def test_key_text(self):
         JSONKeyValue.set(self.type1, self.key1, self.data1)
         object = JSONKeyValue.objects.get(type=self.type1)
         self.assertEqual(object.key_text, json.dumps(self.key1))
