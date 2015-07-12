@@ -6,7 +6,7 @@ from collections import defaultdict
 from django.conf import settings
 
 from middleware import mii_mongo
-from middleware.remote_execution import symlink
+from middleware.remote_execution import symlink, remove_dir
 from mii_common import tools
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie
@@ -33,7 +33,7 @@ class Indexer:
 
     def init(self):
         for folder, _, type in self.index_mapping.values() + [(self.search_dir, None, 'Search')]:
-            tools.delete_dir(os.path.join(self.source_dir, folder))
+            remove_dir(os.path.join(self.source_dir, folder))
             tools.make_dir(os.path.join(self.source_dir, folder))
 
     def index(self):
