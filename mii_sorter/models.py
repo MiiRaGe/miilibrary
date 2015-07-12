@@ -24,6 +24,10 @@ class Movie(Model):
         ]
         ordering = ['title']
 
+    def save(self, *args, **kwargs):
+        self.imdb_id.replace('t', '')
+        return super(Movie, self).save(*args, **kwargs)
+
 
 class Serie(Model):
     name = CharField(unique=True, max_length=50)
