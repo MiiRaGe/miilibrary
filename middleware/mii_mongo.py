@@ -64,13 +64,14 @@ class MiiMongoStored(object):
         """
         logger.info('get_or_sync, %s(%s)' % (method_name, args))
 
-        result = JSONKeyValue.get('%s.%s' % (self.type, method_name), self.key)
+        unique_type = '%s.%s' % (self.type, method_name)
+        result = JSONKeyValue.get(unique_type, self.key)
         if result != 0:
             return result
 
         logger.info('Querying the API')
         result = self.mapping[method_name](*args)
-        JSONKeyValue.set(self.type, self.key, result)
+        JSONKeyValue.set(unique_type, self.key, result)
 
         return result
 

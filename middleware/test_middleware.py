@@ -1,5 +1,7 @@
 import json
 from django.test import TestCase
+import mock
+from middleware.mii_mongo import MiiMongoStored
 from middleware.models import JSONKeyValue
 
 __author__ = 'MiiRaGe'
@@ -37,3 +39,29 @@ class TestJSONKeyValue(TestCase):
         JSONKeyValue.set(self.type1, self.key1, self.data1)
         object = JSONKeyValue.objects.get(type=self.type1)
         self.assertEqual(object.key_text, json.dumps(self.key1))
+
+
+class TestMiiMongoStored(TestCase):
+    def setUp(self):
+        class test(MiiMongoStored):
+            mapping = {
+                'test_function': lambda x: {'result': 'fake'},
+            }
+            type = 'test'
+
+            def test(self):
+                self.key = {'name': 'blah'}
+                return self.get_or_sync('test_function', 'arg')
+
+        self.cached_functions = test()
+
+    @mock.patch('middleware.models.JSONKeyValue.get')
+    @mock.patch('middleware.models.JSONKeyValue.set')
+    def test_caching_calls(self, set, get):
+        get.return_value = 0
+        self.cached_functions.test()
+        assert set.called
+        set.called = False
+        get.return_value = 1
+        self.cached_functions.test()
+        assert not set.called

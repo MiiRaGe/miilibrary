@@ -1,11 +1,14 @@
 import hashlib
 import json
+import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import CharField, Model, DateTimeField, BinaryField
 from django.utils import timezone
 
 __author__ = 'MiiRaGe'
+
+logger = logging.getLogger(__name__)
 
 
 class JSONKeyValue(Model):
@@ -48,6 +51,7 @@ class JSONKeyValue(Model):
             obj = JSONKeyValue.objects.get(type=type, key=hashed_key)
             return json.loads(obj.value)
         except ObjectDoesNotExist:
+            logger.debug('Cache miss')
             return 0
 
     @staticmethod
