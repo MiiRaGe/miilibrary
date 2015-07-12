@@ -25,7 +25,8 @@ class Movie(Model):
         ordering = ['title']
 
     def save(self, *args, **kwargs):
-        self.imdb_id.replace('t', '')
+        if self.imdb_id and 't' in self.imdb_id:
+            self.imdb_id.replace('t', '')
         return super(Movie, self).save(*args, **kwargs)
 
 
