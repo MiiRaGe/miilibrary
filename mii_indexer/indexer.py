@@ -33,11 +33,6 @@ class Indexer:
         }
         logger.create_report()
 
-    def init(self):
-        for folder, _, type in self.index_mapping.values() + [(self.search_dir, None, 'Search')]:
-            remove_dir(os.path.join(self.source_dir, folder))
-            tools.make_dir(os.path.join(self.source_dir, folder))
-
     def index(self):
         dict_index = self.get_dict_index()
         self.apply_dict_index_to_file_system(dict_index)
@@ -69,9 +64,6 @@ class Indexer:
             logger.info('------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
             if os.path.isdir(folder_abs):
-                imdb_file = None
-                id = None
-
                 # index_dict['Search'].update(dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
                 matched = re.match('([^\(]*) \((\d{4})\).*', folder)
                 if matched:
@@ -79,7 +71,7 @@ class Indexer:
                     year = matched.group(2)
                     found, movie = get_movie(movie_name, year)
 
-                if movie and movie.imdb_id:
+                if movie and movie.imdb_id and not movie.indexed:
                     imdb_id = movie.imdb_id
                     imdb_data = self.mii_osdb.get_imdb_information(imdb_id)
                     if imdb_data:
@@ -92,6 +84,8 @@ class Indexer:
                                                                     index_type,
                                                                     movie=movie)
                             index_dict[value[0]].update(dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
+                    movie.indexed = True
+                    movie.save()
 
         # add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
@@ -140,10 +134,8 @@ class Indexer:
             MovieTagging.objects.get_or_create(tag=tag, movie=movie)
         elif link_type == 'Year' and not movie.year:
             movie.year = value
-            movie.save()
         elif link_type == 'Rating' and not movie.rating:
             movie.rating = value
-            movie.save()
         elif link_type in ['Actor', 'Director']:
             person, _ = Person.objects.get_or_create(name=value)
             MovieRelation.objects.get_or_create(person=person, movie=movie, type=link_type)

@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
-    DateTimeField
+    DateTimeField, BooleanField
 from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ class Movie(Model):
     folder_path = CharField(max_length=400)
     file_size = BigIntegerField()
     seen = NullBooleanField(default=None, null=True)
+    indexed = BooleanField(default=False)
 
     class Meta:
         index_together = [
