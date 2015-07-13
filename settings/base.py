@@ -52,12 +52,6 @@ OPENSUBTITLE_API_URL = "https://api.opensubtitles.org/xml-rpc"
 OPENSUBTITLE_LOGIN = ''
 OPENSUBTITLE_PASSWORD = ''
 
-"""[Databases]"""
-MONGO_HOST = 'localhost'
-MONGO_PORT = 27017
-MONGO_USERNAME = 'MiiRaGe'
-MONGO_PASSWORD = '1234'
-MONGO_DB_NAME = 'miilibrary'
 
 """[RSS Link]"""
 RSS_URL = 'http://www.torrentday.com/torrents/rss?download;l7;u=xxx;tp=xxx'
@@ -66,6 +60,7 @@ RSS_FILTERS = [
     'the.peoples.couch.*720p'
 ]
 
+"""[Django Databases]"""
 DATABASES['default']['NAME'] = 'media'
 DATABASES['default']['USER'] = 'MiiRaGe'
 DATABASES['default']['PASSWORD'] = '1234'
@@ -79,3 +74,4 @@ REMOTE_FILE_OPERATION_ENABLED = False
 NAS_IP = ''
 NAS_USERNAME = 'foo'
 NAS_ROOT = '/share/MD0_DATA/'
+MEDIA_RENDERER_RESCAN_URL = 'http://192.168.0.2:9000/rpc/rescan'

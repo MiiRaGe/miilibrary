@@ -9,7 +9,7 @@ from mii_interface.models import Report
 from mii_sorter.models import Movie, Serie
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
 from mii_unpacker.tasks import unpack
-from mii_sorter.tasks import sort
+from mii_sorter.tasks import sort, rescan_media_streamer
 from mii_indexer.tasks import index_movies
 
 
@@ -30,7 +30,7 @@ def rate(request):
     movie = Movie.objects.filter(seen=None).order_by('?')[0]
 
     if request.method == 'POST':
-        data = request.form
+        data = request.POST
         action = data.get('action')
         if action == 'save_movie':
             save_question_answers(data['movie_id'], question_answers=data)
@@ -38,23 +38,22 @@ def rate(request):
             set_movie_unseen(data['movie_id'])
 
     if request.method == 'GET':
-        movie_id = request.args.get('movie_id')
+        movie_id = request.GET.get('movie_id')
         try:
             movie = Movie.objects.get(id=movie_id)
         except ObjectDoesNotExist:
             pass
 
-    movies_choices_json = json.dumps([{'label': x.title, 'value': x.id} for x in Movie.select()])
-    genres = [x.tag.name for x in MovieTagging.filter(movie=movie)]
-    actors = [x.person.name for x in MovieRelation.filter(movie=movie, type='Actor')]
-    directors = [x.person.name for x in MovieRelation.filter(movie=movie, type='Director')]
+    movies_choices_json = json.dumps([{'label': movie_obj['title'], 'value': movie_obj['id']} for movie_obj in Movie.objects.all().values('title', 'id')])
+    genres = [x['tag__name'] for x in MovieTagging.objects.filter(movie=movie).values('tag__name')]
+    actors = [x['person__name'] for x in MovieRelation.objects.filter(movie=movie, type='Actor').values('person__name')]
+    directors = [x['person__name'] for x in MovieRelation.objects.filter(movie=movie, type='Director').values('person__name')]
     return render(request, 'mii_interface/rate.html',
                   dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
                        genres=genres, actors=actors, directors=directors))
 
-
 def reports(request):
-    reports = Report.objects.all().order_by('date')
+    reports = Report.objects.all().order_by('-date')
     return render(request, 'mii_interface/reports.html', {'reports': reports})
 
 
@@ -67,5 +66,5 @@ def report(request, report_id):
 
 
 def start_unpack_sort_indexer(request):
-    (unpack.si() | sort.si() | index_movies.si()).delay()
+    (unpack.si() | sort.si() | index_movies.si() | rescan_media_streamer.si() ).delay()
     return HttpResponse('OK, unpack sort index started')

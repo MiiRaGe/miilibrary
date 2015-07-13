@@ -1,8 +1,5 @@
 import logging
 
-from django.conf import settings
-from django.utils import timezone
-from pymongo import MongoClient
 from middleware.models import JSONKeyValue
 from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
 from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
@@ -10,54 +7,15 @@ from movieinfo.the_movie_db_wrapper import TheMovieDBWrapper
 
 logger = logging.getLogger('NAS')
 
-db = None
-the_movie_db = None
-open_subtitle_db = None
-client = MongoClient(host='mongodb://%s:%s@%s:%s/%s' % (settings.MONGO_USERNAME,
-                                                        settings.MONGO_PASSWORD,
-                                                        settings.MONGO_HOST,
-                                                        settings.MONGO_PORT,
-                                                        settings.MONGO_DB_NAME))
-db = client[settings.MONGO_DB_NAME]
 
-
-# Global tools
-def do_query(qry, collection):
-    """
-
-    :param qry: dict
-    :param collection: type
-    :return: dict
-    """
-    if not db:
-        logger.info('Mongo looks down')
-        return
-    logger.info('Querying mongo: %s' % qry)
-    existing_data = collection.find_one(qry, {'data': 1, 'date': 1})
-    if existing_data:
-        logger.info('Result found in mongo')
-        return existing_data['data']
-
-
-def do_insert(data, collection):
-    """
-    Insert the API result in mongo
-    :param data: dict
-    :param collection: type
-    """
-    if db:
-        collection.insert(data)
-        logger.info('Query saved in mongo')
-
-
-class MiiMongoStored(object):
+class MiiCachedData(object):
     key = {}
     mapping = {}
     type = ''
 
     def get_or_sync(self, method_name, *args):
         """
-        Try to get data from mongo, or call the api and store the result.
+        Try to get data from the cache, or call the api and store the result.
         :param string method_name: Name of the API method to sync the data
         :param tuple args: *args for the API method
         :return dict: JSON returned by the API or from the db
@@ -76,7 +34,7 @@ class MiiMongoStored(object):
         return result
 
 
-class MiiTheMovieDB(MiiMongoStored):
+class MiiTheMovieDB(MiiCachedData):
     the_movie_db_wrapper = TheMovieDBWrapper()
     mapping = {
         'get_movie_imdb_id': the_movie_db_wrapper.get_movie_imdb_id,
@@ -104,7 +62,7 @@ class MiiTheMovieDB(MiiMongoStored):
         return self.get_or_sync('get_movie_imdb_id', tmdb_id)
 
 
-class MiiOpenSubtitleDB(MiiMongoStored):
+class MiiOpenSubtitleDB(MiiCachedData):
     open_subtitle_wrapper = OpenSubtitleWrapper()
     mapping = {
         'get_imdb_information': open_subtitle_wrapper.get_imdb_information,

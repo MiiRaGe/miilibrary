@@ -1,7 +1,7 @@
 import json
 from django.test import TestCase
 import mock
-from middleware.mii_mongo import MiiMongoStored
+from middleware.mii_cache_wrapper import MiiCachedData
 from middleware.models import JSONKeyValue
 
 __author__ = 'MiiRaGe'
@@ -43,7 +43,7 @@ class TestJSONKeyValue(TestCase):
 
 class TestMiiMongoStored(TestCase):
     def setUp(self):
-        class test(MiiMongoStored):
+        class test(MiiCachedData):
             mapping = {
                 'test_function': lambda x: {'result': 'fake'},
             }

@@ -6,7 +6,7 @@ from django.conf import settings
 from pyreport.reporter import Report
 from spur import RunProcessError
 
-from middleware import mii_mongo
+from middleware import mii_cache_wrapper
 from middleware.remote_execution import symlink, remove_dir
 from mii_common import tools
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
@@ -17,7 +17,7 @@ logger = Report()
 
 
 class Indexer:
-    mii_osdb = mii_mongo.MiiOpenSubtitleDB()
+    mii_osdb = mii_cache_wrapper.MiiOpenSubtitleDB()
 
     def __init__(self):
         # All directory is always created by sorter and contains all movie sorted alphabetically

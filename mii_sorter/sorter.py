@@ -6,7 +6,7 @@ from middleware.remote_execution import symlink, remove_dir
 import movieinfo.hash_tool as ht
 
 from django.conf import settings
-from middleware import mii_mongo
+from middleware import mii_cache_wrapper
 from mii_common import tools
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, \
     insert_report
@@ -16,8 +16,8 @@ logger = Report()
 
 
 class Sorter:
-    mii_tmdb = mii_mongo.MiiTheMovieDB()
-    mii_osdb = mii_mongo.MiiOpenSubtitleDB()
+    mii_tmdb = mii_cache_wrapper.MiiTheMovieDB()
+    mii_osdb = mii_cache_wrapper.MiiOpenSubtitleDB()
 
     """ Sorter Module """
     def __init__(self):
