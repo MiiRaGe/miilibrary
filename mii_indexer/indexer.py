@@ -64,7 +64,7 @@ class Indexer:
         logger.info("**********      Indexer       **********")
         logger.info("****************************************")
         index_dict = defaultdict(dict)
-        for folder in sample(os.listdir(self.alphabetical_dir), 100):
+        for folder in os.listdir(self.alphabetical_dir):
             logger.info('------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
             if os.path.isdir(folder_abs):
