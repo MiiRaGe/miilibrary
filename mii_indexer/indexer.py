@@ -31,11 +31,16 @@ class Indexer:
             'director_dir': ('Directors', lambda x: x.get('directors', {}).values(), 'Director'),
             'actor_dir': ('Actors', lambda x: x.get('cast', {}).values(), 'Actor')
         }
+        self.movie_list = []
         logger.create_report()
 
     def index(self):
+        self.movie_list = []
         dict_index = self.get_dict_index()
         self.apply_dict_index_to_file_system(dict_index)
+        for movie in self.movie_list:
+            movie.indexed = True
+            movie.save()
         insert_report(logger.finalize_report(), report_type='indexer')
 
     def apply_dict_index_to_file_system(self, dict_index):
@@ -57,7 +62,6 @@ class Indexer:
         logger.info("****************************************")
         logger.info("**********      Indexer       **********")
         logger.info("****************************************")
-
         index_dict = defaultdict(dict)
         for folder in os.listdir(self.alphabetical_dir):
             logger.info('------ %s ------' % folder)
@@ -83,8 +87,7 @@ class Indexer:
                                                                     index_type,
                                                                     movie=movie)
                             index_dict[value[0]].update(dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
-                    movie.indexed = True
-                    movie.save()
+                    self.movie_list.append(movie)
 
         # add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
