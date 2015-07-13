@@ -26,7 +26,7 @@ class Indexer:
         self.search_dir = os.path.join(self.source_dir, "Search")
         self.index_mapping = {
             'genre_dir': ('Genres', lambda x: x.get('genres'), 'Tag'),
-            'rating_dir': ('Ratings', lambda x: [str(int(float(x.get('rating', 0))))], 'Rating'),
+            'rating_dir': ('Ratings', lambda x: [str(float(x.get('rating', 0)))], 'Rating'),
             'year_dir': ('Years', lambda x: [x.get('year')], 'Year'),
             'director_dir': ('Directors', lambda x: x.get('directors', {}).values(), 'Director'),
             'actor_dir': ('Actors', lambda x: x.get('cast', {}).values(), 'Actor')
@@ -57,7 +57,6 @@ class Indexer:
         logger.info("****************************************")
         logger.info("**********      Indexer       **********")
         logger.info("****************************************")
-        self.init()
 
         index_dict = defaultdict(dict)
         for folder in os.listdir(self.alphabetical_dir):
@@ -97,10 +96,12 @@ class Indexer:
             logger.info('\tIndexing %s, with %s' % (folder, values))
             try:
                 for value in values:
-                    value = value.strip()
-                    index_dict[value] = [(folder, folder_abs)]
                     if movie:
                         self.link_movie_value(movie, value, self.index_mapping[index_type][0])
+                    value = value.strip()
+                    if isinstance(value, float):
+                        value = '%s' % int(value)
+                    index_dict[value] = [(folder, folder_abs)]
             except Exception as e:
                 logger.exception("\tFailed with exception :%s" % repr(e))
             return index_dict
