@@ -53,11 +53,12 @@ class Indexer:
                 for movie_folder, movie_abs_folder in movie_list:
                     try:
                         symlink(movie_abs_folder, os.path.join(current_choice, movie_folder))
-                    except (RunProcessError, OSError):
+                    except (RunProcessError, OSError) as e:
                         logger.exception('Tried to symlink: %s to %s/%s/%s' % (movie_abs_folder,
                                                                                index_type,
                                                                                index_choice,
                                                                                movie_folder))
+                        logger.exception('Error: %s' % e)
 
     def get_dict_index(self):
         logger.info("****************************************")

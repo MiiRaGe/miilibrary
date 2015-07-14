@@ -66,7 +66,10 @@ class Sorter:
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
                 if result:
-                    is_sorted = self.sort_open_subtitle_info(result)
+                    try:
+                        is_sorted = self.sort_open_subtitle_info(result)
+                    except Exception as e:
+                        logger.exception('Error when sorting open_subtitle_info: %s, %s' % (file_name, repr(e)))
             else:
                 result = self.mii_osdb.get_movie_name(movie_hash, number='2')
                 if result:
@@ -375,6 +378,9 @@ def compare(file_name, api_result):
             logger.info("Type Inconsistent : " + api_result.get("MovieKind") + " expected Tv Series/Episode")
             return False, 0
         matching_pattern = re.search("(.*)[sS]0*(\d+)[eE]0*(\d+)", file_name)
+        if not matching_pattern:
+            logger.warning('Pattern not matching:  %s' % file_name)
+            return False, 0
         if not all([api_result.get("SeriesSeason") == matching_pattern.group(2),
                     api_result.get("SeriesEpisode") == matching_pattern.group(3)]):
             logger.info("SXXEXX inconsistent : S%sE%s, expected : S%sE%s" % (api_result.get("SeriesSeason"),
