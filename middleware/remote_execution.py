@@ -22,7 +22,7 @@ def link(source_file, destination_file):
 def symlink(source_file, destination_file):
     # Source file is the destination of the link and destionation_file is the new link path
     if shell:
-        result = shell.run(["ln", "-s", map_to_nas(destination_file), map_to_nas(source_file)])
+        result = shell.run(["ln", "-s", map_to_nas(source_file), map_to_nas(destination_file)])
         return result.return_code
     return os.symlink(source_file, destination_file)
 
