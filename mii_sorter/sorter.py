@@ -151,15 +151,15 @@ class Sorter:
             existing_episode = get_episode(season_dir, name, episode_number)
             file_path = os.path.join(self.data_dir, file_name)
 
-            if exists and os.path.exists(serie.file_path):
+            if exists and os.path.exists(serie.abs_file_path):
                 if serie.file_size > os.path.getsize(file_path):
                     self.move_to_unsorted(file_path)
-                    logger.info("Moving the source to unsorted, episode already exists :%s" % serie.file_path)
+                    logger.info("Moving the source to unsorted, episode already exists :%s" % serie.abs_file_path)
                 elif serie.file_size == os.path.getsize(file_path):
                     os.remove(file_path)
                     logger.info("Removed the source, episode already exists and same size:%s" % existing_episode)
                 else:
-                    self.move_to_unsorted(serie.file_path)
+                    self.move_to_unsorted(serie.abs_file_path)
                     logger.info("Moving destination to unsorted (because bigger = better): %s" % new_file_name)
                     os.rename(file_path, os.path.join(season_dir, new_file_name))
                     serie.file_path = os.path.join(season_dir, new_file_name)
@@ -256,9 +256,14 @@ class Sorter:
         # Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub("[\*\:]", "-", movie_name)
         file_path = os.path.join(self.data_dir, filename)
+
+        custom_movie_dir = "%s (%s)" % (movie_name, year)
+        quality = get_quality(filename)
+        if quality:
+            custom_movie_dir += " [" + quality + "]"
         try:
             exist, movie = get_movie(movie_name, year=year)
-            if exist and os.path.exists(movie.folder_path):
+            if exist and os.path.exists(movie.abs_folder_path):
                 if movie.file_size > os.path.getsize(file_path):
                     logger.info('Do not sort as already existing bigger movie exists')
                     self.move_to_unsorted(file_path)
@@ -269,12 +274,7 @@ class Sorter:
                     return False
                 else:
                     logger.info('Moving the old movie folder to unsorted as new file is bigger')
-                    self.move_to_unsorted(movie.folder_path)
-
-            custom_movie_dir = "%s (%s)" % (movie_name, year)
-            quality = get_quality(filename)
-            if quality:
-                custom_movie_dir += " [" + quality + "]"
+                    self.move_to_unsorted(movie.abs_folder_path)
             logger.debug('Custom folder name :%s' % custom_movie_dir)
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
             logger.debug('Created folder path :%s' % created_movie_dir)

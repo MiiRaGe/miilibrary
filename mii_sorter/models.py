@@ -1,4 +1,5 @@
 import logging
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
@@ -25,7 +26,16 @@ class Movie(Model):
         ]
         ordering = ['title']
 
+    @property
+    def abs_folder_path(self):
+        try:
+            return self.folder_path.format({'destination_dir': settings.DESTINATION_FOLDER})
+        except Exception:
+            return self.folder_path
+
     def save(self, *args, **kwargs):
+        if self.folder_path:
+            self.folder_path = self.folder_path.replace(settings.DESTINATION_FOLDER, '{destination_dir}')
         if self.imdb_id and 't' in self.imdb_id:
             self.imdb_id.replace('t', '')
         return super(Movie, self).save(*args, **kwargs)
@@ -69,6 +79,18 @@ class Episode(Model):
 
     def __unicode__(self):
         return '%s S%sE%s' % (self.season.serie.name, self.season.number, self.number)
+
+    @property
+    def abs_file_path(self):
+        try:
+            return self.file_path.format({'destination_dir': settings.DESTINATION_FOLDER})
+        except Exception:
+            return self.file_path
+
+    def save(self, *args, **kwargs):
+        if self.file_path:
+            self.file_path = self.file_path.replace(settings.DESTINATION_FOLDER, '{destination_dir}')
+        return super(Episode, self).save(*args, **kwargs)
 
 
 class WhatsNew(Model):
