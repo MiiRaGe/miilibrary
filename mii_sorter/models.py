@@ -90,7 +90,6 @@ class Episode(Model):
     def save(self, *args, **kwargs):
         if self.file_path:
             self.file_path = self.file_path.replace(settings.DESTINATION_FOLDER, '{destination_dir}')
-        print self.file_path
         return super(Episode, self).save(*args, **kwargs)
 
 
