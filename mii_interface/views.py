@@ -6,7 +6,7 @@ from django.shortcuts import render
 
 from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
-from mii_sorter.models import Movie, Serie
+from mii_sorter.models import Movie, Serie, Episode
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
 from mii_unpacker.tasks import unpack
 from mii_sorter.tasks import sort, rescan_media_streamer
@@ -22,7 +22,8 @@ def movies(request):
 
 
 def series(request):
-    return render(request, 'mii_interface/serie.html', dict(series=[x for x in Serie.objects.all()]))
+    serie = Episode.objects.all().select_related('season__number', 'season__serie__name').values()
+    return render(request, 'mii_interface/serie.html', dict(series=serie))
 
 
 def rate(request):
