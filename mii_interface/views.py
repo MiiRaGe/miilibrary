@@ -54,7 +54,7 @@ def rate(request):
                        genres=genres, actors=actors, directors=directors))
 
 def reports(request):
-    reports = Report.objects.all().order_by('-date')
+    reports = Report.objects.all().order_by('-date')[:50]
     return render(request, 'mii_interface/reports.html', {'reports': reports})
 
 
