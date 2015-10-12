@@ -62,15 +62,15 @@ def check_feed_and_download_torrents():
             file_name = re.search('/([^\/]*\.torrent)\?', entry['link']).group(1)
             logger.info('Torrent filename : %s' % file_name)
             if os.path.exists(os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name)):
-                break
+                continue
             if 'webrip' in file_name.lower():
-                break
+                continue
             if already_exists(settings.RSS_FILTERS[re_filter], entry['title']):
-                break
+                continue
             created = get_or_create_downloading_object(re_filter, entry['title'])
             #Only download when not already downloading the same episode.
             if not created:
-                break
+                continue
             urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
     insert_report(logger.finalize_report(), report_type='rss')
 
