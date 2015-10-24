@@ -25,7 +25,8 @@ class Indexer:
         # All directory is always created by sorter and contains all movie sorted alphabetically
         self.source_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies')
         self.alphabetical_dir = os.path.join(self.source_dir, "All")
-        self.search_dir = os.path.join(self.source_dir, "Search")
+        self.search_dir = tools.make_dir(os.path.join(self.source_dir, "Search"))
+        self.index_dir = tools.make_dir(os.path.join(self.source_dir, "Index"))
         self.index_mapping = {
             'genre_dir': ('Genres', lambda x: x.get('genres'), 'Tag'),
             'rating_dir': ('Ratings', lambda x: [str(float(x.get('rating', 0)))], 'Rating'),
@@ -43,9 +44,6 @@ class Indexer:
             dump_to_json_file(dict_index)
         else:
             self.apply_dict_index_to_file_system(dict_index)
-        for movie in self.movie_list:
-            movie.indexed = True
-            movie.save()
         insert_report(logger.finalize_report(), report_type='indexer')
 
     def apply_dict_index_to_file_system(self, dict_index):
@@ -157,9 +155,10 @@ class Indexer:
 def dump_to_json_file(index_dict):
     json_index = json.dumps(index_dict)
     json_index = json_index.replace(settings.LOCAL_ROOT, settings.NAS_ROOT)
-    if os.path.exists(settings.DUMP_INDEX_JSON_FILE_NAME):
-        os.remove(settings.DUMP_INDEX_JSON_FILE_NAME)
-    with open(settings.DUMP_INDEX_JSON_FILE_NAME, 'w') as outfile:
+    json_path = os.path.join(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
+    if os.path.exists(json_path):
+        os.remove(json_path)
+    with open(json_path, 'w') as outfile:
         outfile.write(unicode(json_index))
 
 

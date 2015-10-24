@@ -62,10 +62,6 @@ class TestMain(TestCase):
         logger.info("*** Environment Torn Down***")
 
     def test_main(self):
-        logger.info("== Testing validate_settings ==")
-
-        self.assertTrue(tools.validate_settings())
-
         logger.info("== Testing doUnpack ==")
         mnl = MiiNASLibrary()
         mnl.unpack()
@@ -95,10 +91,6 @@ class TestMain(TestCase):
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):
-        logger.info("== Testing validate_settings ==")
-
-        self.assertTrue(tools.validate_settings())
-
         logger.info("== Testing doUnpack ==")
         mnl = MiiNASLibrary()
         mnl.unpack()
