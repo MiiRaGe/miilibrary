@@ -108,7 +108,7 @@ class TestMain(TestCase):
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
         mnl.index()
-        self.assertTrue(os.path.exists('data.json'))
+        self.assertTrue(os.path.exists(self.DESTINATION_FOLDER + '/data.json'))
 
     @mock.patch('mii_unpacker.views.unpack')
     def test_rpc_unpack(self, unpack):

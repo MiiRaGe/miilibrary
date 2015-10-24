@@ -11,6 +11,7 @@ from spur import RunProcessError
 from middleware import mii_cache_wrapper
 from middleware.remote_execution import symlink, remove_dir
 from mii_common import tools
+from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie, insert_report
 
@@ -43,26 +44,8 @@ class Indexer:
         if settings.DUMP_INDEX_JSON_FILE_NAME:
             dump_to_json_file(dict_index)
         else:
-            self.apply_dict_index_to_file_system(dict_index)
+            dict_apply(self.index_dir, dict_index, symlink_method=symlink)
         insert_report(logger.finalize_report(), report_type='indexer')
-
-    def apply_dict_index_to_file_system(self, dict_index):
-        current_path_root = self.source_dir
-        for index_type, index_content in dict_index.items():
-            if index_type == 'Search':
-                continue
-            current_path = tools.make_dir(os.path.join(current_path_root, index_type))
-            for index_choice, movie_list in index_content.items():
-                current_choice = tools.make_dir(os.path.join(current_path, index_choice))
-                for movie_folder, movie_abs_folder in movie_list:
-                    try:
-                        symlink(movie_abs_folder, os.path.join(current_choice, movie_folder))
-                    except (RunProcessError, OSError) as e:
-                        logger.exception('Tried to symlink: %s to %s/%s/%s' % (movie_abs_folder,
-                                                                               index_type,
-                                                                               index_choice,
-                                                                               movie_folder))
-                        logger.exception('Error: %s' % e)
 
     def get_dict_index(self):
         logger.info("****************************************")
