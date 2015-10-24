@@ -83,9 +83,6 @@ class TestMain(TestCase):
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
         mnl.index()
-        # TODO : Add test for assertions on sorted stuff
-        # TODO : Add test for opensubtitle (get real data from production and mock the result with a fake hash)
-
 
         # Test for behaviour with duplicates
         self.setUp()
@@ -95,6 +92,31 @@ class TestMain(TestCase):
         mnl.index()
 
         tools.print_rec(self.DESTINATION_FOLDER, 0)
+
+    @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
+    def test_json_dump(self):
+        logger.info("== Testing validate_settings ==")
+
+        self.assertTrue(tools.validate_settings())
+
+        logger.info("== Testing doUnpack ==")
+        mnl = MiiNASLibrary()
+        mnl.unpack()
+        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
+
+        mnl.sort()
+
+        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
+        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
+        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 1)
+
+        self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
+        self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
+        self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
+                      os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
+
+        mnl.index()
+        self.assertTrue(os.path.exists('data.json'))
 
     @mock.patch('mii_unpacker.views.unpack')
     def test_rpc_unpack(self, unpack):

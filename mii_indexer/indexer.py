@@ -1,3 +1,4 @@
+import json
 from random import sample
 import re
 import os
@@ -38,7 +39,10 @@ class Indexer:
     def index(self):
         self.movie_list = []
         dict_index = self.get_dict_index()
-        self.apply_dict_index_to_file_system(dict_index)
+        if settings.DUMP_INDEX_JSON_FILE_NAME:
+            dump_to_json_file(dict_index)
+        else:
+            self.apply_dict_index_to_file_system(dict_index)
         for movie in self.movie_list:
             movie.indexed = True
             movie.save()
@@ -47,6 +51,8 @@ class Indexer:
     def apply_dict_index_to_file_system(self, dict_index):
         current_path_root = self.source_dir
         for index_type, index_content in dict_index.items():
+            if index_type == 'Search':
+                continue
             current_path = tools.make_dir(os.path.join(current_path_root, index_type))
             for index_choice, movie_list in index_content.items():
                 current_choice = tools.make_dir(os.path.join(current_path, index_choice))
@@ -69,7 +75,7 @@ class Indexer:
             logger.info('------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
             if os.path.isdir(folder_abs):
-                # index_dict['Search'].update(dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
+                index_dict['Search'].update(dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
                 matched = re.match('([^\(]*) \((\d{4})\).*', folder)
                 if matched:
                     movie_name = matched.group(1)
@@ -91,7 +97,7 @@ class Indexer:
                             index_dict[value[0]].update(dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
                     self.movie_list.append(movie)
 
-        # add_number_and_simplify(index_dict['Search'])
+        add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
         return index_dict
 
@@ -148,13 +154,22 @@ class Indexer:
             logger.debug('Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))
 
 
-def search_index(folder):
-    matched = re.match('(^[^\(]*)\(.*', folder[0])
+def dump_to_json_file(index_dict):
+    json_index = json.dumps(index_dict)
+    json_index = json_index.replace(settings.LOCAL_ROOT, settings.NAS_ROOT)
+    if os.path.exists(settings.DUMP_INDEX_JSON_FILE_NAME):
+        os.remove(settings.DUMP_INDEX_JSON_FILE_NAME)
+    with open(settings.DUMP_INDEX_JSON_FILE_NAME, 'w') as outfile:
+        outfile.write(unicode(json_index))
+
+
+def search_index(folder_and_folder_abs):
+    matched = re.match('(^[^\(]*)\(.*', folder_and_folder_abs[0])
     if matched:
         name = matched.group(1)
     else:
-        name = folder[0]
-    return get_tree_from_list([x.upper() for x in name if x.isalpha()], folder)
+        name = folder_and_folder_abs[0]
+    return get_tree_from_list([x.upper() for x in name if x.isalpha()], folder_and_folder_abs)
 
 
 def get_tree_from_list(remaining_letters, folder):
