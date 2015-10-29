@@ -96,8 +96,10 @@ class Sorter:
         self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:12]:
             if os.path.isdir(whatsnew.path):
+                logger.debug("Trying to link file %s to %s" % (whatsnew.path, whatsnew.name))
                 symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
             else:
+                logger.debug("Trying to link directory %s to %s" % (whatsnew.path, whatsnew.name))
                 symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.path.split('/')[-1]))
 
     def sort_open_subtitle_info(self, result):
