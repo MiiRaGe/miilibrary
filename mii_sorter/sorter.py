@@ -25,8 +25,8 @@ class Sorter:
         self.hash_array = []
         self.map = {}
         self.media_dir = settings.DESTINATION_FOLDER
+        self.new_dir = tools.make_dir(os.path.join(self.media_dir, "New"))
         self.data_dir = os.path.join(self.media_dir, "data")
-        self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
         self.serie_dir = os.path.join(self.media_dir, "TVSeries")
         self.movie_dir = os.path.join(self.media_dir, "Movies")
         self.unsorted_dir = os.path.join(self.media_dir, "unsorted")
@@ -88,20 +88,20 @@ class Sorter:
                     logger.info("Looks like a movie")
                     self.sort_movie_from_name(file_name)
 
-        self.update_whatsnew()
+        self.update_new()
         insert_report(logger.finalize_report(), report_type='sorting')
 
-    def update_whatsnew(self):
-        remove_dir(self.whatsnew_dir)
-        self.whatsnew_dir = tools.make_dir(os.path.join(self.media_dir, "What's New"))
+    def update_new(self):
+        remove_dir(self.new_dir)
+        self.new_dir = tools.make_dir(os.path.join(self.media_dir, "New"))
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:24]:
             try:
                 if os.path.isdir(whatsnew.path):
                     logger.debug("Trying to link file %s to %s" % (whatsnew.path, whatsnew.name))
-                    symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.name))
+                    symlink(whatsnew.path, os.path.join(self.new_dir, whatsnew.name))
                 else:
                     logger.debug("Trying to link directory %s to %s" % (whatsnew.path, whatsnew.name))
-                    symlink(whatsnew.path, os.path.join(self.whatsnew_dir, whatsnew.path.split('/')[-1]))
+                    symlink(whatsnew.path, os.path.join(self.new_dir, whatsnew.path.split('/')[-1]))
             except Exception as e:
                 logger.debug("Tried to create a what's new link %s" % repr(e))
 
