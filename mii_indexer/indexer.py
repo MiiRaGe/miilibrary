@@ -26,7 +26,6 @@ class Indexer:
         # All directory is always created by sorter and contains all movie sorted alphabetically
         self.source_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies')
         self.alphabetical_dir = os.path.join(self.source_dir, "All")
-        self.search_dir = tools.make_dir(os.path.join(self.source_dir, "Search"))
         self.index_dir = tools.make_dir(os.path.join(self.source_dir, "Index"))
         self.index_mapping = {
             'genre_dir': ('Genres', lambda x: x.get('genres'), 'Tag'),
