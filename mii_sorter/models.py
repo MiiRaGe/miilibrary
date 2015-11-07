@@ -101,6 +101,17 @@ class WhatsNew(Model):
     class Meta:
         ordering = ['date']
 
+    def get_displayable_date(self):
+        today = timezone.now()
+        day_delta = (today - self.date).days
+        if day_delta == 0:
+            return 'Today'
+        elif day_delta == -1:
+            return 'Yesterday'
+        elif day_delta >= -2:
+            return '%s days ago' % day_delta
+        return self.date.strfdate('%d.%m.%y')
+
 
 def get_serie_episode(name, season, episode):
     """
