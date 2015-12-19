@@ -2,72 +2,29 @@
 
 import logging
 import os
-import shutil
 import tempfile
 import mock
 
-from django.conf import settings
 from django.test import override_settings, TestCase
+from django.conf import settings
 
-from settings.utils import relative
-from mock_osdb import *
-from mock_tmdb import *
 from mii_indexer.indexer import dict_merge_list_extend
 from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
 from mii_common import tools
 from miinaslibrary import MiiNASLibrary
+from tests.base import TestMiilibrary
 
 logger = logging.getLogger(__name__)
 
-mii_osdb_mock = mock.MagicMock()
-mii_osdb_mock.get_movie_name = mock_get_movie_names2
-mii_osdb_mock.get_imdb_information = mock_get_imdb_information
-mii_osdb_mock.get_movie_names = mock_get_movie_names
-mii_osdb_mock.get_subtitles = mock_get_movie_names
 
-mii_tmdb_mock = mock.MagicMock()
-mii_tmdb_mock.get_movie_name = mock_get_movie_name
-mii_tmdb_mock.get_movie_imdb_id = mock_get_movie_imdb_id
-
-
-@override_settings(MINIMUM_SIZE=0.2, NAS_IP=None, NAS_USERNAME=None)
-@mock.patch('mii_indexer.indexer.Indexer.mii_osdb', new=mii_osdb_mock)
-@mock.patch('mii_sorter.sorter.Sorter.mii_tmdb', new=mii_tmdb_mock)
-@mock.patch('mii_sorter.sorter.Sorter.mii_osdb', new=mii_osdb_mock)
-class TestMain(TestCase):
-    def setUp(self):
-        logger.info("*** Building environment ***")
-
-        self.SOURCE_FOLDER = settings.SOURCE_FOLDER
-        self.DESTINATION_FOLDER = settings.DESTINATION_FOLDER
-
-        abs_data = relative('tests/test_data/')
-
-        logger.info("\t ** Moving Files **")
-        for media_file in os.listdir(abs_data):
-            logger.info("\t\t * Moving: %s *" % media_file)
-            shutil.copy(os.path.join(abs_data, media_file), os.path.join(self.SOURCE_FOLDER, media_file))
-        logger.info("*** Environment Builded ***")
-
-    def tearDown(self):
-        logger.info("*** Tearing down environment ***")
-        abs_input = self.SOURCE_FOLDER
-        logger.info("\t ** Cleaning input Files **")
-        tools.cleanup_rec(abs_input)
-
-        logger.info("\t ** Cleaning output directory **")
-        abs_output = self.DESTINATION_FOLDER
-        tools.cleanup_rec(abs_output)
-        logger.info("*** Environment Torn Down***")
-
+class TestMain(TestMiilibrary):
     def test_main(self):
         logger.info("== Testing doUnpack ==")
-        mnl = MiiNASLibrary()
-        mnl.unpack()
+        self.mnl.unpack()
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
-        mnl.sort()
+        self.mnl.sort()
 
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
@@ -78,25 +35,24 @@ class TestMain(TestCase):
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
-        mnl.index()
+        self.mnl.index()
 
         # Test for behaviour with duplicates
         self.setUp()
 
-        mnl.unpack()
-        mnl.sort()
-        mnl.index()
+        self.mnl.unpack()
+        self.mnl.sort()
+        self.mnl.index()
 
         tools.print_rec(self.DESTINATION_FOLDER, 0)
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):
         logger.info("== Testing doUnpack ==")
-        mnl = MiiNASLibrary()
-        mnl.unpack()
+        self.mnl.unpack()
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
-        mnl.sort()
+        self.mnl.sort()
 
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
@@ -107,7 +63,7 @@ class TestMain(TestCase):
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
-        mnl.index()
+        self.mnl.index()
         self.assertTrue(os.path.exists(self.DESTINATION_FOLDER + '/data.json'))
 
     @mock.patch('mii_unpacker.views.unpack')
