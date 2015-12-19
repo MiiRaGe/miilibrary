@@ -8,7 +8,9 @@ import tempfile
 from django.test import override_settings, TestCase
 
 from mii_indexer.indexer import dict_merge_list_extend
-from mii_sorter.models import Movie, Episode
+from mii_indexer.models import MovieRelation
+from mii_indexer.models import MovieTagging, Person
+from mii_sorter.models import Movie, Episode, Serie, Season
 from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
 from mii_common import tools
@@ -31,20 +33,23 @@ class TestMain(TestMiilibrary):
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 1)
 
-        self.assertEqual(Episode.objects.all().count(), 1)
+        self.assertIsNotNone(Episode.objects.get(number=1))
+        self.assertIsNotNone(Season.objects.get(number=1))
+        self.assertIsNotNone(Serie.objects.get(name='The Big Bank Theory'))
 
         self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
         self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
+        self.assertEqual(MovieTagging.objects.count(), 0)
+        self.assertEqual(MovieRelation.objects.count(), 0)
+        self.assertEqual(Person.objects.count(), 0)
         self.mnl.index()
+        self.assertEqual(MovieTagging.objects.count(), 5)
+        self.assertEqual(MovieRelation.objects.count(), 4)
+        self.assertEqual(Person.objects.count(), 5)
 
-        self.mnl.unpack()
-        self.mnl.sort()
-        self.mnl.index()
-
-        tools.print_rec(self.DESTINATION_FOLDER, 0)
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):
