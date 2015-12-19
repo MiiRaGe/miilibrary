@@ -11,8 +11,11 @@ from mii_common import tools
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, \
     insert_report
 
-
-logger = Report()
+if settings.REPORT_ENABLED:
+    logger = Report()
+else:
+    import logging
+    logger = logging.getLogger(__name__)
 
 
 class Sorter:
@@ -21,7 +24,8 @@ class Sorter:
 
     """ Sorter Module """
     def __init__(self):
-        logger.create_report()
+        if settings.REPORT_ENABLED:
+            logger.create_report()
         self.hash_array = []
         self.map = {}
         self.media_dir = settings.DESTINATION_FOLDER
@@ -89,7 +93,8 @@ class Sorter:
                     self.sort_movie_from_name(file_name)
 
         self.update_new()
-        insert_report(logger.finalize_report(), report_type='sorting')
+        if settings.REPORT_ENABLED:
+            insert_report(logger.finalize_report(), report_type='sorting')
 
     def update_new(self):
         remove_dir(self.new_dir)

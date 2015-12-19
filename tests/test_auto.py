@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import mock
 import os
 import tempfile
-import mock
 
 from django.test import override_settings, TestCase
-from django.conf import settings
 
 from mii_indexer.indexer import dict_merge_list_extend
+from mii_sorter.models import Movie, Episode
 from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
 from mii_common import tools
-from miinaslibrary import MiiNASLibrary
 from tests.base import TestMiilibrary
 
 logger = logging.getLogger(__name__)
 
-
+@mock.patch('mii_unpacker.unpacker.link', new=mock.MagicMock(side_effect=AttributeError))
 class TestMain(TestMiilibrary):
     def test_main(self):
         logger.info("== Testing doUnpack ==")
@@ -26,9 +25,13 @@ class TestMain(TestMiilibrary):
 
         self.mnl.sort()
 
+        self.assertEqual(Movie.objects.all().count(), 2)
+
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 1)
+
+        self.assertEqual(Episode.objects.all().count(), 1)
 
         self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
         self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
@@ -36,9 +39,6 @@ class TestMain(TestMiilibrary):
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
         self.mnl.index()
-
-        # Test for behaviour with duplicates
-        self.setUp()
 
         self.mnl.unpack()
         self.mnl.sort()

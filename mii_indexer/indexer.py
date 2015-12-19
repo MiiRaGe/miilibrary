@@ -1,22 +1,23 @@
 import json
-from random import sample
 import re
 import os
 
 from collections import defaultdict
 from django.conf import settings
 from pyreport.reporter import Report
-from spur import RunProcessError
 
 from middleware import mii_cache_wrapper
-from middleware.remote_execution import symlink, remove_dir
+from middleware.remote_execution import symlink
 from mii_common import tools
 from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie, insert_report
 
-
-logger = Report()
+if settings.REPORT_ENABLED:
+    logger = Report()
+else:
+    import logging
+    logger = logging.getLogger(__name__)
 
 
 class Indexer:
@@ -35,7 +36,8 @@ class Indexer:
             'actor_dir': ('Actors', lambda x: x.get('cast', {}).values(), 'Actor')
         }
         self.movie_list = []
-        logger.create_report()
+        if settings.REPORT_ENABLED:
+            logger.create_report()
 
     def index(self):
         self.movie_list = []
@@ -44,7 +46,8 @@ class Indexer:
             dump_to_json_file(dict_index)
         else:
             dict_apply(self.index_dir, dict_index, symlink_method=symlink)
-        insert_report(logger.finalize_report(), report_type='indexer')
+        if settings.REPORT_ENABLED:
+            insert_report(logger.finalize_report(), report_type='indexer')
 
     def get_dict_index(self):
         logger.info("****************************************")
