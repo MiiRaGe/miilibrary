@@ -44,10 +44,6 @@ class MiiNASLibrary:
         logger.info("Unpacking Module :")
         self.recursive_unrarer.unrar_and_link()
         self.recursive_unrarer.cleanup()
-        if settings.SOURCE_CLEANUP:
-            pass
-            # Complete wiping of source folder
-            # tools.cleanup_source(self.source_dir)
         self.recursive_unrarer.print_statistic()
 
     def sort(self):

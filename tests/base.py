@@ -1,4 +1,5 @@
 import mock
+import os
 import random
 import string
 
@@ -28,7 +29,8 @@ Patcher.SKIPNAMES.add('_pytest')
 
 @override_settings(MINIMUM_SIZE=0, NAS_IP=None, NAS_USERNAME=None,
                    SOURCE_FOLDER='/raw/',
-                   DESTINATION_FOLDER='/processed/')
+                   DESTINATION_FOLDER='/processed/',
+                   DUMP_INDEX_JSON_FILE_NAME=None)
 class TestMiilibrary(TestCase, DjTestCase):
     def setUp(self):
         self.setUpPyfakefs()
@@ -57,3 +59,21 @@ class TestMiilibrary(TestCase, DjTestCase):
 
     def _generate_data(self, size):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10000 * size))
+
+    def _fill_data(self):
+        def lazy_creation(filename, contents=None):
+            self.fs.CreateFile(os.path.join(self.DESTINATION_FOLDER, 'data', filename), contents=contents)
+        lazy_creation('The.big.bank.theory.S01E01.720p.mkv', contents='TheBigBank' * 65535)
+        lazy_creation('The.big.bank.theory.S01E01.mkv', contents='TheBig' * 65535)
+        lazy_creation('Thor.(2011).720p.mkv', contents='Thor' * 65535)
+        lazy_creation('Thor.(2011).mkv', contents='Tho' * 65535)
+        lazy_creation('Thor.The.Dark.World.mkv', contents='Tho' * 65535)
+
+    def _fill_movie(self):
+        os.mkdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)'))
+        os.mkdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)'))
+
+        self.fs.CreateFile(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)', 'Thor.(2011).720p.mkv'),
+                           contents='Thor' * 65535)
+        self.fs.CreateFile(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)', 'Thor-.The.Dark.World.(2013).720p.mkv'),
+                           contents='Tho' * 65535)

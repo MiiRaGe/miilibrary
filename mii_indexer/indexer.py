@@ -45,7 +45,10 @@ class Indexer:
         if settings.DUMP_INDEX_JSON_FILE_NAME:
             dump_to_json_file(dict_index)
         else:
-            dict_apply(self.index_dir, dict_index, symlink_method=symlink)
+            if settings.REMOTE_FILE_OPERATION_ENABLED:
+                dict_apply(self.index_dir, dict_index, symlink_method=symlink)
+            else:
+                dict_apply(self.index_dir, dict_index)
         if settings.REPORT_ENABLED:
             insert_report(logger.finalize_report(), report_type='indexer')
 
