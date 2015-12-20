@@ -12,3 +12,4 @@ mock
 python-memcached
 requests
 git+https://github.com/jmcgeheeiv/pyfakefs.git
+git+https://github.com/MiiRaGe/pyreport.git
