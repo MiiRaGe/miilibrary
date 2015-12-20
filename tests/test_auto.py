@@ -46,9 +46,9 @@ class TestMain(TestMiilibrary):
         self.assertEqual(MovieRelation.objects.count(), 0)
         self.assertEqual(Person.objects.count(), 0)
         self.mnl.index()
-        self.assertEqual(MovieTagging.objects.count(), 5)
-        self.assertEqual(MovieRelation.objects.count(), 4)
-        self.assertEqual(Person.objects.count(), 5)
+        self.assertEqual(MovieTagging.objects.count(), 7)
+        self.assertEqual(MovieRelation.objects.count(), 33)
+        self.assertEqual(Person.objects.count(), 22)
 
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')

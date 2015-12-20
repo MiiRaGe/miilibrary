@@ -124,14 +124,14 @@ class Indexer:
 
     @staticmethod
     def link_movie_value(movie, value, link_type):
-        if link_type == 'Tag':
+        if link_type == 'Genres':
             tag, created = Tag.objects.get_or_create(name=value)
             MovieTagging.objects.get_or_create(tag=tag, movie=movie)
-        elif link_type == 'Year' and not movie.year:
+        elif link_type == 'Years' and not movie.year:
             movie.year = value
-        elif link_type == 'Rating' and not movie.rating:
+        elif link_type == 'Ratings' and not movie.rating:
             movie.rating = value
-        elif link_type in ['Actor', 'Director']:
+        elif link_type in ['Actors', 'Directors']:
             person, _ = Person.objects.get_or_create(name=value)
             MovieRelation.objects.get_or_create(person=person, movie=movie, type=link_type)
             logger.debug('Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))
