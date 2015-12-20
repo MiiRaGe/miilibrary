@@ -1,3 +1,6 @@
 from base import *
 
-DATABASES['default']['engine'] = 'django.db.backends.sqlite3'
+DATABASES['default'] = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': 'test_db'
+}
