@@ -1,9 +1,9 @@
 import sys
 # Then logic is base.py extends django.py and local.py needs to extends base.py
-from local import *
-
+try:
+    from local import *
+except ImportError:
+    pass
 
 if 'test' in sys.argv:
-    SOURCE_FOLDER = relative('tests/test_input/')
-    DESTINATION_FOLDER = relative('tests/test_output/')
-    DATABASES['default']['engine'] = 'django.db.backends.sqlite3'
+    from test import *
