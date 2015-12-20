@@ -1,8 +1,7 @@
 # MiiNASLibrary 2.0 #
 
-### Project Management Platform ###
-
-https://app.sonicagile.com/project/miirage/miinaslibrary/backlog
+### Status ###
+[![Build Status](https://travis-ci.org/MiiRaGe/miilibrary.svg?branch=master)](https://travis-ci.org/MiiRaGe/miilibrary)
 
 ### Dependencies ###
 
@@ -12,12 +11,12 @@ https://app.sonicagile.com/project/miirage/miinaslibrary/backlog
 ### Setting up ###
 
 * Install dependencies : pip install -r requirements.txt
-* Run tests : python -m unittest tests.tests_auto
-* Deployement : Carefully set the input and output directory in settings/local.py (local copy of base.py)
+* Run tests : py.test
+* Deployement : Carefully set the parameters in settings/local.py (local copy of base.py)
 
 ### Running ###
 
-* python ./main.py
+* python ./manage.py
 
 ### Contributors ###
 
