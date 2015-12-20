@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name='MovieQuestionSet',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('movie', models.OneToOneField(on_delete=b'CASCADE', to='mii_sorter.Movie')),
+                ('movie', models.OneToOneField(on_delete=models.CASCADE, to='mii_sorter.Movie')),
             ],
         ),
         migrations.CreateModel(
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('answer', models.FloatField()),
                 ('question_type', models.CharField(max_length=50, choices=[(b'actor', b'actor'), (b'story', b'store'), (b'overall', b'overall'), (b'director', b'director')])),
-                ('question_set', models.ForeignKey(to='mii_rating.MovieQuestionSet', on_delete=b'CASCADE')),
+                ('question_set', models.ForeignKey(to='mii_rating.MovieQuestionSet', on_delete=models.CASCADE)),
             ],
         ),
         migrations.AlterUniqueTogether(

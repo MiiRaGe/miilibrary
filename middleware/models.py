@@ -48,8 +48,10 @@ class JSONKeyValue(Model):
         '''
         hashed_key, json_key = JSONKeyValue._get_hashed_key(key)
         try:
-            obj = JSONKeyValue.objects.get(type=type, key=hashed_key)
-            return json.loads(obj.value)
+            obj = JSONKeyValue.objects.filter(type=type, key=hashed_key).values_list('value', flat=True).get()
+            if isinstance(obj, buffer):
+                obj = str(obj).decode('utf-8')
+            return json.loads(obj.decode('utf-8'))
         except ObjectDoesNotExist:
             logger.debug('Cache miss')
             return 0

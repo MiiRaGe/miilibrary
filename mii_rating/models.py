@@ -1,4 +1,4 @@
-from django.db.models import Model, ForeignKey, FloatField, CharField, OneToOneField
+from django.db.models import Model, ForeignKey, FloatField, CharField, OneToOneField, CASCADE
 
 from mii_sorter.models import Movie
 
@@ -12,11 +12,11 @@ QUESTION_CHOICES = [
 
 
 class MovieQuestionSet(Model):
-    movie = OneToOneField(Movie, on_delete='CASCADE')
+    movie = OneToOneField(Movie, CASCADE)
 
 
 class QuestionAnswer(Model):
-    question_set = ForeignKey(MovieQuestionSet, on_delete='CASCADE')
+    question_set = ForeignKey(MovieQuestionSet, CASCADE)
     answer = FloatField()
     question_type = CharField(max_length=50, choices=QUESTION_CHOICES)
 

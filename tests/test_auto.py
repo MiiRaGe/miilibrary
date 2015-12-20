@@ -1,102 +1,114 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
-import shutil
-import tempfile
 import mock
+import os
+import tempfile
 
-from django.conf import settings
 from django.test import override_settings, TestCase
 
-from settings.utils import relative
-from mock_osdb import *
-from mock_tmdb import *
 from mii_indexer.indexer import dict_merge_list_extend
+from mii_indexer.models import MovieRelation
+from mii_indexer.models import MovieTagging, Person
+from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
 from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
-from mii_common import tools
-from miinaslibrary import MiiNASLibrary
+from tests.base import TestMiilibrary
 
 logger = logging.getLogger(__name__)
 
-mii_osdb_mock = mock.MagicMock()
-mii_osdb_mock.get_movie_name = mock_get_movie_names2
-mii_osdb_mock.get_imdb_information = mock_get_imdb_information
-mii_osdb_mock.get_movie_names = mock_get_movie_names
-mii_osdb_mock.get_subtitles = mock_get_movie_names
 
-mii_tmdb_mock = mock.MagicMock()
-mii_tmdb_mock.get_movie_name = mock_get_movie_name
-mii_tmdb_mock.get_movie_imdb_id = mock_get_movie_imdb_id
+@mock.patch('mii_unpacker.unpacker.link', new=mock.MagicMock(side_effect=AttributeError))
+class TestMain(TestMiilibrary):
+    def test_unpack(self):
+        logger.info("== Testing doUnpack ==")
+        self.mnl.unpack()
+        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
+    def test_sort(self):
+        self._fill_data()
+        self.mnl.sort()
+        self.assertEqual(Movie.objects.all().count(), 2)
+        self.assertEqual(Episode.objects.all().count(), 1)
+        self.assertEqual(WhatsNew.objects.all().count(), 3)
 
-@override_settings(MINIMUM_SIZE=0.2, NAS_IP=None, NAS_USERNAME=None)
-@mock.patch('mii_indexer.indexer.Indexer.mii_osdb', new=mii_osdb_mock)
-@mock.patch('mii_sorter.sorter.Sorter.mii_tmdb', new=mii_tmdb_mock)
-@mock.patch('mii_sorter.sorter.Sorter.mii_osdb', new=mii_osdb_mock)
-class TestMain(TestCase):
-    def setUp(self):
-        logger.info("*** Building environment ***")
+    def test_sort_movie(self):
+        self._fill_data()
+        self.mnl.sort()
+        self.assertIsNotNone(Movie.objects.get(title='Thor', year=2011))
+        self.assertIsNotNone(Movie.objects.get(title='Thor- The Dark World', year=2013))
 
-        self.SOURCE_FOLDER = settings.SOURCE_FOLDER
-        self.DESTINATION_FOLDER = settings.DESTINATION_FOLDER
+        self.assertEqual(len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All'))), 2)
+        self.assertIn('Thor- The Dark World (2013)', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
+        self.assertIn('Thor (2011)', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
 
-        abs_data = relative('tests/test_data/')
+    def test_sort_serie(self):
+        self._fill_data()
+        self.mnl.sort()
+        self.assertIsNotNone(get_serie_episode('The Big Bank Theory', 1, 1))
+        self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
+                      os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
+        self.assertEqual(len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1'))), 1)
 
-        logger.info("\t ** Moving Files **")
-        for media_file in os.listdir(abs_data):
-            logger.info("\t\t * Moving: %s *" % media_file)
-            shutil.copy(os.path.join(abs_data, media_file), os.path.join(self.SOURCE_FOLDER, media_file))
-        logger.info("*** Environment Builded ***")
-
-    def tearDown(self):
-        logger.info("*** Tearing down environment ***")
-        abs_input = self.SOURCE_FOLDER
-        logger.info("\t ** Cleaning input Files **")
-        tools.cleanup_rec(abs_input)
-
-        logger.info("\t ** Cleaning output directory **")
-        abs_output = self.DESTINATION_FOLDER
-        tools.cleanup_rec(abs_output)
-        logger.info("*** Environment Torn Down***")
+    def test_index(self):
+        self._fill_movie()
+        movie1 = Movie.objects.create(title='Thor', year='2011', imdb_id='0800369', file_size=10)
+        movie1.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)', 'Thor.(2011).720p.mkv')
+        movie1.save()
+        movie2 = Movie.objects.create(title='Thor- The Dark World', year='2013', imdb_id='1981115', file_size=10)
+        movie2.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)', 'Thor-.The.Dark.World.(2013).720p.mkv')
+        movie2.save()
+        self.mnl.index()
+        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Years')),
+                         ['2011', '2013'])
+        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Genres')),
+                         ['Action', 'Adventure', 'Bullshit', 'Fantasy', 'London', 'Romance'])
+        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Directors')),
+                         ['Alan Taylor', 'Joss Whedon', 'Kenneth Branagh'])
+        self.assertIn('Chris Hemsworth', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Actors')))
+        self.assertIn('Natalie Portman', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Actors')))
+        self.assertIn('Tom Hiddleston', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Actors')))
+        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Ratings')),
+                         ['7.0', '9.5'])
+        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Ratings', '7.0')), ['Thor (2011)'])
 
     def test_main(self):
         logger.info("== Testing doUnpack ==")
-        mnl = MiiNASLibrary()
-        mnl.unpack()
+        self.mnl.unpack()
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
-        mnl.sort()
+        self.mnl.sort()
+
+        self.assertEqual(Movie.objects.all().count(), 2)
 
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 1)
+
+        self.assertIsNotNone(Episode.objects.get(number=1))
+        self.assertIsNotNone(Season.objects.get(number=1))
+        self.assertIsNotNone(Serie.objects.get(name='The Big Bank Theory'))
 
         self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
         self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
-        mnl.index()
-
-        # Test for behaviour with duplicates
-        self.setUp()
-
-        mnl.unpack()
-        mnl.sort()
-        mnl.index()
-
-        tools.print_rec(self.DESTINATION_FOLDER, 0)
+        self.assertEqual(MovieTagging.objects.count(), 0)
+        self.assertEqual(MovieRelation.objects.count(), 0)
+        self.assertEqual(Person.objects.count(), 0)
+        self.mnl.index()
+        self.assertEqual(MovieTagging.objects.count(), 7)
+        self.assertEqual(MovieRelation.objects.count(), 33)
+        self.assertEqual(Person.objects.count(), 22)
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):
         logger.info("== Testing doUnpack ==")
-        mnl = MiiNASLibrary()
-        mnl.unpack()
+        self.mnl.unpack()
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
-        mnl.sort()
+        self.mnl.sort()
 
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
@@ -107,7 +119,7 @@ class TestMain(TestCase):
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
-        mnl.index()
+        self.mnl.index()
         self.assertTrue(os.path.exists(self.DESTINATION_FOLDER + '/data.json'))
 
     @mock.patch('mii_unpacker.views.unpack')

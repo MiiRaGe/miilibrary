@@ -1,4 +1,4 @@
-!#/usr/bin/python
+#!/usr/bin/python
 import json
 import os
 import shutil
@@ -15,5 +15,5 @@ if __name__ == '__main__' and os.path.exists(json_file_path):
     if os.path.exists(index_path):
         shutil.rmtree(index_path)
     current_path_root = tools.make_dir(index_path)
-    tools.dict_apply(current_path_root, dict_index)
+    tools.dict_apply(current_path_root, dict_index, symlink_method=os.symlink)
     os.remove(json_file_path)
