@@ -1,6 +1,8 @@
 import json
-from django.test import TestCase
 import mock
+
+from django.test import TestCase
+
 from middleware.mii_cache_wrapper import MiiCachedData
 from middleware.models import JSONKeyValue
 

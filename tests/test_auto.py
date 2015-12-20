@@ -13,7 +13,7 @@ from mii_indexer.models import MovieTagging, Person
 from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
 from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
-from tests.base import TestMiilibrary
+from utils.base import TestMiilibrary
 
 logger = logging.getLogger(__name__)
 
