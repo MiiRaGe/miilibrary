@@ -4,7 +4,9 @@ import logging
 import mock
 import os
 
+from datetime import timedelta
 from django.test import override_settings
+from django.utils import timezone
 
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
@@ -45,6 +47,15 @@ class TestMain(TestMiilibrary):
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
         self.assertEqual(len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1'))), 1)
+
+    def test_new(self):
+        tday = timezone.now()
+        for i in range(0, 70):
+            WhatsNew.objects.create(path=self.DESTINATION_FOLDER, date=tday - timedelta(days=i), name=i)
+        self.mnl.sorter.update_new()
+        expected = ['1 month(s) ago', '1 week(s) ago', '2 day(s) ago', '2 week(s) ago', '3 day(s) ago', '3 week(s) ago',
+                    '4 day(s) ago', '4 week(s) ago', '5 day(s) ago', '6 day(s) ago', 'Today', 'Yesterday']
+        self.assertEqual(sorted(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New'))), sorted(expected))
 
     def test_index(self):
         self._fill_movie()

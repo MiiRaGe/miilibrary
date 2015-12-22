@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from mii_rss.logic import already_exists, match, get_or_create_downloading_object
+from mii_rss.logic import already_exists, match, get_or_create_downloading_object, get_dict_from_feeds
 from mii_rss.models import FeedDownloaded
 from mii_sorter.models import Season, Episode
 from mii_sorter.models import Serie
@@ -85,3 +85,10 @@ class TestRSS(TestCase):
         FeedDownloaded.objects.create(re_filter=db_name, season=1)
         assert not get_or_create_downloading_object(db_name, title)
 
+    def test_get_entry_from_feed(self):
+        class Feed(object):
+            def __getitem__(self, item):
+                return item
+        list_of_feed = [Feed() for x in range(0, 5)]
+        resulting_dict = get_dict_from_feeds(list_of_feed)
+        assert resulting_dict == {'entries': [{'title': 'title', 'link': 'link'} for x in range(0, 5)]}

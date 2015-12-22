@@ -106,11 +106,14 @@ class WhatsNew(Model):
         day_delta = (today - self.date).days
         if day_delta == 0:
             return 'Today'
-        elif day_delta == -1:
+        elif day_delta == 1:
             return 'Yesterday'
-        elif day_delta >= -2:
-            return '%s days ago' % day_delta
-        return self.date.strfdate('%d.%m.%y')
+        elif day_delta >= 30:
+            return '%s month(s) ago' % (day_delta//30)
+        elif day_delta >= 7:
+            return '%s week(s) ago' % (day_delta//7)
+        else:
+            return '%s day(s) ago' % day_delta
 
 
 def get_serie_episode(name, season, episode):
