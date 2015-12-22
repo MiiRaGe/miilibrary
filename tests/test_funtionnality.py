@@ -21,14 +21,14 @@ class TestMain(TestMiilibrary):
     def test_unpack(self):
         logger.info("== Testing doUnpack ==")
         self.mnl.unpack()
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/data')) == 5
 
     def test_sort(self):
         self._fill_data()
         self.mnl.sort()
-        self.assertEqual(Movie.objects.all().count(), 2)
-        self.assertEqual(Episode.objects.all().count(), 1)
-        self.assertEqual(WhatsNew.objects.all().count(), 3)
+        assert Movie.objects.all().count() == 2
+        assert Episode.objects.all().count() == 1
+        assert WhatsNew.objects.all().count() == 3
 
     def test_sort_movie(self):
         self._fill_data()
@@ -36,7 +36,7 @@ class TestMain(TestMiilibrary):
         self.assertIsNotNone(Movie.objects.get(title='Thor', year=2011))
         self.assertIsNotNone(Movie.objects.get(title='Thor- The Dark World', year=2013))
 
-        self.assertEqual(len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All'))), 2)
+        assert len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All'))) == 2
         self.assertIn('Thor- The Dark World (2013)', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
         self.assertIn('Thor (2011)', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
 
@@ -46,7 +46,7 @@ class TestMain(TestMiilibrary):
         self.assertIsNotNone(get_serie_episode('The Big Bank Theory', 1, 1))
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
-        self.assertEqual(len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1'))), 1)
+        assert len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1'))) == 1
 
     def test_new(self):
         tday = timezone.now()
@@ -55,7 +55,7 @@ class TestMain(TestMiilibrary):
         self.mnl.sorter.update_new()
         expected = ['1 month(s) ago', '1 week(s) ago', '2 day(s) ago', '2 week(s) ago', '3 day(s) ago', '3 week(s) ago',
                     '4 day(s) ago', '4 week(s) ago', '5 day(s) ago', '6 day(s) ago', 'Today', 'Yesterday']
-        self.assertEqual(sorted(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New'))), sorted(expected))
+        assert sorted(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New'))) == sorted(expected)
 
     def test_index(self):
         self._fill_movie()
@@ -85,7 +85,7 @@ class TestMain(TestMiilibrary):
 
         self.mnl.sort()
 
-        self.assertEqual(Movie.objects.all().count(), 2)
+        assert Movie.objects.all().count() == 2
 
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
@@ -100,13 +100,13 @@ class TestMain(TestMiilibrary):
         self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
                       os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
 
-        self.assertEqual(MovieTagging.objects.count(), 0)
-        self.assertEqual(MovieRelation.objects.count(), 0)
-        self.assertEqual(Person.objects.count(), 0)
+        assert MovieTagging.objects.count() == 0
+        assert MovieRelation.objects.count() == 0
+        assert Person.objects.count() == 0
         self.mnl.index()
-        self.assertEqual(MovieTagging.objects.count(), 7)
-        self.assertEqual(MovieRelation.objects.count(), 33)
-        self.assertEqual(Person.objects.count(), 22)
+        assert MovieTagging.objects.count() == 7
+        assert MovieRelation.objects.count() == 33
+        assert Person.objects.count() == 22
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):

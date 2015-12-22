@@ -120,27 +120,27 @@ class TestSorter(TestCase):
     def test_get_info(self):
         name = 'The.Matrix.2001.mkv'
         res = get_info(name)
-        self.assertEqual(res['title'], 'The Matrix')
-        self.assertEqual(res['year'], '2001')
+        assert res['title'] == 'The Matrix'
+        assert res['year'] == '2001'
 
         name = 'Hancock.(2004).mkv'
         res = get_info(name)
-        self.assertEqual(res['title'], 'Hancock')
-        self.assertEqual(res['year'], '2004')
+        assert res['title'] == 'Hancock'
+        assert res['year'] == '2004'
 
         name = '2012.(2007).mkv'
         res = get_info(name)
-        self.assertEqual(res['title'], '2012')
-        self.assertEqual(res['year'], '2007')
+        assert res['title'] == '2012'
+        assert res['year'] == '2007'
 
         name = '2012.720p.mkv'
         res = get_info(name)
-        self.assertEqual(res['title'], '2012')
+        assert res['title'] == '2012'
         self.assertIsNone(res.get('year'))
 
         name = 'Iron Man 3.mkv'
         res = get_info(name)
-        self.assertEqual(res['title'], 'Iron Man 3')
+        assert res['title'] == 'Iron Man 3'
 
     def test_get_best_match(self):
         data = [{
