@@ -33,25 +33,25 @@ class TestMain(TestMiilibrary):
     def test_sort_movie(self):
         self._fill_data()
         self.mnl.sort()
-        self.assertIsNotNone(Movie.objects.get(title='Thor', year=2011))
-        self.assertIsNotNone(Movie.objects.get(title='Thor- The Dark World', year=2013))
+        assert Movie.objects.get(title='Thor', year=2011)
+        assert Movie.objects.get(title='Thor- The Dark World', year=2013)
 
         assert len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All'))) == 2
-        self.assertIn('Thor- The Dark World (2013)', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
-        self.assertIn('Thor (2011)', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
+        assert 'Thor- The Dark World (2013)' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
+        assert 'Thor (2011)' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
 
     def test_sort_serie(self):
         self._fill_data()
         self.mnl.sort()
-        self.assertIsNotNone(get_serie_episode('The Big Bank Theory', 1, 1))
-        self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
-                      os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today')))
-        assert len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1'))) == 1
+        assert get_serie_episode('The Big Bank Theory', 1, 1)
+        assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
+        tbbt_s1 = os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1')
+        assert len(os.listdir(tbbt_s1)) == 1
 
     def test_new(self):
-        tday = timezone.now()
+        today = timezone.now()
         for i in range(0, 70):
-            WhatsNew.objects.create(path=self.DESTINATION_FOLDER, date=tday - timedelta(days=i), name=i)
+            WhatsNew.objects.create(path=self.DESTINATION_FOLDER, date=today - timedelta(days=i), name=i)
         self.mnl.sorter.update_new()
         expected = ['1 month(s) ago', '1 week(s) ago', '2 day(s) ago', '2 week(s) ago', '3 day(s) ago', '3 week(s) ago',
                     '4 day(s) ago', '4 week(s) ago', '5 day(s) ago', '6 day(s) ago', 'Today', 'Yesterday']
@@ -66,39 +66,44 @@ class TestMain(TestMiilibrary):
         movie2.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)', 'Thor-.The.Dark.World.(2013).720p.mkv')
         movie2.save()
         self.mnl.index()
-        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Years')),
-                         ['2011', '2013'])
-        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Genres')),
-                         ['Action', 'Adventure', 'Bullshit', 'Fantasy', 'London', 'Romance'])
-        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Directors')),
-                         ['Alan Taylor', 'Joss Whedon', 'Kenneth Branagh'])
-        self.assertIn('Chris Hemsworth', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Actors')))
-        self.assertIn('Natalie Portman', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Actors')))
-        self.assertIn('Tom Hiddleston', os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Actors')))
-        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Ratings')),
-                         ['7.0', '9.5'])
-        self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Ratings', '7.0')), ['Thor (2011)'])
+        index_root_folder = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index')
+        index_year_folder = os.path.join(index_root_folder, 'Years')
+        index_genre_folder = os.path.join(index_root_folder, 'Genres')
+        index_directors_folder = os.path.join(index_root_folder, 'Directors')
+        index_ratings_folder = os.path.join(index_root_folder, 'Ratings')
+        index_actor_folder = os.path.join(index_root_folder,'Actors')
+
+        assert os.listdir(index_year_folder) == ['2011', '2013']
+        assert os.listdir(index_genre_folder) == ['Action', 'Adventure', 'Bullshit', 'Fantasy', 'London', 'Romance']
+        assert os.listdir(index_directors_folder) == ['Alan Taylor', 'Joss Whedon', 'Kenneth Branagh']
+
+        assert 'Chris Hemsworth' in os.listdir(index_actor_folder)
+        assert 'Natalie Portman' in os.listdir(index_actor_folder)
+        assert 'Tom Hiddleston' in os.listdir(index_actor_folder)
+        assert os.listdir(index_ratings_folder) == ['7.0', '9.5']
+        assert os.listdir(os.path.join(index_ratings_folder, '7.0')) == ['Thor (2011)']
 
     def test_unpack_sort_index(self):
         self.mnl.unpack()
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/data')) == 5
 
         self.mnl.sort()
 
         assert Movie.objects.all().count() == 2
 
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 1)
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')) == 2
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')) == 1
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')) == 1
 
-        self.assertIsNotNone(Episode.objects.get(number=1))
-        self.assertIsNotNone(Season.objects.get(number=1))
-        self.assertIsNotNone(Serie.objects.get(name='The Big Bank Theory'))
+        assert Episode.objects.get(number=1)
+        assert Season.objects.get(number=1)
+        assert Serie.objects.get(name='The Big Bank Theory')
 
-        self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
-        self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
-        self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
-                      os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
+        assert 'The Big Bank Theory' in os.listdir(self.DESTINATION_FOLDER + '/TVSeries')
+        assert 'Season 1' in os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory')
+
+        tbbt_season1_folder = os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1')
+        assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(tbbt_season1_folder)
 
         assert MovieTagging.objects.count() == 0
         assert MovieRelation.objects.count() == 0
@@ -111,21 +116,25 @@ class TestMain(TestMiilibrary):
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):
         self.mnl.unpack()
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/data')) == 5
 
         self.mnl.sort()
 
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')), 2)
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')), 1)
-        self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')), 1)
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')) == 2
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')) == 1
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')) == 1
 
-        self.assertIn('The Big Bank Theory', os.listdir(self.DESTINATION_FOLDER + '/TVSeries'))
-        self.assertIn('Season 1', os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory'))
-        self.assertIn('The.Big.Bank.Theory.S01E01.[720p].mkv',
-                      os.listdir(self.DESTINATION_FOLDER + '/TVSeries/The Big Bank Theory/Season 1'))
+        tv_series_folder = os.path.join(self.DESTINATION_FOLDER, 'TVSeries')
+        assert 'The Big Bank Theory' in os.listdir(tv_series_folder)
+
+        tbbt_folder = os.path.join(tv_series_folder, 'The Big Bank Theory')
+        assert 'Season 1' in os.listdir(tbbt_folder)
+
+        tbbt_season1_folder = os.path.join(tbbt_folder, 'Season 1')
+        assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(tbbt_season1_folder)
 
         self.mnl.index()
-        self.assertTrue(os.path.exists(self.DESTINATION_FOLDER + '/data.json'))
+        assert os.path.exists(self.DESTINATION_FOLDER + '/data.json')
 
     @mock.patch('mii_unpacker.views.unpack')
     def test_rpc_unpack(self, unpack):

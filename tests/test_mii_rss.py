@@ -17,18 +17,18 @@ class TestRSS(TestCase):
             '^better.call.saul.*720p'
         }
 
-        self.assertFalse(match(entry, filters)[0])
+        assert not match(entry, filters)[0]
 
         entry = {
             'title': 'homeland s04e09 theres something else going on 720p hdtv dd5 1 mpeg2-topkek  [no rar]'
         }
 
-        self.assertTrue(match(entry, filters)[0])
+        assert match(entry, filters)[0]
 
         entry = {
             'title': 'better call saul s01e01 720p hdtv x264-killers [no rar]'
         }
-        self.assertTrue(match(entry, filters)[0])
+        assert match(entry, filters)[0]
 
     def test_episode_does_not_already_exist(self):
         db_name = 'Saitama'

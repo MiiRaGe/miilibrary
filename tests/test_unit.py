@@ -136,7 +136,7 @@ class TestSorter(TestCase):
         name = '2012.720p.mkv'
         res = get_info(name)
         assert res['title'] == '2012'
-        self.assertIsNone(res.get('year'))
+        assert not res.get('year')
 
         name = 'Iron Man 3.mkv'
         res = get_info(name)
@@ -155,8 +155,7 @@ class TestSorter(TestCase):
                     'MovieYear': '2014'}]
 
         serie = 'The.Walking.Dead.S05E03.mkv'
-        self.assertEqual(get_best_match(data, serie)['MovieName'],
-                         '"The Walking Dead" Four Walls and a Roof')
+        assert get_best_match(data, serie)['MovieName'] == '"The Walking Dead" Four Walls and a Roof'
 
         data = [
             {"SeriesEpisode": "1", "MovieKind": "episode", "SeriesSeason": "5",
@@ -171,8 +170,7 @@ class TestSorter(TestCase):
 
         serie = 'The.Walking.Dead.S05E01.mkv'
 
-        self.assertEqual(get_best_match(data, serie)['MovieName'],
-                         '"The Walking Dead" No Sanctuary')
+        assert get_best_match(data, serie)['MovieName'] == '"The Walking Dead" No Sanctuary'
 
 
 class TestIndexer(TestCase):
