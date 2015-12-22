@@ -30,7 +30,8 @@ Patcher.SKIPNAMES.add('_pytest')
 @override_settings(MINIMUM_SIZE=0, NAS_IP=None, NAS_USERNAME=None,
                    SOURCE_FOLDER='/raw/',
                    DESTINATION_FOLDER='/processed/',
-                   DUMP_INDEX_JSON_FILE_NAME=None)
+                   DUMP_INDEX_JSON_FILE_NAME=None,
+                   REPORT_ENABLED=False)
 class TestMiilibrary(TestCase, DjTestCase):
     def setUp(self):
         self.setUpPyfakefs()

@@ -68,8 +68,7 @@ class TestMain(TestMiilibrary):
                          ['7.0', '9.5'])
         self.assertEqual(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Ratings', '7.0')), ['Thor (2011)'])
 
-    def test_main(self):
-        logger.info("== Testing doUnpack ==")
+    def test_unpack_sort_index(self):
         self.mnl.unpack()
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 
@@ -100,7 +99,6 @@ class TestMain(TestMiilibrary):
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):
-        logger.info("== Testing doUnpack ==")
         self.mnl.unpack()
         self.assertEqual(len(os.listdir(self.DESTINATION_FOLDER + '/data')), 5)
 

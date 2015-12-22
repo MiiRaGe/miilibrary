@@ -135,7 +135,7 @@ def get_serie_season(name, season):
     """
     Look for the same season in the db, returns a boolean
     :param string name: string
-    :param int season: integer
+    :param season: Season number in str or int
     :return bool:
     """
     try:
