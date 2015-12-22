@@ -29,12 +29,12 @@ class Sorter:
         self.hash_array = []
         self.map = {}
         self.media_dir = settings.DESTINATION_FOLDER
-        self.new_dir = tools.make_dir(os.path.join(self.media_dir, "New"))
-        self.data_dir = os.path.join(self.media_dir, "data")
-        self.serie_dir = os.path.join(self.media_dir, "TVSeries")
-        self.movie_dir = os.path.join(self.media_dir, "Movies")
-        self.unsorted_dir = os.path.join(self.media_dir, "unsorted")
-        self.alphabetical_movie_dir = os.path.join(self.movie_dir, "All")
+        self.new_dir = tools.make_dir(os.path.join(self.media_dir, 'New'))
+        self.data_dir = os.path.join(self.media_dir, 'data')
+        self.serie_dir = os.path.join(self.media_dir, 'TVSeries')
+        self.movie_dir = os.path.join(self.media_dir, 'Movies')
+        self.unsorted_dir = os.path.join(self.media_dir, 'unsorted')
+        self.alphabetical_movie_dir = os.path.join(self.movie_dir, 'All')
         self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
         tools.make_dir(self.serie_dir)
         tools.make_dir(self.movie_dir)
@@ -65,7 +65,7 @@ class Sorter:
                                                  str(get_size(os.path.join(self.data_dir, file_name))))
             is_sorted = False
             if result:
-                logger.info("Got Result from opensubtitle for %s" % file_name)
+                logger.info('Got Result from opensubtitle for %s' % file_name)
                 #logger.debug(result)
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
@@ -87,9 +87,9 @@ class Sorter:
             if not is_sorted:
                 if is_serie(self.map.get(movie_hash)):
                     self.sort_tv_serie(file_name)
-                    logger.info("Sorted the TV Serie : %s" % file_name)
+                    logger.info('Sorted the TV Serie : %s' % file_name)
                 else:
-                    logger.info("Looks like a movie")
+                    logger.info('Looks like a movie')
                     self.sort_movie_from_name(file_name)
 
         self.update_new()
@@ -98,22 +98,22 @@ class Sorter:
 
     def update_new(self):
         remove_dir(self.new_dir)
-        self.new_dir = tools.make_dir(os.path.join(self.media_dir, "New"))
+        self.new_dir = tools.make_dir(os.path.join(self.media_dir, 'New'))
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
             dir = tools.make_dir(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
             try:
                 if os.path.isdir(whatsnew.path):
-                    logger.debug("Trying to link directory %s to %s" % (whatsnew.path, whatsnew.name))
+                    logger.debug('Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))
                     symlink(whatsnew.path, os.path.join(dir, whatsnew.name))
                 else:
-                    logger.debug("Trying to link file %s to %s" % (whatsnew.path, whatsnew.name))
+                    logger.debug('Trying to link file %s to %s' % (whatsnew.path, whatsnew.name))
                     symlink(whatsnew.path, os.path.join(dir, whatsnew.path.split('/')[-1]))
             except Exception as e:
-                logger.debug("Tried to create a what's new link %s" % repr(e))
+                logger.debug('Tried to create a what\'s new link %s' % repr(e))
 
     def sort_open_subtitle_info(self, result):
-        file_name = self.map.get(result.get("MovieHash"))
-        if result.get("MovieKind") == 'movie':
+        file_name = self.map.get(result.get('MovieHash'))
+        if result.get('MovieKind') == 'movie':
             return self.create_dir_and_move_movie(result.get('MovieName'),
                                                   result.get('MovieYear'),
                                                   result.get('IDMovieImdb'),
@@ -337,7 +337,7 @@ def get_info(name):
         title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         return dict(title=title)
 
-    regex_res = re.match("(.+).{4}$", name)
+    regex_res = re.match('(.+).{4}$', name)
     if regex_res:
         title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         return dict(title=title)

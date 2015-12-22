@@ -4,9 +4,9 @@ import os
 from django.conf import settings
 
 from mii_common import tools
-from mii_indexer.indexer import Indexer
-from mii_sorter.sorter import Sorter
-from mii_unpacker.unpacker import RecursiveUnrarer
+from mii_indexer.logic import Indexer
+from mii_sorter.logic import Sorter
+from mii_unpacker.logic import RecursiveUnrarer
 
 
 logger = logging.getLogger(__name__)

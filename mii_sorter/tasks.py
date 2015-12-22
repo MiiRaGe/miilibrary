@@ -6,7 +6,7 @@ from celery import task
 from django.conf import settings
 
 from middleware.decorators import single_instance_task
-from mii_sorter.sorter import Sorter
+from mii_sorter.logic import Sorter
 
 
 @task(serializer='json')

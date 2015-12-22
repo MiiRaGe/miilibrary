@@ -85,7 +85,7 @@ class MiiOpenSubtitleDB(MiiCachedData):
         """
         Return the movie name (and other information) from a hash
         :param string movie_hash: String representing the special hash used by open subtitle
-        :param integer number: Type of API method to call (can be either '' or '2' differences are unknown)
+        :param number: Type of API method to call (can be either '' or '2' differences are unknown)
         :return dict: Return the movie information as JSON
         """
         self.key = {'movie_hash': movie_hash}

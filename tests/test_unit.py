@@ -1,8 +1,8 @@
 import tempfile
 from django.test import TestCase, override_settings
-from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
+from mii_sorter.logic import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
-from mii_indexer.indexer import dict_merge_list_extend
+from mii_indexer.logic import dict_merge_list_extend
 
 
 @override_settings(CUSTOM_RENAMING={'BARNABY': 'Barbie'})

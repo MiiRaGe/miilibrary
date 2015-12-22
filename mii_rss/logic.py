@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from mii_rss.models import FeedDownloaded
 from mii_sorter.models import get_serie_episode, get_serie_season
-from mii_sorter.sorter import is_serie
+from mii_sorter.logic import is_serie
 
 
 def already_exists(db_name, title):
