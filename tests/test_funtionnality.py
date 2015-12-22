@@ -16,7 +16,7 @@ from utils.base import TestMiilibrary
 logger = logging.getLogger(__name__)
 
 
-@mock.patch('mii_unpacker.unpacker.link', new=mock.MagicMock(side_effect=AttributeError))
+@mock.patch('mii_unpacker.logic.link', new=mock.MagicMock(side_effect=AttributeError))
 class TestMain(TestMiilibrary):
     def test_unpack(self):
         logger.info("== Testing doUnpack ==")
