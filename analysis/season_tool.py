@@ -1,30 +1,20 @@
-'''
-Created on 1 fvr. 2014
-
-@author: MiiRaGe
-'''
-
-import os,re
 import logging
+import os
+import re
 
-logger = logging.getLogger('NAS')
+from collections import defaultdict
 
-def analyse(path,fileToWriteTo):
-    summary = dict()
-    for serieFolder in os.listdir(path):
-        logger.info("Entering :" + serieFolder)
-        seasons = analyseSerie(os.path.join(path,serieFolder))
-        summary[serieFolder] = seasons
-    if os.path.exists(fileToWriteTo):
-        os.remove(fileToWriteTo)
-    fh = open(fileToWriteTo,"w")
-    for serie in summary:
-        fh.write(serie + " :\n")
-        for seasons in summary[serie]:
-            for season in seasons:
-                fh.write("\t" + season +"\n")
+from mii_sorter.models import Episode
 
-    
+
+logger = logging.getLogger(__name__)
+
+
+def analyse_series():
+    summary = defaultdict(lambda x :defaultdict(list))
+    for episode in Episode.objects.values('number', 'season__number', 'season__serie__name'):
+        summary[episode['season__serie__name']][episode['season__number']].append(episode['number'])
+
 def analyseSerie(path):
     seasons = []
     seasonsList = os.listdir(path)
