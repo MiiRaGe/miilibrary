@@ -1,7 +1,5 @@
 import tempfile
-
 from django.test import TestCase, override_settings
-
 from mii_sorter.sorter import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
 from mii_indexer.indexer import dict_merge_list_extend
@@ -108,14 +106,14 @@ class TestSorter(TestCase):
         name = 'serie de malade 720p 1080p DTS AC3 BLU-ray webrip'
         quality = get_quality(name)
 
-        self.assertIn('720p', quality)
-        self.assertIn('DTS', quality)
-        self.assertIn('AC3', quality)
-        self.assertIn('BluRay', quality)
-        self.assertIn('WebRIP', quality)
+        assert '720p' in quality
+        assert 'DTS' in quality
+        assert 'AC3' in quality
+        assert 'BluRay' in quality
+        assert 'WebRIP' in quality
 
-        self.assertNotIn('1080p', quality)
-        self.assertNotIn('Web-RIP', quality)
+        assert '1080p' not in quality
+        assert 'Web-RIP' not in quality
 
     def test_get_info(self):
         name = 'The.Matrix.2001.mkv'
@@ -143,54 +141,104 @@ class TestSorter(TestCase):
         assert res['title'] == 'Iron Man 3'
 
     def test_get_best_match(self):
-        data = [{
-                    'SeriesEpisode': '3',
-                    'MovieKind': 'episode', 'SeriesSeason': '5',
-                    'MovieName': '"Drop Dead Diva" Surrogates',
-                    'MovieYear': '2013'},
-                {
-                    'SeriesEpisode': '3',
-                    'MovieKind': 'episode', 'SeriesSeason': '5',
-                    'MovieName': '"The Walking Dead" Four Walls and a Roof',
-                    'MovieYear': '2014'}]
+        data = [
+            {
+                'SeriesEpisode': '3',
+                'MovieKind': 'episode', 'SeriesSeason': '5',
+                'MovieName': '\"Drop Dead Diva\" Surrogates',
+                'MovieYear': '2013'
+            },
+            {
+                'SeriesEpisode': '3',
+                'MovieKind': 'episode', 'SeriesSeason': '5',
+                'MovieName': '\"The Walking Dead\" Four Walls and a Roof',
+                'MovieYear': '2014'
+            }
+        ]
 
         serie = 'The.Walking.Dead.S05E03.mkv'
-        assert get_best_match(data, serie)['MovieName'] == '"The Walking Dead" Four Walls and a Roof'
+        assert get_best_match(data, serie)['MovieName'] == '\"The Walking Dead\" Four Walls and a Roof'
 
         data = [
-            {"SeriesEpisode": "1", "MovieKind": "episode", "SeriesSeason": "5",
-             "MovieName": "\"Waking the Dead\" Towers of Silence: Part 1",
-             "MovieYear": "2005"},
-            {"SeriesEpisode": "1", "MovieKind": "episode", "SeriesSeason": "5",
-             "MovieName": "\"The Walking Dead\" No Sanctuary",
-             "MovieYear": "2014"},
-            {"SeriesEpisode": "1", "MovieKind": "episode", "SeriesSeason": "5",
-             "MovieName": "\"Waking the Dead\" Towers of Silence: Part 1",
-             "MovieYear": "2005"}, ]
+            {
+                'SeriesEpisode': '1',
+                'MovieKind': 'episode',
+                'SeriesSeason': '5',
+                'MovieName': '\"Waking the Dead\" Towers of Silence: Part 1',
+                'MovieYear': '2005'
+            },
+            {
+                'SeriesEpisode': '1',
+                'MovieKind': 'episode',
+                'SeriesSeason': '5',
+                'MovieName': '\"The Walking Dead\" No Sanctuary',
+                'MovieYear': '2014'
+            },
+            {
+                'SeriesEpisode': '1',
+                'MovieKind': 'episode',
+                'SeriesSeason': '5',
+                'MovieName': '\"Waking the Dead\" Towers of Silence: Part 1',
+                'MovieYear': '2005'
+            },
+        ]
 
         serie = 'The.Walking.Dead.S05E01.mkv'
 
-        assert get_best_match(data, serie)['MovieName'] == '"The Walking Dead" No Sanctuary'
+        assert get_best_match(data, serie)['MovieName'] == '\"The Walking Dead\" No Sanctuary'
 
 
 class TestIndexer(TestCase):
     def test_dict_merge(self):
-        d1 = {'A': {'B': ['AB'],
-                    'C': ['AC']}}
-        d2 = {'A': {'B': ['AB'],
+        d1 = {
+            'A':
+                {
+                    'B': ['AB'],
+                    'C': ['AC']
+                }
+        }
+        d2 = {
+            'A':
+                {
+                    'B': ['AC'],
                     'D': ['PD'],
-                    'E': {'F': ['AEF']}}}
+                    'E': {
+                        'F': ['AEF']
+                    }
+                }
+        }
         merged_dict = dict_merge_list_extend(d1, d2)
-        self.assertDictEqual(merged_dict, {'A': {'C': ['AC'], 'B': ['AB', 'AB'], 'E': {'F': ['AEF']}, 'D': ['PD']}})
+        expected = {
+            'A':
+                {
+                    'C': ['AC'],
+                    'B': ['AB', 'AC'],
+                    'E': {
+                        'F': ['AEF']
+                    },
+                    'D': ['PD']
+                }
+        }
+        assert merged_dict == expected
 
     def test_dict_merge_empty(self):
-        d2 = {'--': ['Thor (2011) [720p]'], 'T': {'--': ['Thor (2011) [720p]'], 'H': {'--': ['Thor (2011) [720p]'],
-                                                                                      'O': {
-                                                                                          '--': ['Thor (2011) [720p]'],
-                                                                                          'R': {
-                                                                                              '--': [
-                                                                                                  'Thor (2011) [720p]']}}}}}
+        d2 = {
+            '--': ['Thor (2011) [720p]'],
+            'T': {
+                '--': ['Thor (2011) [720p]'],
+                'H': {
+                    '--': ['Thor (2011) [720p]'],
+                    'O': {
+                        '--': ['Thor (2011) [720p]'],
+                        'R': {
+                            '--': [
+                                'Thor (2011) [720p]']
+                        }
+                    }
+                }
+            }
+        }
         merged_dict = dict_merge_list_extend({}, d2)
-        self.assertDictEqual(d2, merged_dict)
+        assert d2 == merged_dict
         merged_dict = dict_merge_list_extend(d2, {})
-        self.assertDictEqual(d2, merged_dict)
+        assert d2 == merged_dict

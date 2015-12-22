@@ -114,27 +114,27 @@ class Sorter:
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get("MovieHash"))
         if result.get("MovieKind") == 'movie':
-            return self.create_dir_and_move_movie(result.get("MovieName"),
-                                                  result.get("MovieYear"),
-                                                  result.get("IDMovieImdb"),
+            return self.create_dir_and_move_movie(result.get('MovieName'),
+                                                  result.get('MovieYear'),
+                                                  result.get('IDMovieImdb'),
                                                   file_name)
         else:
-            parsing = re.match('"(.*)"(.*)', result.get("MovieName"))
+            parsing = re.match('"(.*)"(.*)', result.get('MovieName'))
             serie_title = ""
             if parsing:
                 serie_name = parsing.group(1).strip()
                 serie_title = parsing.group(2).strip()
             else:
-                serie_name = result.get("MovieName")
+                serie_name = result.get('MovieName')
 
-            if result.get("SeriesSeason") == '0' or result.get("SeriesEpisode") == '0':
+            if result.get('SeriesSeason') == '0' or result.get('SeriesEpisode') == '0':
                 matched = self.serie_regex.search(result.get('SubFileName'))
                 if matched:
-                    result["SeriesSeason"] = matched.group(1)
-                    result["SeriesEpisode"] = matched.group(2)
+                    result['SeriesSeason'] = matched.group(1)
+                    result['SeriesEpisode'] = matched.group(2)
             return self.create_dir_and_move_serie(serie_name,
-                                                  result.get("SeriesSeason"),
-                                                  result.get("SeriesEpisode"),
+                                                  result.get('SeriesSeason'),
+                                                  result.get('SeriesEpisode'),
                                                   serie_title,
                                                   file_name)
 
@@ -157,10 +157,11 @@ class Sorter:
         new_file_name = re.sub("[\s\.]+", ".", new_file_name)
         result_dir = tools.make_dir(os.path.join(self.serie_dir, name))
         season_dir = tools.make_dir(os.path.join("%s/Season %s" % (result_dir, season)))
+
+        file_path = os.path.join(self.data_dir, file_name)
         try:
             exists, serie = get_serie_episode(name, int(season), int(episode_number))
             existing_episode = get_episode(season_dir, name, episode_number)
-            file_path = os.path.join(self.data_dir, file_name)
 
             if exists and os.path.exists(serie.abs_file_path):
                 if serie.file_size > os.path.getsize(file_path):
