@@ -1,4 +1,5 @@
 celery
+coveralls
 django
 django-celery
 django-supervisor
