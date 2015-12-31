@@ -53,6 +53,7 @@ def rate(request):
                   dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
                        genres=genres, actors=actors, directors=directors))
 
+
 def reports(request):
     reports = Report.objects.all().order_by('-date')[:50]
     return render(request, 'mii_interface/reports.html', {'reports': reports})

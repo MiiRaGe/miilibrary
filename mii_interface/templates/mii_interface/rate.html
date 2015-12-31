@@ -110,6 +110,7 @@
             </div>
             <div class="col-md-6">
                 <form method="post" action="./rate">
+                    {% csrf %}
                     {% for type, question in questions.items %}
                     <p><label>{{question.question}}</label><input class='input-rating' name="{{type}}"></p>
                     {% endfor %}
