@@ -1,3 +1,3 @@
 [run]
-omit = tests/*,*/__init__.py,manage.py
+omit = tests/*,*/__init__.py,manage.py,mii_common/wsgi.py,*/migrations/*
 
