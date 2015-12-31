@@ -4,7 +4,7 @@ from django.utils import timezone
 
 class FeedDownloaded(Model):
     season = IntegerField()
-    episode = IntegerField()
+    episode = IntegerField(null=True)
     re_filter = CharField(max_length=100)
 
     class Meta:

@@ -53,7 +53,7 @@ class Serie(Model):
 
 class Season(Model):
     number = IntegerField()
-    serie = ForeignKey(Serie, related_name='seasons', on_delete=CASCADE)
+    serie = ForeignKey(Serie, CASCADE, related_name='seasons')
 
     class Meta:
         unique_together = [
@@ -67,7 +67,7 @@ class Season(Model):
 
 class Episode(Model):
     number = IntegerField()
-    season = ForeignKey(Season, related_name='episodes', on_delete=CASCADE)
+    season = ForeignKey(Season, CASCADE, related_name='episodes')
     file_path = CharField(max_length=400)
     file_size = BigIntegerField()
 
@@ -106,11 +106,14 @@ class WhatsNew(Model):
         day_delta = (today - self.date).days
         if day_delta == 0:
             return 'Today'
-        elif day_delta == -1:
+        elif day_delta == 1:
             return 'Yesterday'
-        elif day_delta >= -2:
-            return '%s days ago' % day_delta
-        return self.date.strfdate('%d.%m.%y')
+        elif day_delta >= 30:
+            return '%s month(s) ago' % (day_delta//30)
+        elif day_delta >= 7:
+            return '%s week(s) ago' % (day_delta//7)
+        else:
+            return '%s day(s) ago' % day_delta
 
 
 def get_serie_episode(name, season, episode):
@@ -135,7 +138,7 @@ def get_serie_season(name, season):
     """
     Look for the same season in the db, returns a boolean
     :param string name: string
-    :param int season: integer
+    :param season: Season number in str or int
     :return bool:
     """
     try:

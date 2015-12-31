@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='season',
             name='serie',
-            field=models.ForeignKey(related_name='seasons', on_delete=b'CASCADE', to='mii_sorter.Serie'),
+            field=models.ForeignKey(related_name='seasons', on_delete=models.CASCADE, to='mii_sorter.Serie'),
         ),
         migrations.AlterIndexTogether(
             name='movie',
@@ -76,6 +76,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='episode',
             name='season',
-            field=models.ForeignKey(related_name='episodes', on_delete=b'CASCADE', to='mii_sorter.Season'),
+            field=models.ForeignKey(related_name='episodes', on_delete=models.CASCADE, to='mii_sorter.Season'),
         ),
     ]

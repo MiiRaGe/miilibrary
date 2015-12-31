@@ -1,22 +1,23 @@
 import json
-from random import sample
 import re
 import os
 
 from collections import defaultdict
 from django.conf import settings
 from pyreport.reporter import Report
-from spur import RunProcessError
 
 from middleware import mii_cache_wrapper
-from middleware.remote_execution import symlink, remove_dir
+from middleware.remote_execution import symlink
 from mii_common import tools
 from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie, insert_report
 
-
-logger = Report()
+if settings.REPORT_ENABLED:
+    logger = Report()
+else:
+    import logging
+    logger = logging.getLogger(__name__)
 
 
 class Indexer:
@@ -35,7 +36,8 @@ class Indexer:
             'actor_dir': ('Actors', lambda x: x.get('cast', {}).values(), 'Actor')
         }
         self.movie_list = []
-        logger.create_report()
+        if settings.REPORT_ENABLED:
+            logger.create_report()
 
     def index(self):
         self.movie_list = []
@@ -43,8 +45,12 @@ class Indexer:
         if settings.DUMP_INDEX_JSON_FILE_NAME:
             dump_to_json_file(dict_index)
         else:
-            dict_apply(self.index_dir, dict_index, symlink_method=symlink)
-        insert_report(logger.finalize_report(), report_type='indexer')
+            if settings.REMOTE_FILE_OPERATION_ENABLED:
+                dict_apply(self.index_dir, dict_index, symlink_method=symlink)
+            else:
+                dict_apply(self.index_dir, dict_index)
+        if settings.REPORT_ENABLED:
+            insert_report(logger.finalize_report(), report_type='indexer')
 
     def get_dict_index(self):
         logger.info("****************************************")
@@ -121,14 +127,14 @@ class Indexer:
 
     @staticmethod
     def link_movie_value(movie, value, link_type):
-        if link_type == 'Tag':
+        if link_type == 'Genres':
             tag, created = Tag.objects.get_or_create(name=value)
             MovieTagging.objects.get_or_create(tag=tag, movie=movie)
-        elif link_type == 'Year' and not movie.year:
+        elif link_type == 'Years' and not movie.year:
             movie.year = value
-        elif link_type == 'Rating' and not movie.rating:
+        elif link_type == 'Ratings' and not movie.rating:
             movie.rating = value
-        elif link_type in ['Actor', 'Director']:
+        elif link_type in ['Actors', 'Directors']:
             person, _ = Person.objects.get_or_create(name=value)
             MovieRelation.objects.get_or_create(person=person, movie=movie, type=link_type)
             logger.debug('Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))

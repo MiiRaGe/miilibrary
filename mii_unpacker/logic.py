@@ -6,12 +6,15 @@ import subprocess
 from pyreport import reporter
 from django.conf import settings
 from middleware.remote_execution import link, unrar
-from os import listdir
 from mii_sorter.models import insert_report
 
 from mii_unpacker.models import Unpacked
 
-logger = reporter.Report()
+if settings.REPORT_ENABLED:
+    logger = reporter.Report()
+else:
+    import logging
+    logger = logging.getLogger(__name__)
 
 
 class RecursiveUnrarer:
@@ -24,7 +27,8 @@ class RecursiveUnrarer:
         self.linked = 0
 
     def unrar_and_link(self):
-        logger.create_report()
+        if settings.REPORT_ENABLED:
+            logger.create_report()
         logger.info("****************************************")
         logger.info("**********      Unpacker      **********")
         logger.info("****************************************")
@@ -39,7 +43,7 @@ class RecursiveUnrarer:
 
         logger.debug("%sEntering : %s" % (indent, current_directory))
         indent += "\t"
-        for data_file in listdir(current_directory):
+        for data_file in os.listdir(current_directory):
             full_file_path = os.path.join(current_directory, data_file)
             if os.path.isfile(full_file_path):
                 if data_file.endswith(".part01.rar"):
@@ -96,12 +100,12 @@ class RecursiveUnrarer:
                     logger.debug("Removing (Reason : size < %sMo): %s" % (settings.MINIMUM_SIZE, media_file))
                     os.remove(self.destination_dir + os.path.sep + media_file)
                     self.removed += 1
-                if os.path.islink(os.path.join(self.destination_dir, media_file)):
-                    os.unlink(os.path.join(self.destination_dir, media_file))
+                # if os.path.islink(os.path.join(self.destination_dir, media_file)):
+                #     os.unlink(os.path.join(self.destination_dir, media_file))
 
     def link_video(self, source_path, file_to_link):
-        source_file = source_path + os.path.sep + file_to_link
-        destination_file = self.destination_dir + os.path.sep + file_to_link
+        source_file = os.path.join(source_path, file_to_link)
+        destination_file = os.path.join(self.destination_dir, file_to_link)
         if Unpacked.objects.filter(filename=file_to_link).exists():
             logger.error("Not linking, same file exist (weight wise)")
             return False
@@ -133,5 +137,6 @@ class RecursiveUnrarer:
         logger.info("Extracted : %s" % self.extracted)
         logger.info("Linked : %s" % self.linked)
         logger.info("Removed : %s" % self.removed)
-        insert_report(logger.finalize_report(), report_type='unpacker')
+        if settings.REPORT_ENABLED:
+            insert_report(logger.finalize_report(), report_type='unpacker')
 

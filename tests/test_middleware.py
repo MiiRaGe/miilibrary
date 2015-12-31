@@ -1,6 +1,8 @@
 import json
-from django.test import TestCase
 import mock
+
+from django.test import TestCase
+
 from middleware.mii_cache_wrapper import MiiCachedData
 from middleware.models import JSONKeyValue
 
@@ -17,19 +19,19 @@ class TestJSONKeyValue(TestCase):
         self.data2 = {'name': 'value', 'value': [1, 2, 3]}
 
     def test_get_no_data(self):
-        self.assertEqual(JSONKeyValue.get(self.type1, self.key1), 0)
+        assert JSONKeyValue.get(self.type1, self.key1) == 0
 
     def test_set_data(self):
         JSONKeyValue.set(self.type1, self.key1, self.data1)
         JSONKeyValue.set(self.type1, self.key2, self.data2)
-        self.assertEqual(JSONKeyValue.get(self.type1, self.key1), self.data1)
-        self.assertEqual(JSONKeyValue.get(self.type1, self.key2), self.data2)
+        assert JSONKeyValue.get(self.type1, self.key1) == self.data1
+        assert JSONKeyValue.get(self.type1, self.key2) == self.data2
 
     def test_set_data_type(self):
         JSONKeyValue.set(self.type1, self.key1, self.data1)
         JSONKeyValue.set(self.type2, self.key1, self.data2)
-        self.assertEqual(JSONKeyValue.get(self.type1, self.key1), self.data1)
-        self.assertEqual(JSONKeyValue.get(self.type2, self.key1), self.data2)
+        assert JSONKeyValue.get(self.type1, self.key1) == self.data1
+        assert JSONKeyValue.get(self.type2, self.key1) == self.data2
 
     def test_set_duplicate(self):
         JSONKeyValue.set(self.type1, self.key1, self.data1)
@@ -38,7 +40,7 @@ class TestJSONKeyValue(TestCase):
     def test_key_text(self):
         JSONKeyValue.set(self.type1, self.key1, self.data1)
         object = JSONKeyValue.objects.get(type=self.type1)
-        self.assertEqual(object.key_text, json.dumps(self.key1))
+        assert object.key_text == json.dumps(self.key1)
 
 
 class TestMiiMongoStored(TestCase):

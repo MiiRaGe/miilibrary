@@ -115,7 +115,7 @@ def listdir_abs(parent):
     return [os.path.join(parent, child) for child in os.listdir(parent)]
 
 
-def dict_apply(path, dictionnary, symlink_method=os.symlink):
+def dict_apply(path, dictionnary, symlink_method=None):
     '''
     This method expect a dict with any depth where leaf are a list of tuple (name, path) where a symlink is going to be created
     following the path in the tree to match the patch in the file system.
@@ -133,11 +133,14 @@ def dict_apply(path, dictionnary, symlink_method=os.symlink):
         if isinstance(leaf, list):
             for name, abs_path_to_name in leaf:
                 try:
-                    symlink_method(abs_path_to_name, os.path.join(current_path, name))
+                    if not symlink_method:
+                        os.symlink(abs_path_to_name, os.path.join(current_path, name))
+                    else:
+                        symlink_method(abs_path_to_name, os.path.join(current_path, name))
                 except OSError as e:
-                    print 'Tried to symlink: %s to %s/%s' % (abs_path_to_name,
-                                                             current_path,
-                                                             name)
+                    print 'Tried to symlink: "%s" to "%s/%s"' % (abs_path_to_name,
+                                                                 current_path,
+                                                                 name)
                     print 'Error: %s' % e
         else:
-            dict_apply(current_path, leaf)
+            dict_apply(current_path, leaf, symlink_method=symlink_method)

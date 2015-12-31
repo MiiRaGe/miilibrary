@@ -6,3 +6,5 @@ local.py
 .project/
 # rating/
 .DS_Store
+*.log
+.cache

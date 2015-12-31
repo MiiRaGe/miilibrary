@@ -9,7 +9,7 @@ from django.conf import settings
 from middleware.decorators import single_instance_task
 
 from mii_common import tools
-from mii_unpacker.unpacker import RecursiveUnrarer
+from mii_unpacker.logic import RecursiveUnrarer
 
 
 @task(serializer='json')

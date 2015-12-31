@@ -79,3 +79,5 @@ MEDIA_RENDERER_RESCAN_URL = 'http://192.168.0.2:9000/rpc/rescan'
 #Indexer
 # This is enabling dumping the index data in a json file at the root of the MoviesSeries folder for another programm to index
 DUMP_INDEX_JSON_FILE_NAME = ''
+
+REPORT_ENABLED = True
