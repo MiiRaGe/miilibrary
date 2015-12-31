@@ -3,6 +3,7 @@ django
 django-celery
 django-supervisor
 django-dbbackup
+gunicorn
 mysql-python
 pytest
 pytest-django
