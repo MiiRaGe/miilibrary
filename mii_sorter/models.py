@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
-    DateTimeField, BooleanField
+    DateTimeField, BooleanField, CASCADE
 from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class Serie(Model):
 
 class Season(Model):
     number = IntegerField()
-    serie = ForeignKey(Serie, related_name='seasons', on_delete='CASCADE')
+    serie = ForeignKey(Serie, related_name='seasons', on_delete=CASCADE)
 
     class Meta:
         unique_together = [
@@ -67,7 +67,7 @@ class Season(Model):
 
 class Episode(Model):
     number = IntegerField()
-    season = ForeignKey(Season, related_name='episodes', on_delete='CASCADE')
+    season = ForeignKey(Season, related_name='episodes', on_delete=CASCADE)
     file_path = CharField(max_length=400)
     file_size = BigIntegerField()
 
