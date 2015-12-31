@@ -11,6 +11,7 @@ spur
 feedparser
 mock
 python-memcached
+python-coveralls
 requests
 git+https://github.com/jmcgeheeiv/pyfakefs.git
 git+https://github.com/MiiRaGe/pyreport.git
