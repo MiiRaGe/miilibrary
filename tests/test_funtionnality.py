@@ -20,19 +20,19 @@ logger = logging.getLogger(__name__)
 class TestMain(TestMiilibrary):
     def test_unpack(self):
         logger.info("== Testing doUnpack ==")
-        self.mnl.unpack()
+        self.recursive_unrarer.run()
         assert len(os.listdir(self.DESTINATION_FOLDER + '/data')) == 5
 
     def test_sort(self):
         self._fill_data()
-        self.mnl.sort()
+        self.sorter.sort()
         assert Movie.objects.all().count() == 2
         assert Episode.objects.all().count() == 1
         assert WhatsNew.objects.all().count() == 3
 
     def test_sort_movie(self):
         self._fill_data()
-        self.mnl.sort()
+        self.sorter.sort()
         assert Movie.objects.get(title='Thor', year=2011)
         assert Movie.objects.get(title='Thor- The Dark World', year=2013)
 
@@ -42,7 +42,7 @@ class TestMain(TestMiilibrary):
 
     def test_sort_serie(self):
         self._fill_data()
-        self.mnl.sort()
+        self.sorter.sort()
         assert get_serie_episode('The Big Bank Theory', 1, 1)
         assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
         tbbt_s1 = os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1')
@@ -52,7 +52,7 @@ class TestMain(TestMiilibrary):
         today = timezone.now()
         for i in range(0, 70):
             WhatsNew.objects.create(path=self.DESTINATION_FOLDER, date=today - timedelta(days=i), name=i)
-        self.mnl.sorter.update_new()
+        self.sorter.update_new()
         expected = ['1 month(s) ago', '1 week(s) ago', '2 day(s) ago', '2 week(s) ago', '3 day(s) ago', '3 week(s) ago',
                     '4 day(s) ago', '4 week(s) ago', '5 day(s) ago', '6 day(s) ago', 'Today', 'Yesterday']
         assert sorted(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New'))) == sorted(expected)
@@ -65,7 +65,7 @@ class TestMain(TestMiilibrary):
         movie2 = Movie.objects.create(title='Thor- The Dark World', year='2013', imdb_id='1981115', file_size=10)
         movie2.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)', 'Thor-.The.Dark.World.(2013).720p.mkv')
         movie2.save()
-        self.mnl.index()
+        self.indexer.index()
         index_root_folder = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index')
         index_year_folder = os.path.join(index_root_folder, 'Years')
         index_genre_folder = os.path.join(index_root_folder, 'Genres')
@@ -84,10 +84,10 @@ class TestMain(TestMiilibrary):
         assert os.listdir(os.path.join(index_ratings_folder, '7.0')) == ['Thor (2011)']
 
     def test_unpack_sort_index(self):
-        self.mnl.unpack()
+        self.recursive_unrarer.run()
         assert len(os.listdir(self.DESTINATION_FOLDER + '/data')) == 5
 
-        self.mnl.sort()
+        self.sorter.sort()
 
         assert Movie.objects.all().count() == 2
 
@@ -108,17 +108,17 @@ class TestMain(TestMiilibrary):
         assert MovieTagging.objects.count() == 0
         assert MovieRelation.objects.count() == 0
         assert Person.objects.count() == 0
-        self.mnl.index()
+        self.indexer.index()
         assert MovieTagging.objects.count() == 7
         assert MovieRelation.objects.count() == 33
         assert Person.objects.count() == 22
 
     @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
     def test_json_dump(self):
-        self.mnl.unpack()
+        self.recursive_unrarer.run()
         assert len(os.listdir(self.DESTINATION_FOLDER + '/data')) == 5
 
-        self.mnl.sort()
+        self.sorter.sort()
 
         assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')) == 2
         assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')) == 1
@@ -133,7 +133,7 @@ class TestMain(TestMiilibrary):
         tbbt_season1_folder = os.path.join(tbbt_folder, 'Season 1')
         assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(tbbt_season1_folder)
 
-        self.mnl.index()
+        self.indexer.index()
         assert os.path.exists(self.DESTINATION_FOLDER + '/data.json')
 
     @mock.patch('mii_unpacker.views.unpack')

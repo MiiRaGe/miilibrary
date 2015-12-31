@@ -8,7 +8,9 @@ from django.test import override_settings, TestCase as DjTestCase
 from fake_filesystem_unittest import Patcher, TestCase
 
 from mii_common import tools
-from miinaslibrary import MiiNASLibrary
+from mii_indexer.logic import Indexer
+from mii_sorter.logic import Sorter
+from mii_unpacker.logic import RecursiveUnrarer
 from mock_osdb import *
 from mock_tmdb import *
 
@@ -51,12 +53,14 @@ class TestMiilibrary(TestCase, DjTestCase):
             self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.The.Dark.World.mkv',
                                contents='Thor2' * 65535)
 
-        self.mnl = MiiNASLibrary()
-        self.mnl.recursive_unrarer.unrar = fake_unrar
-        self.mnl.recursive_unrarer.unrar = fake_unrar
-        self.mnl.sorter.mii_osdb = mii_osdb_mock
-        self.mnl.sorter.mii_tmdb = mii_tmdb_mock
-        self.mnl.indexer.mii_osdb = mii_osdb_mock
+        self.recursive_unrarer = RecursiveUnrarer()
+        self.recursive_unrarer.unrar = fake_unrar
+        self.recursive_unrarer.unrar = fake_unrar
+        self.sorter = Sorter()
+        self.sorter.mii_osdb = mii_osdb_mock
+        self.sorter.mii_tmdb = mii_tmdb_mock
+        self.indexer = Indexer()
+        self.indexer.mii_osdb = mii_osdb_mock
 
     def _generate_data(self, size):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10000 * size))

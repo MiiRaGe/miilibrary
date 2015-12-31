@@ -15,13 +15,12 @@ logger = logging.getLogger(__name__)
 class MiiNASLibrary:
     def __init__(self):
         # #### Folder Initialisation #####
-        self.source_dir = settings.SOURCE_FOLDER
-        self.output_dir = settings.DESTINATION_FOLDER
-        self.movie_dir = os.path.join(self.output_dir, "Movies")
-        self.data_dir = tools.make_dir(os.path.join(self.output_dir, "data"))
+        self.source_dir = None
+        self.output_dir = None
+        self.data_dir = None
 
         # #### Modules Initialisation #####
-        self.recursive_unrarer = RecursiveUnrarer(self.source_dir, self.data_dir)
+        self.recursive_unrarer = RecursiveUnrarer()
         self.sorter = Sorter()
         self.indexer = Indexer()
 

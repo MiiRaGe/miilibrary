@@ -6,6 +6,7 @@ import subprocess
 from pyreport import reporter
 from django.conf import settings
 from middleware.remote_execution import link, unrar
+from mii_common import tools
 from mii_sorter.models import insert_report
 
 from mii_unpacker.models import Unpacked
@@ -18,13 +19,18 @@ else:
 
 
 class RecursiveUnrarer:
-    def __init__(self, source, data_dir):
-        self.destination_dir = data_dir
-        self.source_dir = source
+    def __init__(self):
+        self.destination_dir = tools.make_dir(os.path.join(settings.DESTINATION_FOLDER, "data"))
+        self.source_dir = settings.SOURCE_FOLDER
         self.level = 0
         self.removed = 0
         self.extracted = 0
         self.linked = 0
+    
+    def run(self):
+        self.unrar_and_link()
+        self.cleanup()
+        self.print_statistic()
 
     def unrar_and_link(self):
         if settings.REPORT_ENABLED:
