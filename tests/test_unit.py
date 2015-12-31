@@ -1,5 +1,7 @@
 import tempfile
 from django.test import TestCase, override_settings
+
+from analysis.season_tool import analyse_series
 from mii_sorter.logic import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
 from mii_indexer.logic import dict_merge_list_extend
@@ -242,3 +244,9 @@ class TestIndexer(TestCase):
         assert d2 == merged_dict
         merged_dict = dict_merge_list_extend(d2, {})
         assert d2 == merged_dict
+
+
+class TestAnalysis(TestCase):
+    def test_analyses_serie(self):
+        analyse_series()
+        pass

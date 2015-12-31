@@ -4,6 +4,7 @@ django
 django-celery
 django-supervisor
 django-dbbackup
+factory-boy
 gunicorn
 mysql-python
 pytest
