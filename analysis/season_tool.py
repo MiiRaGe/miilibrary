@@ -11,9 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 def analyse_series():
-    summary = defaultdict(lambda x :defaultdict(list))
+    summary = defaultdict(lambda:defaultdict(list))
     for episode in Episode.objects.values('number', 'season__number', 'season__serie__name'):
-        summary[episode['season__serie__name']][episode['season__number']].append(episode['number'])
+        summary[episode['season__serie__name']][int(episode['season__number'])].append(int(episode['number']))
+    print summary
+
 
 def analyseSerie(path):
     seasons = []
