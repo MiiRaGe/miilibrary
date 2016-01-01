@@ -1,12 +1,39 @@
 import logging
 import socket
 import time
-
 from xmlrpclib import ProtocolError, ServerProxy
 from django.conf import settings
 
-
 logger = logging.getLogger(__name__)
+
+
+def needs_login(f):
+    def wrapped_function(self, *args, **kwargs):
+        if not self.login_successful:
+            self.log_in()
+            if not self.login_successful:
+                return ''
+        return f(self, *args, **kwargs)
+
+    return wrapped_function
+
+
+def retry_when_failing(f):
+    def wrapped_function(*args, **kwargs):
+        time.sleep(0.3)
+        while True:
+            try:
+                result = f(*args, **kwargs)
+                logger.debug(result)
+                return result
+            except ProtocolError:
+                logger.info("Got rejected by the API, waiting 1minutes")
+                time.sleep(60)
+            except Exception as e:
+                logger.exception(repr(e))
+                return None
+
+    return wrapped_function
 
 
 class OpenSubtitleWrapper:
@@ -44,74 +71,33 @@ class OpenSubtitleWrapper:
                 return
             time.sleep(60)
 
+    @needs_login
+    @retry_when_failing
     def get_imdb_information(self, imdb_id):
-        if not self.login_successful:
-            self.log_in()
-            if not self.login_successful:
-                return ''
-        time.sleep(0.3)
-        result = ''
-        while True:
-            try:
-                result = self.server.GetIMDBMovieDetails(self.token, imdb_id)
-                return result.get("data")
-            except ProtocolError:
-                logger.info("Result :" + str(result))
-                logger.info("Got rejected by the API, waiting 1minutes")
-                time.sleep(60)
+        return self.server.GetIMDBMovieDetails(self.token, imdb_id).get('data')
 
+    @needs_login
+    @retry_when_failing
     def get_movie_names(self, movie_hashes):
-        if not self.login_successful:
-            self.log_in()
-            if not self.login_successful:
-                return ''
-        return self.server.CheckMovieHash(self.token, movie_hashes).get("data")
+        return self.server.CheckMovieHash(self.token, movie_hashes).get('data')
 
+    @needs_login
+    @retry_when_failing
     def get_movie_names2(self, movie_hashes):
-        if not self.login_successful:
-            self.log_in(True, 10)
-            if not self.login_successful:
-                return ''
-        time.sleep(0.3)
-        result = ''
-        while True:
-            try:
-                result = self.server.CheckMovieHash2(self.token, movie_hashes)
-                return result.get("data")
-            except ProtocolError:
-                logger.info("Result : %s" % result)
-                logger.info("Got rejected by the API, waiting 1minutes")
-                time.sleep(60)
+        return self.server.CheckMovieHash2(self.token, movie_hashes).get('data')
 
+    @needs_login
+    @retry_when_failing
     def get_subtitles(self, movie_hash, movie_size, movie_name):
-        if not self.login_successful:
-            self.log_in()
-            if not self.login_successful:
-                return ''
-        time.sleep(0.3)
-        result = None
-        while True:
-            try:
-                result = self.server.SearchSubtitles(self.token,
-                                                     [
-                                                         {'moviehash': movie_hash,
-                                                          'moviebytesize': movie_size,
-                                                          'sublanguageid': 'eng,fra,ger',
-                                                          'query': movie_name}],
-                                                     {'limit': 100})
-                logger.debug(result)
-                try:
-                    result = result.get("data")
-                except:
-                    return None
-                return result
-            except ProtocolError:
-                logger.info("Result : %s" % result)
-                logger.info("Got rejected by the API, waiting 1minutes")
-                time.sleep(60)
-            except Exception as e:
-                logger.exception(repr(e))
-                return None
+        return self.server.SearchSubtitles(self.token,
+                                           [
+                                               {'moviehash': movie_hash,
+                                                'moviebytesize': movie_size,
+                                                'sublanguageid': 'eng,fra,ger',
+                                                'query': movie_name}
+                                           ],
+                                           {'limit': 100}).get('data')
 
+    @needs_login
     def exit(self):
         return self.server.LogOut()
