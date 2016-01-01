@@ -167,25 +167,54 @@ class TestSpecificUnpacker(TestMiilibrary):
         self.DESTINATION_FOLDER = '/processed/'
         tools.make_dir(self.DESTINATION_FOLDER)
         tools.make_dir(self.SOURCE_FOLDER)
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
         self.recursive_unrarer = RecursiveUnrarer()
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_already_unrared(self, unrar):
         UnpackedFactory.create(filename='Thor.2.rar')
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert not unrar.called
         assert self.recursive_unrarer.extracted == 0
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unrar(self, unrar):
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert unrar.called
         assert self.recursive_unrarer.extracted == 1
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unrar_raising_error(self, unrar):
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
         unrar.side_effect = CalledProcessError('', '', '')
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.extracted == 0
+
+    def test_linking_video(self):
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
+        self.recursive_unrarer.unrar_and_link()
+        assert self.recursive_unrarer.linked == 1
+
+    def test_linking_video_already_exists(self):
+        UnpackedFactory.create(filename='Thor.2.mkv')
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
+        self.recursive_unrarer.unrar_and_link()
+        assert self.recursive_unrarer.linked == 0
+
+    def test_linking_video_file_exists_but_less(self):
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
+        self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(2))
+        self.recursive_unrarer.unrar_and_link()
+        assert self.recursive_unrarer.linked == 0
+
+    def test_linking_video_file_exists_betters(self):
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(2))
+        self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(1))
+        self.recursive_unrarer.unrar_and_link()
+        assert self.recursive_unrarer.linked == 1
+
+
+
+
 
