@@ -214,6 +214,13 @@ class TestSpecificUnpacker(TestMiilibrary):
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
 
+    @mock.patch('mii_unpacker.logic.link', new=mock.MagicMock(side_effect=AttributeError))
+    def test_linking_video_file_exists_betters_link_fails(self):
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(2))
+        self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(1))
+        self.recursive_unrarer.unrar_and_link()
+        assert self.recursive_unrarer.linked == 1
+
 
 
 
