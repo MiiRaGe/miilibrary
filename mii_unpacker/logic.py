@@ -13,7 +13,7 @@ from mii_unpacker.models import Unpacked
 
 if settings.REPORT_ENABLED:
     logger = reporter.Report()
-else:
+else:   # pragma: no cover
     import logging
     logger = logging.getLogger(__name__)
 

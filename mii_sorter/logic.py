@@ -13,7 +13,7 @@ from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode,
 
 if settings.REPORT_ENABLED:
     logger = Report()
-else:
+else:   # pragma: no cover
     import logging
     logger = logging.getLogger(__name__)
 

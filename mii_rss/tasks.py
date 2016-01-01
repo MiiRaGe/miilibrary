@@ -14,7 +14,7 @@ from mii_sorter.models import insert_report
 
 if settings.REPORT_ENABLED:
     logger = Report()
-else:
+else:   # pragma: no cover
     import logging
     logger = logging.getLogger(__name__)
 
