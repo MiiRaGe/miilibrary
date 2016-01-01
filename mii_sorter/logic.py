@@ -1,7 +1,6 @@
 import logging
 import os
 import re
-
 from pyreport.reporter import Report
 from middleware.remote_execution import symlink, remove_dir
 from django.conf import settings
@@ -321,10 +320,7 @@ def get_info(name):
     if regex_res:
         title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         result = dict(title=title)
-        try:
-            result['year'] = regex_res.group(2)
-        except AttributeError:
-            logger.exception('No year info for %s' % name)
+        result['year'] = regex_res.group(2)
         return result
 
     regex_res = re.match('(.+)(?:720p?|1080p?)', name)
@@ -332,12 +328,9 @@ def get_info(name):
         title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         return dict(title=title)
 
-    regex_res = re.match('(.+).{4}$', name)
-    if regex_res:
-        title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
-        return dict(title=title)
-
-    return dict(title=name)
+    regex_res = re.match('^(.+).{4}$', name)
+    title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
+    return dict(title=title)
 
 
 def get_quality(name):
@@ -379,12 +372,14 @@ def rename_serie(file_name):
 def compare(file_name, api_result):
     logger.info('Comparing Opensubtitle api_result with file_name for safety')
     score = 0
-    if is_serie(file_name):
+    regex_result = is_serie(file_name)
+    if regex_result:
         # Movie type consistency issue
         if api_result.get('MovieKind') == 'movie':
             logger.info('Type Inconsistent : ' + api_result.get('MovieKind') + ' expected Tv Series/Episode')
             return False, 0
-        matching_pattern = re.search('(.*)[sS]0*(\d+)[eE]0*(\d+)', file_name)
+        matching_pattern = re.search('(.*)[sS]0*(\d+)[eE]0*(\d+)', file_name) or re.search('(.*)(\d?\d)x(\d?\d)',
+                                                                                           file_name)
         if not matching_pattern:
             logger.warning('Pattern not matching:  %s' % file_name)
             return False, 0

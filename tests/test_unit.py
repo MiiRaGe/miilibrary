@@ -40,7 +40,7 @@ class TestSorter(TestCase):
             'MovieKind': 'movie'
         }
 
-        serie1 = 'Dragons.defenders.of.berk.S05e10.fap'
+        serie1 = 'Dragons.defenders.of.berk.S05e10.paf'
         assert not compare(serie1, api_result)[0]
 
         api_result['MovieKind'] = 'web series'
@@ -56,7 +56,7 @@ class TestSorter(TestCase):
         api_result['SeriesEpisode'] = '10'
         assert compare(serie1, api_result)[0]
 
-        serie1 = 'Dragons.riders.of.berk.S05e10.fap'
+        serie1 = 'Dragons.riders.of.berk.S05e10.paf'
         assert compare(serie1, api_result)[0]
 
         api_result['MovieName'] = 'Dragons.riders.of.berk'
