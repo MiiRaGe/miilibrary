@@ -1,3 +1,7 @@
 [run]
 omit = tests/*,*/__init__.py,manage.py,mii_common/wsgi.py,*/migrations/*,*/factories.py
 
+[report]
+exclude_lines=
+	if __name__ == .__main__.:
+
