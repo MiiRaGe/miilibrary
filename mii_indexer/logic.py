@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 import os
 
@@ -13,11 +14,11 @@ from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie, insert_report
 
+
+logger = logging.getLogger(__name__)
+
 if settings.REPORT_ENABLED:
     logger = Report()
-else:
-    import logging
-    logger = logging.getLogger(__name__)    # pragma: no cover
 
 
 class Indexer:

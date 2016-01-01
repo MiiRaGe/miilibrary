@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import shutil
@@ -11,11 +12,10 @@ from mii_sorter.models import insert_report
 
 from mii_unpacker.models import Unpacked
 
+logger = logging.getLogger(__name__)    # pragma: no cover
+
 if settings.REPORT_ENABLED:
     logger = reporter.Report()
-else:
-    import logging
-    logger = logging.getLogger(__name__)    # pragma: no cover
 
 
 class RecursiveUnrarer:

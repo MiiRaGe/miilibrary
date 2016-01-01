@@ -1,21 +1,19 @@
+import logging
 import os
 import re
+
 from pyreport.reporter import Report
 from middleware.remote_execution import symlink, remove_dir
-
-import movieinfo.hash_tool as ht
-
 from django.conf import settings
 from middleware import mii_cache_wrapper
 from mii_common import tools
-from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, \
-    insert_report
+from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, insert_report
+from movieinfo import hash_tool as ht
+
+logger = logging.getLogger(__name__)
 
 if settings.REPORT_ENABLED:
     logger = Report()
-else:
-    import logging
-    logger = logging.getLogger(__name__)    # pragma: no cover
 
 
 class Sorter:
@@ -23,6 +21,7 @@ class Sorter:
     mii_osdb = mii_cache_wrapper.MiiOpenSubtitleDB()
 
     """ Sorter Module """
+
     def __init__(self):
         if settings.REPORT_ENABLED:
             logger.create_report()
@@ -516,5 +515,3 @@ def letter_coverage(file_name, api_name):
     except ZeroDivisionError:
         logger.exception('Empty title name, can\'t compare')
         return 0
-
-
