@@ -44,7 +44,7 @@ class RecursiveUnrarer:
 
     def recursive_unrar_and_link(self, current_directory):
         indent = ""
-        for i in range(0, self.level - 1):
+        for i in range(0, self.level):
             indent += "\t"
 
         logger.debug("%sEntering : %s" % (indent, current_directory))
