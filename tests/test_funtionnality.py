@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from subprocess import CalledProcessError
+
 import mock
 import os
 
@@ -8,9 +10,12 @@ from datetime import timedelta
 from django.test import override_settings
 from django.utils import timezone
 
+from mii_common import tools
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
 from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
+from mii_unpacker.factories import UnpackedFactory
+from mii_unpacker.logic import RecursiveUnrarer
 from utils.base import TestMiilibrary
 
 logger = logging.getLogger(__name__)
@@ -153,4 +158,34 @@ class TestMain(TestMiilibrary):
         response = self.client.get('/rpc/index')
         assert response.status_code == 200
         assert index.delay.called
+
+
+class TestSpecificUnpacker(TestMiilibrary):
+    def setUp(self):
+        self.setUpPyfakefs()
+        self.SOURCE_FOLDER = '/raw/'
+        self.DESTINATION_FOLDER = '/processed/'
+        tools.make_dir(self.DESTINATION_FOLDER)
+        tools.make_dir(self.SOURCE_FOLDER)
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
+        self.recursive_unrarer = RecursiveUnrarer()
+
+    @mock.patch('mii_unpacker.logic.unrar')
+    def test_already_unrared(self, unrar):
+        UnpackedFactory.create(filename='Thor.2.rar')
+        self.recursive_unrarer.unrar_and_link()
+        assert not unrar.called
+        assert self.recursive_unrarer.extracted == 0
+
+    @mock.patch('mii_unpacker.logic.unrar')
+    def test_unrar(self, unrar):
+        self.recursive_unrarer.unrar_and_link()
+        assert unrar.called
+        assert self.recursive_unrarer.extracted == 1
+
+    @mock.patch('mii_unpacker.logic.unrar')
+    def test_unrar_raising_error(self, unrar):
+        unrar.side_effect = CalledProcessError('', '', '')
+        self.recursive_unrarer.unrar_and_link()
+        assert self.recursive_unrarer.extracted == 0
 

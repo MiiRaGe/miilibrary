@@ -81,8 +81,6 @@ class RecursiveUnrarer:
 
         try:
             output = unrar(archive_file, self.destination_dir)
-            # TODO : Do something with execution_result.output.
-            # TODO : Log in a table
             logger.debug("Extraction OK!")
             Unpacked.objects.create(filename=file_name)
             self.extracted += 1
