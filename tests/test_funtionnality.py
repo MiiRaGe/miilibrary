@@ -13,6 +13,7 @@ from django.utils import timezone
 from mii_common import tools
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
+from mii_sorter.logic import Sorter, get_dir_size, get_size
 from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
 from mii_unpacker.factories import UnpackedFactory
 from mii_unpacker.logic import RecursiveUnrarer
@@ -222,6 +223,22 @@ class TestSpecificUnpacker(TestMiilibrary):
         assert self.recursive_unrarer.linked == 1
 
 
+class TestSpecificSorter(TestMiilibrary):
+    def setUp(self):
+        self.setUpPyfakefs()
+        self.DESTINATION_FOLDER = '/processed/'
+        tools.make_dir(self.DESTINATION_FOLDER)
+        tools.make_dir(os.path.join(self.DESTINATION_FOLDER, 'data'))
+        self.sorter = Sorter()
+
+    def test_get_size(self):
+        data_path = os.path.join(self.DESTINATION_FOLDER, 'data')
+        f1 = os.path.join(data_path, 'file1')
+        f2 = os.path.join(data_path, 'file2')
+        self.fs.CreateFile(f1, contents=self._generate_data(1))
+        self.fs.CreateFile(f2, contents=self._generate_data(1))
+        dir_size = get_dir_size(data_path)
+        assert dir_size >= (get_size(f1) + get_size(f2))
 
 
 
