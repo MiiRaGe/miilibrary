@@ -90,6 +90,8 @@ class TestSorter(TestCase):
         str2 = 'New Girl'
         assert letter_coverage(str1, str2) <= limit
 
+        assert letter_coverage('', '') == 0
+
     def test_rename_serie(self):
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/..25x15..?'
         assert 'The.Walking.Dead.S25E15.' == rename_serie(serie_name1)
@@ -190,6 +192,7 @@ class TestSorter(TestCase):
 
         assert get_best_match(data, serie)['MovieName'] == '\"The Walking Dead\" No Sanctuary'
 
+        assert not get_best_match([], serie)
 
 class TestIndexer(TestCase):
     def test_dict_merge(self):
