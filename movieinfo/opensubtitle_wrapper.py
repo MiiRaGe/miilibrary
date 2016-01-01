@@ -20,7 +20,6 @@ def needs_login(f):
 
 def retry_when_failing(f):
     def wrapped_function(*args, **kwargs):
-        time.sleep(0.3)
         while True:
             try:
                 result = f(*args, **kwargs)

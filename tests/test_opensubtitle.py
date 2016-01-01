@@ -4,8 +4,7 @@ import socket
 from xmlrpclib import ProtocolError
 from django.test import override_settings, TestCase
 
-from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper
-
+from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper, needs_login, retry_when_failing
 
 fake_server = mock.MagicMock()
 
@@ -72,16 +71,48 @@ class TestOpenSubtitleWrapper(TestCase):
 
     def test_getsubtitles_information(self):
         fake_server.SearchSubtitles.return_value = {'data': 'info'}
-        assert self.os.get_subtitles('','','') == 'info'
+        assert self.os.get_subtitles('', '', '') == 'info'
 
 
 class TestOpenSubtitleWrapperDecorators(TestCase):
-    def setUp(self):
-        pass
+    def test_true_login(self):
+        class Dummy:
+            login_successful = False
+            @needs_login
+            def t(self):
+                return 'Test Passed'
 
-    # @mock.patch('movieinfo.opensubtitle_wrapper.time.sleep')
-    # def test_get_imdb_information_fail_once(self, sleep):
-    #     fake_server.GetIMDBMovieDetails.side_effect = [ProtocolError('', '', '', ''), {'data': 'info'}]
-    #     assert self.os.get_imdb_information('imdb_id') == 'info'
-    #     assert sleep.called
-    #
+            def log_in(self):
+                self.login_successful = True
+        assert Dummy().t() == 'Test Passed'
+
+    def test_login_broken(self):
+        class Dummy:
+            login_successful = False
+            @needs_login
+            def t(self):
+                return 'Test Passed'
+
+            def log_in(self):
+                pass
+
+        assert Dummy().t() == ''
+
+    @mock.patch('movieinfo.opensubtitle_wrapper.time.sleep')
+    def test_retry_while_failing(self, sleep):
+        count = 0
+
+        class Dummy:
+            login_successful = False
+            count = 0
+
+            @retry_when_failing
+            def t(self):
+                if self.count < 2:
+                    self.count += 1
+                    raise ProtocolError('', '', '', '')
+                else:
+                    return 'Test Passed'
+
+        assert Dummy().t()
+        assert sleep.call_count == 2
