@@ -66,7 +66,6 @@ class Sorter:
             is_sorted = False
             if result:
                 logger.info('Got Result from opensubtitle for %s' % file_name)
-                #logger.debug(result)
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
                 if result:
@@ -101,15 +100,12 @@ class Sorter:
         self.new_dir = tools.make_dir(os.path.join(self.media_dir, 'New'))
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
             dir = tools.make_dir(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
-            try:
-                if os.path.isdir(whatsnew.path):
-                    logger.debug('Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))
-                    symlink(whatsnew.path, os.path.join(dir, whatsnew.name))
-                else:
-                    logger.debug('Trying to link file %s to %s' % (whatsnew.path, whatsnew.name))
-                    symlink(whatsnew.path, os.path.join(dir, whatsnew.path.split('/')[-1]))
-            except Exception as e:
-                logger.debug('Tried to create a what\'s new link %s' % repr(e))
+            if os.path.isdir(whatsnew.path):
+                logger.debug('Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))
+                symlink(whatsnew.path, os.path.join(dir, whatsnew.name))
+            else:
+                logger.debug('Trying to link file %s to %s' % (whatsnew.path, whatsnew.name))
+                symlink(whatsnew.path, os.path.join(dir, whatsnew.path.split('/')[-1]))
 
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get('MovieHash'))

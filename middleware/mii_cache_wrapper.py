@@ -95,7 +95,7 @@ class MiiOpenSubtitleDB(MiiCachedData):
         """
         Get the list of subtitles associated to a file hash
         :param string movie_hash: String representing the special hash used by open subtitle
-        :param int file_size: Size of the movie
+        :param str file_size: Size of the movie
         :return dict: Return the JSON containing information about different available subtitles
         """
         self.key = {'movie_hash': movie_hash, 'file_size': file_size}
