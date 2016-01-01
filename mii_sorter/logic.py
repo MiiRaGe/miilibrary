@@ -13,9 +13,9 @@ from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode,
 
 if settings.REPORT_ENABLED:
     logger = Report()
-else:   # pragma: no branch
+else:
     import logging
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)    # pragma: no cover
 
 
 class Sorter:

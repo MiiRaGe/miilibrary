@@ -17,7 +17,7 @@ if settings.REPORT_ENABLED:
     logger = Report()
 else:
     import logging
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)    # pragma: no cover
 
 
 class Indexer:

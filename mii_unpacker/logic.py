@@ -13,9 +13,9 @@ from mii_unpacker.models import Unpacked
 
 if settings.REPORT_ENABLED:
     logger = reporter.Report()
-else:   # pragma: no branch
+else:
     import logging
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)    # pragma: no cover
 
 
 class RecursiveUnrarer:
