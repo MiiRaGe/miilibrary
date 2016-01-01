@@ -4,4 +4,5 @@ omit = tests/*,*/__init__.py,manage.py,mii_common/wsgi.py,*/migrations/*,*/facto
 [report]
 exclude_lines=
 	if __name__ == .__main__.:
+	if settings.REPORT_ENABLED:
 
