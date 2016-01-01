@@ -47,12 +47,16 @@ class TestMiilibrary(TestCase, DjTestCase):
         self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.(2011).mkv', contents='Tho' * 65535)
         self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor-sample.mkv', contents=self._generate_data(1))
         self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
+        self.fs.CreateFile(self.SOURCE_FOLDER + '/sub/Thor.2.part01.rar', contents=self._generate_data(1))
+        self.fs.CreateFile(self.SOURCE_FOLDER + '/sub/Thor.2.part02.rar', contents=self._generate_data(1))
 
         def fake_unrar(*args, **kwargs):
-            self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2-sample.mkv', contents=self._generate_data(1))
-            self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.The.Dark.World.mkv',
-                               contents='Thor2' * 65535)
-
+            try:
+                self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2-sample.mkv', contents=self._generate_data(1))
+                self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.The.Dark.World.mkv',
+                                   contents='Thor2' * 65535)
+            except IOError:
+                pass
         self.recursive_unrarer = RecursiveUnrarer()
         self.recursive_unrarer.unrar = fake_unrar
         self.recursive_unrarer.unrar = fake_unrar
