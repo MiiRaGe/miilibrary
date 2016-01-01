@@ -53,6 +53,7 @@ class TestMiilibrary(TestCase, DjTestCase):
         def fake_unrar(*args, **kwargs):
             try:
                 self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2-sample.mkv', contents=self._generate_data(1))
+                self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.srt', contents=self._generate_data(1))
                 self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.The.Dark.World.mkv',
                                    contents='Thor2' * 65535)
             except IOError:
