@@ -100,12 +100,8 @@ class TestOpenSubtitleWrapperDecorators(TestCase):
 
     @mock.patch('movieinfo.opensubtitle_wrapper.time.sleep')
     def test_retry_while_failing(self, sleep):
-        count = 0
-
         class Dummy:
-            login_successful = False
             count = 0
-
             @retry_when_failing
             def t(self):
                 if self.count < 2:
@@ -114,5 +110,14 @@ class TestOpenSubtitleWrapperDecorators(TestCase):
                 else:
                     return 'Test Passed'
 
-        assert Dummy().t()
+        assert Dummy().t() == 'Test Passed'
         assert sleep.call_count == 2
+
+    @mock.patch('movieinfo.opensubtitle_wrapper.time.sleep')
+    def test_retry_while_failing_unknown_error(self, sleep):
+        class Dummy:
+            @retry_when_failing
+            def t(self):
+                raise Exception('Unknown error')
+
+        assert Dummy().t() is None

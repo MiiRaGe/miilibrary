@@ -1,18 +1,12 @@
-import re
 import cgi
+import json
+import re
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
-    
 from urllib2 import Request, urlopen, HTTPError
 
 
 class TheMovieDBWrapper:
-    
     def __init__(self):
-        self.headers = {"Accept": "application/json"}
         self.server = 'http://api.themoviedb.org'
         self.api_key = 'api_key=9a35d9bef7cbb4fc7355bf143f8560b4'
 
@@ -29,11 +23,11 @@ class TheMovieDBWrapper:
         url = "%s/3/movie/%s?%s" % (self.server, movie_id, self.api_key)
         return self.get_url(url)
 
-    def get_url(self, url):
-        search_request = Request(url, headers=self.headers)
+    @staticmethod
+    def get_url(url):
+        search_request = Request(url, headers={"Accept": "application/json"})
         try:
             response_body = urlopen(search_request).read()
         except HTTPError:
             return False
-
         return json.loads(response_body)
