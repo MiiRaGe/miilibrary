@@ -2,10 +2,9 @@ import logging
 import socket
 import time
 
-from xmlrpclib import ProtocolError, ServerProxy, SafeTransport, GzipDecodedResponse
-
+from xmlrpclib import ProtocolError, ServerProxy
 from django.conf import settings
-from pyexpat import ExpatError
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +18,8 @@ class OpenSubtitleWrapper:
     def log_in(self, retry=False, max_retries=5):
         self.server = ServerProxy(settings.OPENSUBTITLE_API_URL)
         result = None
-        go_on = True
         fail_count = 0
-        while go_on:
+        while True:
             try:
                 logger.info("Login into openSubtitle...")
                 username = settings.OPENSUBTITLE_LOGIN
