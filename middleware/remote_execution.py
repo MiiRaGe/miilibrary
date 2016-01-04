@@ -4,6 +4,8 @@ import subprocess
 import spur
 
 from django.conf import settings
+from django.utils.encoding import smart_str
+
 from mii_common.tools import delete_dir
 
 shell = None
@@ -52,4 +54,4 @@ def map_to_nas(local_path):
     :param local_path:
     :return:
     """
-    return local_path.replace(settings.LOCAL_ROOT, settings.NAS_ROOT).decode('utf-8')
+    return smart_str(local_path.replace(settings.LOCAL_ROOT, settings.NAS_ROOT))
