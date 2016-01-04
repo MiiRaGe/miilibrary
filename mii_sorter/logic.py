@@ -380,9 +380,6 @@ def compare(file_name, api_result):
             return False, 0
         matching_pattern = re.search('(.*)[sS]0*(\d+)[eE]0*(\d+)', file_name) or re.search('(.*)(\d?\d)x(\d?\d)',
                                                                                            file_name)
-        if not matching_pattern:
-            logger.warning('Pattern not matching:  %s' % file_name)
-            return False, 0
         if not all([api_result.get('SeriesSeason') == matching_pattern.group(2),
                     api_result.get('SeriesEpisode') == matching_pattern.group(3)]):
             logger.info('SXXEXX inconsistent : S%sE%s, expected : S%sE%s' % (api_result.get('SeriesSeason'),

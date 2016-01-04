@@ -222,6 +222,16 @@ class TestSpecificUnpacker(TestMiilibrary):
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
 
+    @mock.patch('mii_unpacker.logic.unrar')
+    def test_unicode_archive(self, unrar):
+        self.fs.CreateFile(self.SOURCE_FOLDER + u'ééü.rar', contents=self._generate_data(2))
+        self.recursive_unrarer.unrar_and_link()
+
+    @mock.patch('mii_unpacker.logic.unrar')
+    def test_unicode_archive(self, unrar):
+        self.fs.CreateFile(self.SOURCE_FOLDER + 'ééü.mkv', contents=self._generate_data(2))
+        self.recursive_unrarer.unrar_and_link()
+
 
 class TestSpecificSorter(TestMiilibrary):
     def setUp(self):
