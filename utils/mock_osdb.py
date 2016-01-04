@@ -72,4 +72,4 @@ def mock_get_imdb_information(id):
                    'trivia': "Tom Hiddleston was chosen after previously collaborating with Kenneth Branagh on the theatrical play 'Ivanov' and the TV series Wallander (2008). See more >>",
                    'id': '0800369'},
     }
-    return data[id.replace('t', '')]
+    return data.get(id.replace('t', ''))
