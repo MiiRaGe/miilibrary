@@ -18,7 +18,7 @@ mii_osdb_mock = mock.MagicMock()
 mii_osdb_mock.get_movie_name = mock_get_movie_names2
 mii_osdb_mock.get_imdb_information = mock_get_imdb_information
 mii_osdb_mock.get_movie_names = mock_get_movie_names
-mii_osdb_mock.get_subtitles = mock_get_movie_names
+mii_osdb_mock.get_subtitles = mock_get_subtitles
 
 mii_tmdb_mock = mock.MagicMock()
 mii_tmdb_mock.get_movie_name = mock_get_movie_name

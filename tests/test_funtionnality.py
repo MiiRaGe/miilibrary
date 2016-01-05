@@ -17,7 +17,7 @@ from mii_sorter.logic import Sorter, get_dir_size, get_size
 from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
 from mii_unpacker.factories import UnpackedFactory
 from mii_unpacker.logic import RecursiveUnrarer
-from utils.base import TestMiilibrary
+from utils.base import TestMiilibrary, mii_osdb_mock
 
 logger = logging.getLogger(__name__)
 
@@ -240,15 +240,71 @@ class TestSpecificSorter(TestMiilibrary):
         tools.make_dir(self.DESTINATION_FOLDER)
         tools.make_dir(os.path.join(self.DESTINATION_FOLDER, 'data'))
         self.sorter = Sorter()
+        self.sorter.mii_osdb = mii_osdb_mock
+        self.data_path = os.path.join(self.DESTINATION_FOLDER, 'data')
 
     def test_get_size(self):
-        data_path = os.path.join(self.DESTINATION_FOLDER, 'data')
-        f1 = os.path.join(data_path, 'file1')
-        f2 = os.path.join(data_path, 'file2')
+        f1 = os.path.join(self.data_path, 'file1')
+        f2 = os.path.join(self.data_path, 'file2')
         self.fs.CreateFile(f1, contents=self._generate_data(1))
         self.fs.CreateFile(f2, contents=self._generate_data(1))
-        dir_size = get_dir_size(data_path)
+        dir_size = get_dir_size(self.data_path)
         assert dir_size >= (get_size(f1) + get_size(f2))
 
+    @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
+    def test_sort_open_subtitle_is_called(self):
+        self.fs.CreateFile(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
+        self.sorter.sort_open_subtitle_info = mock.MagicMock()
+        self.sorter.sort()
+        assert self.sorter.sort_open_subtitle_info.called
 
+    @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
+    def test_sort_open_subtitle_is_called_with_error(self):
+        self.fs.CreateFile(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
+        self.sorter.sort_open_subtitle_info = mock.MagicMock(side_effect=Exception('test'))
+        self.sorter.sort()
+        assert self.sorter.sort_open_subtitle_info.called
 
+    @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
+    def test_sort_open_subtitle_info_movie(self):
+        os_info = {
+            'MovieHash': '123',
+            'MovieKind': 'movie',
+            'MovieName': 'name',
+            'MovieYear': 'year',
+            'IDMovieImdb': 'id',
+        }
+        self.sorter.map = {'123': 'test_file.mkv'}
+        self.sorter.create_dir_and_move_movie = mock.MagicMock()
+        self.sorter.sort_open_subtitle_info(os_info)
+        self.sorter.create_dir_and_move_movie.assert_called_with('name', 'year', 'id', 'test_file.mkv')
+
+    @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
+    def test_sort_open_subtitle_info_movie_with_name(self):
+        os_info = {
+            'MovieHash': '123',
+            'MovieKind': 'serie',
+            'MovieName': '"Arrow" My Name is oliver queer',
+            'SeriesSeason': '1',
+            'SeriesEpisode': '1',
+        }
+        self.sorter.map = {'123': 'test_file.mkv'}
+        self.sorter.create_dir_and_move_serie = mock.MagicMock()
+        self.sorter.sort_open_subtitle_info(os_info)
+        self.sorter.create_dir_and_move_serie.assert_called_with('Arrow', '1', '1', 'My Name is oliver queer',
+                                                                        'test_file.mkv')
+    @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
+    def test_sort_open_subtitle_info_movie_without_name_0_exception(self):
+        os_info = {
+            'MovieHash': '123',
+            'MovieKind': 'serie',
+            'MovieName': 'Arrow',
+            'SeriesSeason': '0',
+            'SeriesEpisode': '1',
+            'SubFileName': 'ArrowS01E01.mkv',
+        }
+        self.sorter.map = {'123': 'test_file.mkv'}
+        self.sorter.create_dir_and_move_serie = mock.MagicMock()
+        self.sorter.sort_open_subtitle_info(os_info)
+        self.sorter.create_dir_and_move_serie.assert_called_with('Arrow', '1', '01', '',
+                                                                        'test_file.mkv')
