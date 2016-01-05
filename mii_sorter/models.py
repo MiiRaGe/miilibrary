@@ -5,6 +5,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
     DateTimeField, BooleanField, CASCADE
+from django.utils.encoding import smart_unicode
+
 from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
@@ -212,4 +214,4 @@ def insert_movie(title, year, path, size):
 
 
 def insert_report(report_html, report_type=''):
-    Report.objects.create(report_type=report_type, report_html=report_html)
+    Report.objects.create(report_type=report_type, report_html=smart_unicode(report_html))
