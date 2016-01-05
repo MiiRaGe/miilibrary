@@ -5,7 +5,7 @@ from django.conf import settings
 from factory import DjangoModelFactory, Sequence, SubFactory
 from factory.fuzzy import FuzzyInteger, FuzzyChoice
 
-from mii_sorter.models import Episode, Season, Serie
+from mii_sorter.models import Episode, Season, Serie, Movie
 
 
 class SerieFactory(DjangoModelFactory):
@@ -34,3 +34,19 @@ class EpisodeFactory(DjangoModelFactory):
     season = SubFactory(SeasonFactory)
     file_path = Sequence(lambda n: os.path.join(settings.DESTINATION_FOLDER, 'serie_%s.mkv' % n))
     file_size = FuzzyInteger(low=100, high=1000)
+
+
+class MovieFactory(DjangoModelFactory):
+    class Meta:
+        model = Movie
+        django_get_or_create = ('title', )
+
+    folder_path = Sequence(lambda n: os.path.join(settings.DESTINATION_FOLDER, 'movie_%s.mkv' % n))
+    file_size = FuzzyInteger(low=100, high=1000)
+    title = FuzzyChoice(['Movie1', 'Movie2', 'Movie3'])
+    year = FuzzyInteger(low=2000, high=2010)
+    imdb_id = Sequence(lambda n: '%s' % n)
+    rating = 5.0
+    seen = False
+    indexed = False
+

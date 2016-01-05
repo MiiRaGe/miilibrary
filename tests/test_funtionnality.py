@@ -13,6 +13,7 @@ from django.utils import timezone
 from mii_common import tools
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
+from mii_sorter.factories import MovieFactory
 from mii_sorter.logic import Sorter, get_dir_size, get_size
 from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
 from mii_unpacker.factories import UnpackedFactory
@@ -308,3 +309,38 @@ class TestSpecificSorter(TestMiilibrary):
         self.sorter.sort_open_subtitle_info(os_info)
         self.sorter.create_dir_and_move_serie.assert_called_with('Arrow', '1', '01', '',
                                                                         'test_file.mkv')
+
+    def test_create_dir_and_move_movie_to_unsorted(self):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        MovieFactory.create(file_size=5000, title='test', folder_path=existing_file, year=1500)
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        self.sorter.move_to_unsorted = mock.MagicMock()
+        self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
+        self.sorter.move_to_unsorted.assert_called_with(test_file)
+
+    @mock.patch('mii_sorter.logic.tools.delete_dir')
+    def test_create_dir_and_move_movie_same_size(self, delete_dir):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        MovieFactory.create(file_size=os.path.getsize(test_file), title='test', folder_path=existing_file, year=1500)
+        self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
+        delete_dir.assert_called_with(test_file)
+
+    @mock.patch('mii_sorter.logic.tools.delete_dir')
+    def test_create_dir_and_move_movie_error_handling(self, delete_dir):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        MovieFactory.create(file_size=os.path.getsize(test_file), title='test', folder_path=existing_file, year=1500)
+        delete_dir.side_effect = OSError()
+        assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
+        delete_dir.side_effect = Exception()
+        assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
+
+
+
