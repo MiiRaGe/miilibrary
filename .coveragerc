@@ -1,5 +1,5 @@
 [run]
-omit = tests/*,*/__init__.py,manage.py,mii_common/wsgi.py,*/migrations/*,*/factories.py,settings/*,utils/*
+omit = tests/*,*/__init__.py,manage.py,mii_common/wsgi.py,*/migrations/*,*/factories.py,settings/*
 
 [report]
 exclude_lines=

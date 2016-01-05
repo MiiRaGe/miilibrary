@@ -1,10 +1,55 @@
 def mock_get_movie_names(*args, **kwargs):
-    return {}
-
+    return mock_get_subtitles(*args, **kwargs)
 
 def mock_get_movie_names2(*args, **kwargs):
-    return {}
-
+    data = {'50423c444e56478c': [
+        {'ISO639': 'en', 'SubComments': '0',
+         'SeriesEpisode': '23',
+         'MovieImdbRating': '8.4', 'SubHash': 'f3cd485b7664218d3336d4fe179bcc51',
+         'MovieReleaseName': 'Arrow.S03E23.HDTV.x264-LOL',
+         'IDMovie': '196912',
+         'MovieByteSize': '1151804016', 'MovieKind': 'episode', 'SeriesSeason': '3',
+         'MatchedBy': 'moviehash', 'SubRating': '0.0',
+         'MovieHash': 'f53650824e198c27',
+         'MovieName': '"Arrow" My Name Is Oliver Queen', 'IDMovieImdb': '4006604', 'MovieYear': '2015'},
+        {'ISO639': 'en',
+         'SubComments': '0',
+         'SeriesEpisode': '23',
+         'MovieImdbRating': '8.4',
+         'SubHash': '68ae2443494321a8ad026aa2e7166de7',
+         'MovieReleaseName': 'Arrow.S03E23.HDTV.x264-LOL',
+         'IDMovie': '196912',
+         'MovieByteSize': '1151804016',
+         'MovieKind': 'episode',
+         'SeriesSeason': '3',
+         'MatchedBy': 'moviehash',
+         'SubRating': '0.0',
+         'MovieHash': 'f53650824e198c27',
+         'MovieName': '"Arrow" My Name Is Oliver Queen', 'IDMovieImdb': '4006604', 'MovieYear': '2015'}, {
+            'ISO639': 'en', 'SubComments': '0',
+            'SeriesEpisode': '23',
+            'MovieImdbRating': '8.4', 'SubHash': 'f7d37f581c48f17d72f3d304f5c750b0',
+            'MovieReleaseName': 'Arrow.S03E23.My.Name.Is.Oliver.Queen.1080p.WEB-DL.DD5.1.H.264-B',
+            'IDMovie': '196912',
+            'MovieByteSize': '1151804016', 'MovieKind': 'episode', 'SeriesSeason': '3',
+            'MatchedBy': 'moviehash', 'SubRating': '0.0',
+            'MovieHash': 'f53650824e198c27',
+            'MovieName': '"Arrow" My Name Is Oliver Queen', 'IDMovieImdb': '4006604', 'MovieYear': '2015'},
+        {'ISO639': 'en',
+         'SubComments': '0',
+         'SeriesEpisode': '3',
+         'MovieImdbRating': '8.9',
+         'SubHash': '357989bc2d6bb28948914d2fee374227',
+         'MovieReleaseName': 'Arrow.S02E03.HDTV.x264-LOL',
+         'IDMovie': '160679',
+         'MovieByteSize': '1151804016',
+         'MovieKind': 'episode',
+         'SeriesSeason': '2',
+         'MatchedBy': 'moviehash',
+         'SubRating': '0.0',
+         'MovieHash': 'f53650824e198c27',
+         'MovieName': '"Arrow" Broken Dolls', 'IDMovieImdb': '3126166', 'MovieYear': '2013'}]}
+    return data if args[0] in data else {}
 
 def mock_get_subtitles(*args, **kwargs):
     data = {'50423c444e56478c': [
