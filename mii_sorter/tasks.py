@@ -14,8 +14,3 @@ from mii_sorter.logic import Sorter
 def sort():
     sorter = Sorter()
     sorter.sort()
-
-
-@task(serializer='json')
-def rescan_media_streamer():
-    requests.get(settings.MEDIA_RENDERER_RESCAN_URL)

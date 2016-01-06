@@ -8,14 +8,14 @@ def get_questions():
 
 
 def save_question_answers(movie_id, question_answers={}):
-    movie = Movie.get(id=movie_id)
+    movie = Movie.objects.get(id=movie_id)
     movie.seen = True
     movie.save()
 
-    question_set = MovieQuestionSet.get_or_create(movie=movie)
+    question_set = MovieQuestionSet.objects.get_or_create(movie=movie)
 
     #Deleting the old questions if any
-    QuestionAnswer.delete().where(QuestionAnswer.question_set == question_set).execute()
+    QuestionAnswer.objects.filter(question_set=question_set).delete()
     question_answers = dict(question_answers)
     del question_answers['action']
     del question_answers['movie_id']
@@ -24,6 +24,6 @@ def save_question_answers(movie_id, question_answers={}):
 
 
 def set_movie_unseen(movie_id):
-    movie = Movie.get(id=movie_id)
+    movie = Movie.objects.get(id=movie_id)
     movie.seen = False
     movie.save()

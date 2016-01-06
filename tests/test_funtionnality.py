@@ -143,24 +143,6 @@ class TestMain(TestMiilibrary):
         self.indexer.index()
         assert os.path.exists(self.DESTINATION_FOLDER + '/data.json')
 
-    @mock.patch('mii_unpacker.views.unpack')
-    def test_rpc_unpack(self, unpack):
-        response = self.client.get('/rpc/unpack')
-        assert response.status_code == 200
-        assert unpack.delay.called
-
-    @mock.patch('mii_sorter.views.sort')
-    def test_rpc_sort(self, sort):
-        response = self.client.get('/rpc/sort')
-        assert response.status_code == 200
-        assert sort.delay.called
-
-    @mock.patch('mii_indexer.views.index_movies')
-    def test_rpc_index(self, index):
-        response = self.client.get('/rpc/index')
-        assert response.status_code == 200
-        assert index.delay.called
-
 
 class TestSpecificUnpacker(TestMiilibrary):
     def setUp(self):
