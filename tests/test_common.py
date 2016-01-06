@@ -1,6 +1,6 @@
+import mock
 import os
 
-from mock import mock
 from fake_filesystem_unittest import TestCase as FakeFSTestCase
 from unittest2 import TestCase
 
@@ -72,7 +72,7 @@ class TestWithFakeFS(FakeFSTestCase):
         assert logger.error.call_count == 2
 
     def test_dict_apply_empty_dict(self):
-        before = os.listdir(('/'))
+        before = os.listdir('/')
         dict_apply('/', {})
-        after = os.listdir(('/'))
+        after = os.listdir('/')
         assert before == after
