@@ -18,11 +18,6 @@ def make_dir(path):
     return path
 
 
-def getstatusoutput(cmd):
-    """Return (status, output) of executing cmd in a shell."""
-    return commands.getstatusoutput(cmd)
-
-
 def delete_dir(path, include_root=True):
     """deletes the path entirely"""
     for root, dirs, files in os.walk(path, topdown=False):

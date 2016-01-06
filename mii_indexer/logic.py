@@ -180,6 +180,6 @@ def get_count(d1):
 
 
 def remove_single_movie_person(index_dict):
-    for actor, value in index_dict['Actor'].items():
+    for actor, value in index_dict['Actors'].items():
         if len(value) <= 1:
-            del index_dict['Actor'][actor]
+            del index_dict['Actors'][actor]
