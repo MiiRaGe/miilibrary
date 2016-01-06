@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import urllib
@@ -12,11 +13,10 @@ from mii_rss.logic import already_exists, get_or_create_downloading_object, get_
 from mii_rss.models import FeedEntries
 from mii_sorter.models import insert_report
 
+logger = logging.getLogger(__name__)
+
 if settings.REPORT_ENABLED:
     logger = Report()
-else:   # pragma: no branch
-    import logging
-    logger = logging.getLogger(__name__)
 
 
 @app.task(serializer='json')
