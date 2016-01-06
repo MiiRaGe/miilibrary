@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from middleware.mii_cache_wrapper import MiiCachedData
 from middleware.models import JSONKeyValue
+from middleware.tasks import db_backup
 
 __author__ = 'MiiRaGe'
 
@@ -67,3 +68,10 @@ class TestMiiMongoStored(TestCase):
         get.return_value = 1
         self.cached_functions.test()
         assert not set.called
+
+
+class TestDbBackup():
+    @mock.patch('middleware.tasks.Command')
+    def test_dbbackup(self, Command):
+        db_backup()
+        assert Command.called
