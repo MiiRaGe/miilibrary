@@ -104,28 +104,6 @@ class Indexer:
                 logger.exception("\tFailed with exception :%s" % repr(e))
             return index_dict
 
-    def add_counting(self, current_folder, skipped=False):
-        for folder in os.listdir(current_folder):
-            if folder != '--':
-                count = len(os.listdir(os.path.join(current_folder, folder, '--')))
-                self.add_counting(os.path.join(current_folder, folder))
-                os.rename(os.path.join(current_folder, folder),
-                          os.path.join(current_folder, '%s (%s results)' % (folder, count)))
-        if not skipped:
-            self._add_counting(current_folder)
-
-    @staticmethod
-    def _add_counting(current_dir):
-        count = len(os.listdir(os.path.join(current_dir, '--')))
-        if count > 1:
-            os.rename(os.path.join(current_dir, '--'), os.path.join(current_dir, '-- (%s results)' % count))
-        else:
-            for folder in tools.listdir_abs(current_dir):
-                if folder.endswith('--'):
-                    os.rename(os.path.join(folder, os.listdir(folder)[0]),
-                              os.path.join(current_dir, os.listdir(folder)[0]))
-                tools.delete_dir(folder)
-
     @staticmethod
     def link_movie_value(movie, value, link_type):
         if link_type == 'Genres':
