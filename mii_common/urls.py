@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^rpc/sort$', mii_sorter_views.start_sort, name='start_sort'),
     url(r'^rpc/unpack$', mii_unpacker_views.start_unpacker, name='start_unpacker'),
     url(r'^rpc/rss', mii_rss_views.check_feeds, name='check_feeds'),
+    url(r'^rpc/recheck_rss', mii_rss_views.recheck_feeds, name='recheck_feeds'),
     url(r'^rpc/unpack_sort_index', mii_interface_views.start_unpack_sort_indexer, name='unpack_sort_index'),
     url(r'^admin/', include(admin.site.urls)),
 ]
