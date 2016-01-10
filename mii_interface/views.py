@@ -1,9 +1,7 @@
 import json
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-
 from django.shortcuts import render
-
 from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
 from mii_sorter.models import Movie, Serie, Episode
@@ -18,11 +16,16 @@ def index(request):
 
 
 def movies(request):
-    return render(request, 'mii_interface/movie.html', dict(movies=Movie.objects.all().values_list('title', 'year', 'rating')))
+    return render(request, 'mii_interface/movie.html', dict(movies=Movie.objects.all().values('title', 'year', 'rating',
+                                                                                              'imdb_id')))
 
 
 def series(request):
-    serie = Episode.objects.all().order_by('season__serie__name', 'season__number', 'number').values('number', 'season__number', 'season__serie__name').values()
+    serie = Episode.objects.all().order_by('season__serie__name',
+                                           'season__number',
+                                           'number').values('number',
+                                                            'season__number',
+                                                            'season__serie__name').values()
     return render(request, 'mii_interface/serie.html', dict(series=serie))
 
 
@@ -31,8 +34,10 @@ def rate(request):
     try:
         movie = Movie.objects.filter(seen=None).order_by('?')[0]
         genres = [x['tag__name'] for x in MovieTagging.objects.filter(movie=movie).values('tag__name')]
-        actors = [x['person__name'] for x in MovieRelation.objects.filter(movie=movie, type='Actor').values('person__name')]
-        directors = [x['person__name'] for x in MovieRelation.objects.filter(movie=movie, type='Director').values('person__name')]
+        actors = [x['person__name'] for x in
+                  MovieRelation.objects.filter(movie=movie, type='Actor').values('person__name')]
+        directors = [x['person__name'] for x in
+                     MovieRelation.objects.filter(movie=movie, type='Director').values('person__name')]
     except IndexError:
         movie = None
         genres = None
@@ -54,7 +59,8 @@ def rate(request):
         except ObjectDoesNotExist:
             pass
 
-    movies_choices_json = json.dumps([{'label': movie_obj['title'], 'value': movie_obj['id']} for movie_obj in Movie.objects.all().values('title', 'id')])
+    movies_choices_json = json.dumps([{'label': movie_obj['title'], 'value': movie_obj['id']} for movie_obj in
+                                      Movie.objects.all().values('title', 'id')])
     return render(request, 'mii_interface/rate.html',
                   dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
                        genres=genres, actors=actors, directors=directors))
