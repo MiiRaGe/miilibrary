@@ -25,7 +25,7 @@ def series(request):
                                               'season__number',
                                               'number').values('number',
                                                                'season__number',
-                                                               'season__serie__name').values()
+                                                               'season__serie__name')
     return render(request, 'mii_interface/serie.html', dict(episodes=episodes))
 
 
