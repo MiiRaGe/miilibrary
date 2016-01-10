@@ -21,12 +21,12 @@ def movies(request):
 
 
 def series(request):
-    serie = Episode.objects.all().order_by('season__serie__name',
-                                           'season__number',
-                                           'number').values('number',
-                                                            'season__number',
-                                                            'season__serie__name').values()
-    return render(request, 'mii_interface/serie.html', dict(series=serie))
+    episodes = Episode.objects.all().order_by('season__serie__name',
+                                              'season__number',
+                                              'number').values('number',
+                                                               'season__number',
+                                                               'season__serie__name').values()
+    return render(request, 'mii_interface/serie.html', dict(episodes=episodes))
 
 
 def rate(request):
