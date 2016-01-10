@@ -11,8 +11,8 @@
 {% block content %}
     <h1>Series</h1>
     <ul>
-    {% for serie in series %}
-        <li>{{ serie.name }} : Season {{ serie.season }} Episode {{ serie.episode }}</li>
+    {% for episode in episodes %}
+        <li>{{ episode.season__serie__name }} : Season {{ episode.season__number }} Episode {{ episode.number }}</li>
     {% endfor %}
     </ul>
 {% endblock %}
