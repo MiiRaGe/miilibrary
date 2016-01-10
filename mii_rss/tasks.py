@@ -41,8 +41,6 @@ def check_feed_and_download_torrents():
             logger.info('Torrent filename : %s' % file_name)
             if os.path.exists(os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name)):
                 continue
-            if 'webrip' in file_name.lower():
-                continue
             if already_exists(settings.RSS_FILTERS[re_filter], entry['title']):
                 continue
             created = get_or_create_downloading_object(re_filter, entry['title'])
