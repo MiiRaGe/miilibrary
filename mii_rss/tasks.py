@@ -4,7 +4,9 @@ import os
 import re
 import urllib
 import feedparser
+from datetime import timedelta
 from django.conf import settings
+from django.utils import timezone
 from pyreport.reporter import Report
 from mii_celery import app
 from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, match
@@ -15,6 +17,15 @@ logger = logging.getLogger(__name__)
 
 if settings.REPORT_ENABLED:
     logger = Report()
+
+
+@app.task(serializer='json')
+def recheck_feed_and_download_torrents():
+    json_feeds = FeedEntries.objects.filter(date__gte=timezone.now() - timedelta(days=3)) \
+        .values_list('json_entries', flat=True)
+    feeds = [json.loads(x) for x in json_feeds]
+    for feed_entries in feeds:
+        process_feeds(feed_entries)
 
 
 @app.task(serializer='json')
@@ -30,7 +41,13 @@ def check_feed_and_download_torrents():
     FeedEntries.objects.create(json_entries=json.dumps(get_dict_from_feeds(feed['entries'])))
 
     logger.info('Going through the entries')
-    for entry in feed['entries']:
+    process_feeds(feed['entries'])
+    if settings.REPORT_ENABLED:
+        insert_report(logger.finalize_report(), report_type='rss')
+
+
+def process_feeds(entries):
+    for entry in entries:
         entry['title'] = entry['title'].lower()
         logger.info('Entry : %s' % entry['title'])
         matched, re_filter = match(entry, settings.RSS_FILTERS.keys())
@@ -48,5 +65,3 @@ def check_feed_and_download_torrents():
                 continue
             logger.info('Added torrent')
             urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
-    if settings.REPORT_ENABLED:
-        insert_report(logger.finalize_report(), report_type='rss')
