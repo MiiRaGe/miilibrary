@@ -27,7 +27,7 @@ def recheck_feed_and_download_torrents():
         .values_list('json_entries', flat=True)
     feeds = [json.loads(x) for x in json_feeds]
     for feed_entries in feeds:
-        process_feeds(feed_entries)
+        process_feeds(feed_entries['entries'])
     if settings.REPORT_ENABLED:
         insert_report(logger.finalize_report(), report_type='recheck_rss')
 
