@@ -21,11 +21,15 @@ if settings.REPORT_ENABLED:
 
 @app.task(serializer='json')
 def recheck_feed_and_download_torrents():
+    if settings.REPORT_ENABLED:
+        logger.create_report()
     json_feeds = FeedEntries.objects.filter(date__gte=timezone.now() - timedelta(days=3)) \
         .values_list('json_entries', flat=True)
     feeds = [json.loads(x) for x in json_feeds]
     for feed_entries in feeds:
         process_feeds(feed_entries)
+    if settings.REPORT_ENABLED:
+        insert_report(logger.finalize_report(), report_type='recheck_rss')
 
 
 @app.task(serializer='json')
