@@ -1,10 +1,9 @@
-import tempfile
 from django.test import TestCase, override_settings
 
 from analysis.season_tool import analyse_series
 from mii_sorter.factories import EpisodeFactory
 from mii_sorter.logic import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
-    letter_coverage, rename_serie, get_episode, get_quality, get_info, get_best_match
+    letter_coverage, rename_serie, get_quality, get_info, get_best_match
 from mii_indexer.logic import dict_merge_list_extend
 
 
@@ -105,17 +104,6 @@ class TestSorter(TestCase):
     def test_rename_serie(self):
         serie_name1 = 'The;;#!"$%^&*()_Walking<>?:@~{}Dead\\\\/..25x15..?'
         assert 'The.Walking.Dead.S25E15.' == rename_serie(serie_name1)
-
-    def test_get_episode(self):
-        tmp_dir = tempfile.mkdtemp()
-
-        f1 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E04.mkv')
-        f2 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E02.mkv')
-        f3 = tempfile.NamedTemporaryFile(dir=tmp_dir, suffix='S01E05.mkv')
-
-        assert not get_episode(tmp_dir, 'useless arg', '01')
-        assert get_episode(tmp_dir, 'useless arg', '02')
-        assert not get_episode(tmp_dir, 'useless arg', '03')
 
     def test_get_quality(self):
         name = 'serie de malade 720p 1080p DTS AC3 BLU-ray webrip'

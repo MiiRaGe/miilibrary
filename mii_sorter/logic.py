@@ -155,15 +155,16 @@ class Sorter:
         file_path = os.path.join(self.data_dir, file_name)
         try:
             exists, serie = get_serie_episode(name, int(season), int(episode_number))
-            existing_episode = get_episode(season_dir, name, episode_number)
 
             if exists and os.path.exists(serie.abs_file_path):
                 if serie.file_size > os.path.getsize(file_path):
                     self.move_to_unsorted(file_path)
                     logger.info('Moving the source to unsorted, episode already exists :%s' % serie.abs_file_path)
+                    return False
                 elif serie.file_size == os.path.getsize(file_path):
                     os.remove(file_path)
-                    logger.info('Removed the source, episode already exists and same size:%s' % existing_episode)
+                    logger.info('Removed the source, episode already exists and same size:%s' % serie.abs_file_path)
+                    return False
                 else:
                     self.move_to_unsorted(serie.abs_file_path)
                     logger.info('Moving destination to unsorted (because bigger = better): %s' % new_file_name)

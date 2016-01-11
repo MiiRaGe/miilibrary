@@ -13,7 +13,7 @@ from django.utils import timezone
 from mii_common import tools
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
-from mii_sorter.factories import MovieFactory
+from mii_sorter.factories import MovieFactory, EpisodeFactory
 from mii_sorter.logic import Sorter, get_dir_size, get_size
 from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
 from mii_unpacker.factories import UnpackedFactory
@@ -307,7 +307,7 @@ class TestSpecificSorter(TestMiilibrary):
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
         self.sorter.move_to_unsorted = mock.MagicMock()
-        self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
+        assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
         self.sorter.move_to_unsorted.assert_called_with(test_file)
 
     @mock.patch('mii_sorter.logic.tools.delete_dir')
@@ -317,7 +317,7 @@ class TestSpecificSorter(TestMiilibrary):
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
         MovieFactory.create(file_size=os.path.getsize(test_file), title='test', folder_path=existing_file, year=1500)
-        self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
+        assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
         delete_dir.assert_called_with(test_file)
 
     @mock.patch('mii_sorter.logic.tools.delete_dir')
@@ -331,6 +331,34 @@ class TestSpecificSorter(TestMiilibrary):
         assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
         delete_dir.side_effect = Exception()
         assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
+
+    def test_create_dir_and_move_serie_to_unsorted(self):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        self.sorter.move_to_unsorted = mock.MagicMock()
+        assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
+        self.sorter.move_to_unsorted.assert_called_with(test_file)
+
+    def test_create_dir_and_move_serie_error_handling(self):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        self.sorter.move_to_unsorted = mock.MagicMock()
+        self.sorter.move_to_unsorted.side_effect = OSError()
+        assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
+
+    def test_create_dir_and_move_serie_same_size(self):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
 
 
 
