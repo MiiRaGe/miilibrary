@@ -4,7 +4,9 @@ from django.test import TestCase
 
 from mii_indexer.factories import MovieRelationFactory, MovieTaggingFactory
 from mii_interface.factories import ReportFactory
-from mii_sorter.factories import EpisodeFactory
+from mii_rating.models import QuestionAnswer, MovieQuestionSet
+from mii_sorter.factories import EpisodeFactory, MovieFactory
+from mii_sorter.models import Movie
 
 
 class TestViews(TestCase):
@@ -72,3 +74,26 @@ class TestViews(TestCase):
         assert index.si.called
         assert unpack.si.called
         assert sort.si.called
+
+    def test_mii_rating(self):
+        movie = MovieFactory.create(seen=None)
+        data = {
+            'action': 'not_seen',
+            'movie_id': movie.id
+        }
+        self.client.post('/rate', data=data)
+        assert Movie.objects.get(id=movie.id).seen is False
+
+    def test_mii_rating_save_question(self):
+        movie = MovieFactory.create(seen=None)
+        data = {
+            'action': 'save_movie',
+            'movie_id': movie.id,
+            'overall': ['9.4'],
+        }
+        self.client.post('/rate', data=data)
+        assert MovieQuestionSet.objects.get(movie_id=movie.id)
+        assert QuestionAnswer.objects.get(question_type='overall')
+
+    def test_mii_rating_missing_movie(self):
+        self.client.get('/rate?movie_id=1')
