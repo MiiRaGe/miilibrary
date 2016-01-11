@@ -85,6 +85,8 @@ class TestViews(TestCase):
         assert Movie.objects.get(id=movie.id).seen is False
         assert response.status_code == 200
 
+
+class TestMiiRating(TestCase):
     def test_mii_rating_save_question(self):
         movie = MovieFactory.create(seen=None)
         data = {

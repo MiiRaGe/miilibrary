@@ -22,6 +22,7 @@ class MovieRelationFactory(DjangoModelFactory):
     movie = SubFactory(MovieFactory)
     person = SubFactory(PersonFactory)
 
+
 class TagFactory(DjangoModelFactory):
     class Meta:
         model = Tag
