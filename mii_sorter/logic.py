@@ -355,14 +355,6 @@ def get_quality(name):
     return ','.join(quality)
 
 
-def get_episode(season_dir, serie_name, number):
-    for episode in os.listdir(season_dir):
-        if re.search('[Ss]\d+[eE]' + number, episode):
-            logger.info('Same episode found (%s e%s) : %s' % (serie_name, number, episode))
-            return episode
-    return None
-
-
 def rename_serie(file_name):
     new_name = change_token_to_dot(file_name)
     if re.sub('[^\d]([0-3]?\d)x(\d{1,2})[^\d]', 'S\g<1>E\g<2>', new_name) is not new_name:
