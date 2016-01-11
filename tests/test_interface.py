@@ -81,8 +81,9 @@ class TestViews(TestCase):
             'action': 'not_seen',
             'movie_id': movie.id
         }
-        self.client.post('/rate', data=data)
+        response = self.client.post('/rate', data=data)
         assert Movie.objects.get(id=movie.id).seen is False
+        assert response.status_code == 200
 
     def test_mii_rating_save_question(self):
         movie = MovieFactory.create(seen=None)
@@ -91,9 +92,18 @@ class TestViews(TestCase):
             'movie_id': movie.id,
             'overall': ['9.4'],
         }
-        self.client.post('/rate', data=data)
+        response = self.client.post('/rate', data=data)
         assert MovieQuestionSet.objects.get(movie_id=movie.id)
         assert QuestionAnswer.objects.get(question_type='overall')
+        assert response.status_code == 200
 
     def test_mii_rating_missing_movie(self):
-        self.client.get('/rate?movie_id=1')
+        response = self.client.get('/rate?movie_id=1')
+        assert response.status_code == 200
+
+    def test_rate_with_info(self):
+        movie = MovieFactory.create(seen=None)
+        MovieRelationFactory.create_batch(5, movie=movie)
+        MovieTaggingFactory.create_batch(5, movie=movie)
+        response = self.client.get('/rate')
+        assert response.status_code == 200
