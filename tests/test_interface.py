@@ -9,20 +9,10 @@ from mii_sorter.factories import EpisodeFactory
 
 class TestViews(TestCase):
     def setUp(self):
-        MovieTaggingFactory.create()
-        MovieTaggingFactory.create()
-        MovieTaggingFactory.create()
-        MovieRelationFactory.create()
-        MovieRelationFactory.create()
-        MovieRelationFactory.create()
-        MovieRelationFactory.create()
-        EpisodeFactory.create()
-        EpisodeFactory.create()
-        EpisodeFactory.create()
-        EpisodeFactory.create()
-        EpisodeFactory.create()
-        ReportFactory.create()
-        ReportFactory.create()
+        MovieTaggingFactory.create_batch(3)
+        MovieRelationFactory.create_batch(5)
+        EpisodeFactory.create_batch(6)
+        ReportFactory.create_batch(5)
         self.report = ReportFactory.create()
 
     def test_index(self):

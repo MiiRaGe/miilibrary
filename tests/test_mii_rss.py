@@ -1,9 +1,11 @@
 import mock
 from django.test import TestCase, override_settings
 from fake_filesystem_unittest import TestCase as FakeFsTestCase
+
+from mii_rss.factories import FeedEntriesFactory
 from mii_rss.logic import already_exists, match, get_or_create_downloading_object, get_dict_from_feeds
 from mii_rss.models import FeedDownloaded, FeedEntries
-from mii_rss.tasks import check_feed_and_download_torrents
+from mii_rss.tasks import check_feed_and_download_torrents, recheck_feed_and_download_torrents
 from mii_sorter.models import Season, Episode
 from mii_sorter.models import Serie
 
@@ -139,4 +141,19 @@ class TestTask(FakeFsTestCase, TestCase):
         check_feed_and_download_torrents()
         assert urllib.urlretrieve.called
 
+    @mock.patch('mii_rss.tasks.urllib')
+    @mock.patch('mii_rss.tasks.feedparser')
+    @mock.patch('mii_rss.tasks.get_or_create_downloading_object')
+    def test_task_feed_matching_already_downloading(self, get_or_create, feedparser, urllib):
+        get_or_create.return_value = False
+        feedparser.parse.return_value = {'status': 200,
+                                         'entries': [{'title': 'non_matching', 'link': '/test.torrent?'}]
+                                         }
+        check_feed_and_download_torrents()
+        assert not urllib.urlretrieve.called
 
+    @mock.patch('mii_rss.tasks.process_feeds')
+    def test_recheck_feeds(self, process_feeds):
+        FeedEntriesFactory.create_batch(10)
+        recheck_feed_and_download_torrents()
+        assert process_feeds.called
