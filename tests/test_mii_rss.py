@@ -130,4 +130,13 @@ class TestTask(FakeFsTestCase, TestCase):
         check_feed_and_download_torrents()
         assert not urllib.urlretrieve.called
 
+    @mock.patch('mii_rss.tasks.urllib')
+    @mock.patch('mii_rss.tasks.feedparser')
+    def test_task_feed_matching_downloading(self, feedparser, urllib):
+        feedparser.parse.return_value = {'status': 200,
+                                         'entries': [{'title': 'non_matching', 'link': '/test.torrent?'}]
+                                         }
+        check_feed_and_download_torrents()
+        assert urllib.urlretrieve.called
+
 
