@@ -2,14 +2,11 @@
 
 import logging
 from subprocess import CalledProcessError
-
 import mock
 import os
-
 from datetime import timedelta
 from django.test import override_settings
 from django.utils import timezone
-
 from mii_common import tools
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
@@ -51,7 +48,8 @@ class TestMain(TestMiilibrary):
         self._fill_data()
         self.sorter.sort()
         assert get_serie_episode('The Big Bank Theory', 1, 1)
-        assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
+        assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(
+            os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
         tbbt_s1 = os.path.join(self.DESTINATION_FOLDER, 'TVSeries', 'The Big Bank Theory', 'Season 1')
         assert len(os.listdir(tbbt_s1)) == 1
 
@@ -70,7 +68,8 @@ class TestMain(TestMiilibrary):
         movie1.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)', 'Thor.(2011).720p.mkv')
         movie1.save()
         movie2 = Movie.objects.create(title='Thor- The Dark World', year='2013', imdb_id='1981115', file_size=10)
-        movie2.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)', 'Thor-.The.Dark.World.(2013).720p.mkv')
+        movie2.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)',
+                                        'Thor-.The.Dark.World.(2013).720p.mkv')
         movie2.save()
         self.indexer.index()
         index_root_folder = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index')
@@ -78,7 +77,7 @@ class TestMain(TestMiilibrary):
         index_genre_folder = os.path.join(index_root_folder, 'Genres')
         index_directors_folder = os.path.join(index_root_folder, 'Directors')
         index_ratings_folder = os.path.join(index_root_folder, 'Ratings')
-        index_actor_folder = os.path.join(index_root_folder,'Actors')
+        index_actor_folder = os.path.join(index_root_folder, 'Actors')
 
         assert os.listdir(index_year_folder) == ['2011', '2013']
         assert os.listdir(index_genre_folder) == ['Action', 'Adventure', 'Bullshit', 'Fantasy', 'London', 'Romance']
@@ -283,7 +282,8 @@ class TestSpecificSorter(TestMiilibrary):
         self.sorter.create_dir_and_move_serie = mock.MagicMock()
         self.sorter.sort_open_subtitle_info(os_info)
         self.sorter.create_dir_and_move_serie.assert_called_with('Arrow', '1', '1', 'My Name is oliver queer',
-                                                                        'test_file.mkv')
+                                                                 'test_file.mkv')
+
     @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
     def test_sort_open_subtitle_info_movie_without_name_0_exception(self):
         os_info = {
@@ -298,7 +298,7 @@ class TestSpecificSorter(TestMiilibrary):
         self.sorter.create_dir_and_move_serie = mock.MagicMock()
         self.sorter.sort_open_subtitle_info(os_info)
         self.sorter.create_dir_and_move_serie.assert_called_with('Arrow', '1', '01', '',
-                                                                        'test_file.mkv')
+                                                                 'test_file.mkv')
 
     def test_create_dir_and_move_movie_to_unsorted(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
@@ -334,7 +334,8 @@ class TestSpecificSorter(TestMiilibrary):
 
     def test_create_dir_and_move_serie_to_unsorted(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
-        EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1,
+                              number=1)
         test_file = os.path.join(self.data_path, 'test.mkv')
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
@@ -344,7 +345,8 @@ class TestSpecificSorter(TestMiilibrary):
 
     def test_create_dir_and_move_serie_error_handling(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
-        EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1,
+                              number=1)
         test_file = os.path.join(self.data_path, 'test.mkv')
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
@@ -357,7 +359,8 @@ class TestSpecificSorter(TestMiilibrary):
         test_file = os.path.join(self.data_path, 'test.mkv')
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
-        EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test', file_path=existing_file,
+                              season__number=1, number=1)
         assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
 
     def test_create_dir_and_move_serie_new_is_bigger(self):
@@ -366,7 +369,8 @@ class TestSpecificSorter(TestMiilibrary):
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
         self.sorter.move_to_unsorted = mock.MagicMock()
-        EpisodeFactory.create(file_size=os.path.getsize(test_file) - 1, season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        EpisodeFactory.create(file_size=os.path.getsize(test_file) - 1, season__serie__name='Test',
+                              file_path=existing_file, season__number=1, number=1)
         assert self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
         self.sorter.move_to_unsorted.assert_called_with(existing_file)
 
@@ -375,5 +379,35 @@ class TestSpecificSorter(TestMiilibrary):
         test_file = os.path.join(self.data_path, 'test.mkv')
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
-        EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test', file_path='/unknown_path', season__number=1, number=1)
+        EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test',
+                              file_path='/unknown_path', season__number=1, number=1)
         assert self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
+
+    @mock.patch('mii_sorter.logic.get_info')
+    def test_sort_movie_from_name(self, get_info):
+        get_info.return_value = None
+        assert not self.sorter.sort_movie_from_name('')
+
+    def test_sort_movie_from_name_no_match(self):
+        self.sorter.mii_tmdb = mock.MagicMock()
+        self.sorter.mii_tmdb.get_movie_name.return_value = {
+            'results':
+                [
+                    {'id': '12345',
+                     'release_date': '1900-01-01'}
+                ]
+        }
+        self.sorter.mii_tmdb.get_movie_imdb_id.return_value = 'asdf'
+        assert not self.sorter.sort_movie_from_name('Movie.(2000).mkv')
+
+    def test_sort_movie_from_name_no_match_title(self):
+        self.sorter.mii_tmdb = mock.MagicMock()
+        self.sorter.mii_tmdb.get_movie_name.return_value = {
+            'results':
+                [
+                    {'id': '12345',
+                     'release_date': '2000-01-01',
+                     'title': 'asdfs'}
+                ]
+        }
+        assert not self.sorter.sort_movie_from_name('Movie.(2000).mkv')
