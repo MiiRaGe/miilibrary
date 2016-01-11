@@ -76,9 +76,11 @@ class TestSorter(TestCase):
         assert not compare(movie1, api_result)[0]
 
         # Movie Name inconsistency.
+        api_result['MovieKind'] = 'movie'
         api_result['MovieName'] = 'TvSeries'
         movie1 = 'Dragons.defenders.of.berk.2014'
         assert not compare(movie1, api_result)[0]
+
 
     def test_letter_coverage(self):
         limit = 65

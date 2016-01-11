@@ -411,3 +411,11 @@ class TestSpecificSorter(TestMiilibrary):
                 ]
         }
         assert not self.sorter.sort_movie_from_name('Movie.(2000).mkv')
+
+    def test_move_to_unsorted(self):
+        self.fs.CreateFile('/test.mkv', contents='a')
+        self.fs.CreateFile('/unsorted/test.mkv', contents='b')
+        self.sorter.unsorted_dir = '/unsorted'
+        self.sorter.move_to_unsorted('/', 'test.mkv')
+        assert not os.path.exists('/test.mkv')
+        assert os.path.exists('/unsorted/test.mkv')
