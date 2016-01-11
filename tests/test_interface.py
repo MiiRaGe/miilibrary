@@ -35,6 +35,9 @@ class TestViews(TestCase):
     def test_report(self):
         assert self.client.get('/report/%s/' % self.report.id).status_code == 200
 
+    def test_report_missing(self):
+        assert self.client.get('/report/39202390/').status_code == 200
+
     @mock.patch('mii_unpacker.views.unpack')
     def test_rpc_unpack(self, unpack):
         response = self.client.get('/rpc/unpack')
