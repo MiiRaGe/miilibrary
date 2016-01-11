@@ -51,6 +51,18 @@ class TestViews(TestCase):
         assert response.status_code == 200
         assert index.delay.called
 
+    @mock.patch('mii_rss.views.recheck_feed_and_download_torrents')
+    def test_rpc_rerss(self, index):
+        response = self.client.get('/rpc/recheck_rss')
+        assert response.status_code == 200
+        assert index.delay.called
+
+    @mock.patch('mii_rss.views.check_feed_and_download_torrents')
+    def test_rpc_rss(self, rss):
+        response = self.client.get('/rpc/rss')
+        assert response.status_code == 200
+        assert rss.delay.called
+
     @mock.patch('mii_interface.views.index_movies')
     @mock.patch('mii_interface.views.unpack')
     @mock.patch('mii_interface.views.sort')
