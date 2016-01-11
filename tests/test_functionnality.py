@@ -360,5 +360,20 @@ class TestSpecificSorter(TestMiilibrary):
         EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
         assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
 
+    def test_create_dir_and_move_serie_new_is_bigger(self):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        self.sorter.move_to_unsorted = mock.MagicMock()
+        EpisodeFactory.create(file_size=os.path.getsize(test_file) - 1, season__serie__name='Test', file_path=existing_file, season__number=1, number=1)
+        assert self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
+        self.sorter.move_to_unsorted.assert_called_with(existing_file)
 
-
+    def test_create_dir_and_move_serie_replace_missing(self):
+        existing_file = os.path.join(self.data_path, 'test2.mkv')
+        test_file = os.path.join(self.data_path, 'test.mkv')
+        self.fs.CreateFile(test_file, contents='test_file')
+        self.fs.CreateFile(existing_file, contents='test_file')
+        EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test', file_path='/unknown_path', season__number=1, number=1)
+        assert self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
