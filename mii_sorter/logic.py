@@ -41,7 +41,7 @@ class Sorter:
 
     def create_hash_list(self, media):
         file_path = os.path.join(self.data_dir, media)
-        movie_hash = str(ht.hashFile(file_path))
+        movie_hash = str(ht.hash_file(file_path))
         self.map[movie_hash] = media
         self.hash_array.append(movie_hash)
         self.hash_array = list(set(self.hash_array))
