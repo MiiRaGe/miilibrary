@@ -1,7 +1,10 @@
 import json
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST
+
+from middleware.remote_execution import remote_play
 from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
 from mii_sorter.models import Movie, Serie, Episode
@@ -23,7 +26,8 @@ def movies(request):
 def series(request):
     episodes = Episode.objects.all().order_by('season__serie__name',
                                               'season__number',
-                                              'number').values('number',
+                                              'number').values('id',
+                                                               'number',
                                                                'season__number',
                                                                'season__serie__name')
     return render(request, 'mii_interface/serie.html', dict(episodes=episodes))
@@ -82,3 +86,15 @@ def report(request, report_id):
 def start_unpack_sort_indexer(request):
     (unpack.si() | sort.si() | index_movies.si()).delay()
     return HttpResponse('OK, unpack sort index started')
+
+
+@require_POST
+def play(request):
+    data = request.POST
+    if 'episode_id' in data:
+        try:
+            episode = Episode.objects.get(id=data['episode_id'])
+            remote_play(episode.file_path)
+        except ObjectDoesNotExist:
+            pass
+    return redirect('series')

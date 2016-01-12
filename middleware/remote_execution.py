@@ -1,11 +1,11 @@
 import os
 import shlex
 import subprocess
-import spur
 
+import pyjsonrpc
+import spur
 from django.conf import settings
 from django.utils.encoding import smart_unicode
-
 from mii_common.tools import delete_dir
 
 shell = None
@@ -33,7 +33,8 @@ def symlink(source_file, destination_file):
 def unrar(source_file, destination_dir):
     # Source file is the archive file and destionation_dir is the extraction directory
     if shell:
-        result = shell.run([settings.REMOTE_UNRAR_PATH, "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
+        result = shell.run(
+            [settings.REMOTE_UNRAR_PATH, "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
     return subprocess.check_output(shlex.split('unrar e -y %s %s' % (source_file, destination_dir)))
 
@@ -55,3 +56,19 @@ def map_to_nas(local_path):
     :return:
     """
     return smart_unicode(local_path.replace(settings.LOCAL_ROOT, settings.NAS_ROOT))
+
+
+def remote_play(path):
+    """
+    This function remotes play a file to a kodi xbmc server.
+    :param path:
+    :return:
+    """
+    smb_path = path.format(destination_dir='smb://MIINAS/MoviesSeries')
+    url = "http://192.168.0.149:8080/jsonrpc"
+    http_client = pyjsonrpc.HttpClient(
+        url=url,
+        username="kodi",
+        password="kodi",
+    )
+    http_client.call('Player.Open', item={'file': smb_path})
