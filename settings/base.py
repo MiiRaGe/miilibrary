@@ -75,6 +75,7 @@ NAS_IP = ''
 NAS_USERNAME = 'foo'
 NAS_ROOT = '/share/MD0_DATA/'
 MEDIA_RENDERER_RESCAN_URL = 'http://192.168.0.2:9000/rpc/rescan'
+REMOTE_UNRAR_PATH = u"/usr/local/sbin/unrar"
 
 #Indexer
 # This is enabling dumping the index data in a json file at the root of the MoviesSeries folder for another programm to index

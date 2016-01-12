@@ -7,4 +7,5 @@ exclude_lines=
 	if settings.REPORT_ENABLED:
 	import logging
 	logger = logging.getLogger(__name__)
+	if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
 

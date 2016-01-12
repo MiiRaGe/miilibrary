@@ -9,6 +9,7 @@ from django.utils.encoding import smart_unicode
 from mii_common.tools import delete_dir
 
 shell = None
+
 if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
     shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME, connect_timeout=3600)
 
@@ -32,8 +33,7 @@ def symlink(source_file, destination_file):
 def unrar(source_file, destination_dir):
     # Source file is the archive file and destionation_dir is the extraction directory
     if shell:
-        # TODO : Remove hardcoded unrar command
-        result = shell.run([u"/usr/local/sbin/unrar", "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
+        result = shell.run([settings.REMOTE_UNRAR_PATH, "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
     return subprocess.check_output(shlex.split('unrar e -y %s %s' % (source_file, destination_dir)))
 
