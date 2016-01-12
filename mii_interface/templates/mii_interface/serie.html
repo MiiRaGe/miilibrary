@@ -10,13 +10,13 @@
 
 {% block content %}
     <h1>Series</h1>
-    <ul>
+    <ul class="list-group">
     {% for episode in episodes %}
-        <li>{{ episode.season__serie__name }} : Season {{ episode.season__number }} Episode {{ episode.number }}
+        <li class="list-group-item">{{ episode.season__serie__name }} : Season {{ episode.season__number }} Episode {{ episode.number }}
                 <form method="post" action="./play">
                     {% csrf_token%}
                     <input type="hidden" name="episode_id" value="{{ episode.id}}"/>
-                    <div class="btn-group pull-right" role="group">
+                    <div class="btn-group" role="group">
                         <input type="submit" class="btn btn-default" value="Play"/>
                     </div>
                 </form>
