@@ -9,18 +9,65 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Series</h1>
-    <ul class="list-group">
-    {% for episode in episodes %}
-        <li class="list-group-item">{{ episode.season__serie__name }} : Season {{ episode.season__number }} Episode {{ episode.number }}
-                <form method="post" action="./play">
-                    {% csrf_token%}
-                    <input type="hidden" name="episode_id" value="{{ episode.id}}"/>
-                    <div class="btn-group" role="group">
-                        <input type="submit" class="btn btn-default" value="Play"/>
+<h1>Series</h1>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    {% for serie, seasons in series %}
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="heading{{forloop.counter}}">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#"
+                   data-target="#collapse{{forloop.counter}}"
+                   aria-expanded="false" aria-controls="collapse{{forloop.counter}}">
+                    {{ serie }}
+                </a>
+            </h4>
+        </div>
+        <div id="collapse{{forloop.counter}}" class="panel-collapse collapse" role="tabpanel"
+             aria-labelledby="heading{{forloop.counter}}">
+            <div class="panel-body">
+                <div class="panel-group" id="accordion{{forloop.counter}}" role="tablist" aria-multiselectable="true">
+                    {% for season, episodes in seasons.items %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab"
+                             id="heading{{forloop.parentloop.counter}}_inner{{forloop.counter}}">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse"
+                                   data-parent="#accordion{{forloop.parentloop.counter}}"
+                                   data-target="#collapse{{forloop.parentloop.counter}}_inner{{forloop.counter}}"
+                                   href="#"
+                                   aria-expanded="false"
+                                   aria-controls="collapse{{forloop.parentloop.counter}}_inner{{forloop.counter}}">
+                                    Season {{ season }}
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapse{{forloop.parentloop.counter}}_inner{{forloop.counter}}"
+                             class="panel-collapse collapse" role="tabpanel"
+                             aria-labelledby="heading{{forloop.parentloop.counter}}_inner{{forloop.counter}}">
+                            <table class="table-default table table-condensed">
+                                {% for number, id in episodes %}
+                                <tr>
+                                    <td>
+                                        <form method="post" action="./play" class="form-inline">
+                                            <div class="form-group">
+                                                <label for="play_button">Episode {{ number }}</label>
+                                                {% csrf_token %}
+                                                <input type="hidden" name="episode_id" value="{{ id }}"/>
+                                                <input id="play_button" type="submit" class="btn btn-default"
+                                                       value="Play"/>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
                     </div>
-                </form>
-        </li>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
     {% endfor %}
-    </ul>
+</div>
 {% endblock %}

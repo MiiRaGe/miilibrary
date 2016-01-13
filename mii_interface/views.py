@@ -1,4 +1,6 @@
 import json
+from collections import defaultdict
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -30,7 +32,14 @@ def series(request):
                                                                'number',
                                                                'season__number',
                                                                'season__serie__name')
-    return render(request, 'mii_interface/serie.html', dict(episodes=episodes))
+    organised_episodes = defaultdict(lambda: defaultdict(list))
+    for episode in episodes:
+        organised_episodes[episode['season__serie__name']][episode['season__number']].append((episode['number'], episode['id']))
+
+    for key, value in organised_episodes.items():
+        organised_episodes[key] = dict(value)
+
+    return render(request, 'mii_interface/serie.html', dict(series=sorted(dict(organised_episodes).items(), key=lambda x:x[0])))
 
 
 def rate(request):
