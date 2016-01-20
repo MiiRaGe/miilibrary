@@ -1,6 +1,6 @@
 import mock
 
-from fake_filesystem_unittest import TestCase
+from pyfakefs.fake_filesystem_unittest import TestCase
 
 from movieinfo.hash_tool import hash_file
 

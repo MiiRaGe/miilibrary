@@ -1,6 +1,6 @@
 import mock
 from django.test import TestCase, override_settings
-from fake_filesystem_unittest import TestCase as FakeFsTestCase
+from pyfakefs.fake_filesystem_unittest import TestCase as FakeFsTestCase
 
 from mii_rss.factories import FeedEntriesFactory
 from mii_rss.logic import already_exists, match, get_or_create_downloading_object, get_dict_from_feeds

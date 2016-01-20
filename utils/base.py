@@ -5,7 +5,7 @@ import string
 
 
 from django.test import override_settings, TestCase as DjTestCase
-from fake_filesystem_unittest import Patcher, TestCase
+from pyfakefs.fake_filesystem_unittest import Patcher, TestCase
 
 from mii_common import tools
 from mii_indexer.logic import Indexer

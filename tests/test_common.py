@@ -1,7 +1,7 @@
 import mock
 import os
 
-from fake_filesystem_unittest import TestCase as FakeFSTestCase
+from pyfakefs.fake_filesystem_unittest import TestCase as FakeFSTestCase
 from unittest2 import TestCase
 
 from mii_common.tools import make_dir, delete_dir, listdir_abs, dict_apply
