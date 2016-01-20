@@ -95,8 +95,10 @@ class Sorter:
 
     def update_new(self):
         remove_dir(self.new_dir)
-        self.new_dir = tools.make_dir(os.path.join(self.media_dir, 'New'))
+        self.new_dir = tools.make_dir(self.new_dir)
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
+            if not os.path.exists(whatsnew.path):
+                continue
             dir = tools.make_dir(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
             if os.path.isdir(whatsnew.path):
                 logger.debug('Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))

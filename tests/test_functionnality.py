@@ -62,6 +62,17 @@ class TestMain(TestMiilibrary):
                     '4 day(s) ago', '4 week(s) ago', '5 day(s) ago', '6 day(s) ago', 'Today', 'Yesterday']
         assert sorted(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New'))) == sorted(expected)
 
+    def test_new_missing_item(self):
+        today = timezone.now()
+        WhatsNew.objects.create(path='/does/not/exist', date=today, name='0')
+        for i in range(1, 70):
+            WhatsNew.objects.create(path=self.DESTINATION_FOLDER, date=today - timedelta(days=i), name=i)
+        self.sorter.update_new()
+        expected = ['1 month(s) ago', '1 week(s) ago', '2 day(s) ago', '2 week(s) ago', '3 day(s) ago', '3 week(s) ago',
+                    '4 day(s) ago', '4 week(s) ago', '5 day(s) ago', '6 day(s) ago', 'Yesterday']
+        assert sorted(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New'))) == sorted(expected)
+
+
     def test_index(self):
         self._fill_movie()
         movie1 = Movie.objects.create(title='Thor', year='2011', imdb_id='0800369', file_size=10)

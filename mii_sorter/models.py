@@ -1,12 +1,10 @@
 import logging
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField, \
     DateTimeField, BooleanField, CASCADE
 from django.utils.encoding import smart_unicode
-
 from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
@@ -111,9 +109,9 @@ class WhatsNew(Model):
         elif day_delta == 1:
             return 'Yesterday'
         elif day_delta >= 30:
-            return '%s month(s) ago' % (day_delta//30)
+            return '%s month(s) ago' % (day_delta // 30)
         elif day_delta >= 7:
-            return '%s week(s) ago' % (day_delta//7)
+            return '%s week(s) ago' % (day_delta // 7)
         else:
             return '%s day(s) ago' % day_delta
 
@@ -167,12 +165,14 @@ def insert_serie_episode(serie_name, serie_season, episode_number, serie_path, s
 
     season, created = Season.objects.get_or_create(number=serie_season, serie=serie)
 
-    episode, created = Episode.objects.get_or_create(number=episode_number, season=season, file_path=serie_path, file_size=size)
+    episode, created = Episode.objects.get_or_create(number=episode_number, season=season, file_path=serie_path,
+                                                     file_size=size)
 
     # Add the serie to the what's new folder
-    wn, created = WhatsNew.objects.get_or_create(name='%s S%sE%s' % (serie_name, serie_season, episode_number),
-                                                 date=timezone.now(),
-                                                 path=serie_path)
+    wn, created = WhatsNew.objects.get_or_create(
+        name='%s S%sE%s' % (serie_name, serie_season, episode_number),
+        date=timezone.now(),
+        path=serie_path)
     return episode
 
 
