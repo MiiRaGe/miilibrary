@@ -53,7 +53,7 @@ class JSONKeyValue(Model):
                 obj = str(obj).decode('utf-8')
             return json.loads(obj.decode('utf-8'))
         except ObjectDoesNotExist:
-            logger.debug('Cache miss')
+            logger.debug(u'Cache miss')
             return 0
 
     @staticmethod

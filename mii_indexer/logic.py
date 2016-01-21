@@ -59,7 +59,7 @@ class Indexer:
         logger.info("****************************************")
         index_dict = defaultdict(dict)
         for folder in os.listdir(self.alphabetical_dir):
-            logger.info('------ %s ------' % folder)
+            logger.info(u'------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
             if os.path.isdir(folder_abs):
                 index_dict['Search'].update(dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
@@ -73,7 +73,7 @@ class Indexer:
                     imdb_id = movie.imdb_id
                     imdb_data = self.mii_osdb.get_imdb_information(imdb_id)
                     if imdb_data:
-                        logger.info('Found imdb data from opensubtitle:')
+                        logger.info(u'Found imdb data from opensubtitle:')
                         logger.debug("\tData: %s" % imdb_data)
                         for index_type, value in self.index_mapping.items():
                             new_index_for_movie = self.index_values(self.index_mapping[index_type][1](imdb_data),
@@ -91,7 +91,7 @@ class Indexer:
     def index_values(self, values, folder, folder_abs, index_type, movie=None):
         if values:
             index_dict = {}
-            logger.info('\tIndexing %s, with %s' % (folder, values))
+            logger.info(u'\tIndexing %s, with %s' % (folder, values))
             try:
                 for value in values:
                     if movie:
@@ -116,7 +116,7 @@ class Indexer:
         elif link_type in ['Actors', 'Directors']:
             person, _ = Person.objects.get_or_create(name=value)
             MovieRelation.objects.get_or_create(person=person, movie=movie, type=link_type)
-            logger.debug('Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))
+            logger.debug(u'Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))
 
 
 def dump_to_json_file(index_dict):

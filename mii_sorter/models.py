@@ -125,12 +125,12 @@ def get_serie_episode(name, season, episode):
     :return tuple: Tuple containing the path is serie is found (Boolean, String)
     """
     try:
-        logger.info('Querying serie table with name=%s, season=%s and episode=%s' % (name, season, episode))
+        logger.info(u'Querying serie table with name=%s, season=%s and episode=%s' % (name, season, episode))
         episode = Episode.objects.get(season__number=season, number=episode, season__serie__name=name)
         if episode:
             return True, episode
     except ObjectDoesNotExist as e:
-        logger.info('Found nothing %s' % repr(e))
+        logger.info(u'Found nothing %s' % repr(e))
         return False, None
 
 
@@ -142,12 +142,12 @@ def get_serie_season(name, season):
     :return bool:
     """
     try:
-        logger.info('Querying serie table with name=%s and season=%s' % (name, season))
+        logger.info(u'Querying serie table with name=%s and season=%s' % (name, season))
         season = Season.objects.get(number=season, serie__name=name)
         if season:
             return True
     except ObjectDoesNotExist as e:
-        logger.info('Found nothing %s' % repr(e))
+        logger.info(u'Found nothing %s' % repr(e))
         return False
 
 
@@ -185,15 +185,15 @@ def get_movie(title, year=None):
     :rtype (bool, Movie):
     """
     try:
-        logger.info('Querying movie table with name=%s and year=%s' % (title, year))
+        logger.info(u'Querying movie table with name=%s and year=%s' % (title, year))
         if year:
             movie = Movie.objects.get(title=title, year=year)
         else:
             movie = Movie.objects.get(title=title)
-        logger.info('Found movie')
+        logger.info(u'Found movie')
         return True, movie
     except ObjectDoesNotExist as e:
-        logger.info('Found nothing %s' % repr(e))
+        logger.info(u'Found nothing %s' % repr(e))
         return False, None
 
 

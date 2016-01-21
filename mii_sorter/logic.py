@@ -58,12 +58,12 @@ class Sorter:
 
         for movie_hash in sorted(self.hash_array):
             file_name = self.map.get(movie_hash)
-            logger.info('------ %s ------' % file_name)
+            logger.info(u'------ %s ------' % file_name)
             result = self.mii_osdb.get_subtitles(movie_hash,
                                                  str(get_size(os.path.join(self.data_dir, file_name))))
             is_sorted = False
             if result:
-                logger.info('Got Result from opensubtitle for %s' % file_name)
+                logger.info(u'Got Result from opensubtitle for %s' % file_name)
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
                 if result:
@@ -84,9 +84,9 @@ class Sorter:
             if not is_sorted:
                 if is_serie(self.map.get(movie_hash)):
                     self.sort_tv_serie(file_name)
-                    logger.info('Sorted the TV Serie : %s' % file_name)
+                    logger.info(u'Sorted the TV Serie : %s' % file_name)
                 else:
-                    logger.info('Looks like a movie')
+                    logger.info(u'Looks like a movie')
                     self.sort_movie_from_name(file_name)
 
         self.update_new()
@@ -101,10 +101,10 @@ class Sorter:
                 continue
             dir = tools.make_dir(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
             if os.path.isdir(whatsnew.path):
-                logger.debug('Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))
+                logger.debug(u'Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))
                 symlink(whatsnew.path, os.path.join(dir, whatsnew.name))
             else:
-                logger.debug('Trying to link file %s to %s' % (whatsnew.path, whatsnew.name))
+                logger.debug(u'Trying to link file %s to %s' % (whatsnew.path, whatsnew.name))
                 symlink(whatsnew.path, os.path.join(dir, whatsnew.path.split('/')[-1]))
 
     def sort_open_subtitle_info(self, result):
@@ -161,15 +161,15 @@ class Sorter:
             if exists and os.path.exists(serie.abs_file_path):
                 if serie.file_size > os.path.getsize(file_path):
                     self.move_to_unsorted(file_path)
-                    logger.info('Moving the source to unsorted, episode already exists :%s' % serie.abs_file_path)
+                    logger.info(u'Moving the source to unsorted, episode already exists :%s' % serie.abs_file_path)
                     return False
                 elif serie.file_size == os.path.getsize(file_path):
                     os.remove(file_path)
-                    logger.info('Removed the source, episode already exists and same size:%s' % serie.abs_file_path)
+                    logger.info(u'Removed the source, episode already exists and same size:%s' % serie.abs_file_path)
                     return False
                 else:
                     self.move_to_unsorted(serie.abs_file_path)
-                    logger.info('Moving destination to unsorted (because bigger = better): %s' % new_file_name)
+                    logger.info(u'Moving destination to unsorted (because bigger = better): %s' % new_file_name)
                     os.rename(file_path, os.path.join(season_dir, new_file_name))
                     serie.file_path = os.path.join(season_dir, new_file_name)
                     serie.file_size = os.path.getsize(os.path.join(season_dir, new_file_name))
@@ -182,11 +182,11 @@ class Sorter:
                                          episode_number,
                                          os.path.join(season_dir, new_file_name),
                                          os.path.getsize(file_path))
-                    logger.info('Created Serie object %s,S%sE%s' % (name, season, episode_number))
+                    logger.info(u'Created Serie object %s,S%sE%s' % (name, season, episode_number))
                 else:
                     serie.file_path = os.path.join(season_dir, new_file_name)
                     serie.save()
-                logger.info('Moving the episode to the correct folder...%s' % new_file_name)
+                logger.info(u'Moving the episode to the correct folder...%s' % new_file_name)
                 os.rename(file_path, os.path.join(season_dir, new_file_name))
                 return True
         except OSError:
@@ -209,14 +209,14 @@ class Sorter:
             return False
         name = info.get('title')
         year = info.get('year')
-        logger.info('Name/Year found from file_name : Name = <%s>, Year = <%s>' % (name, year))
+        logger.info(u'Name/Year found from file_name : Name = <%s>, Year = <%s>' % (name, year))
         result = self.mii_tmdb.get_movie_name(name, year)
-        logger.debug('Result from tmdb: %s' % result)
+        logger.debug(u'Result from tmdb: %s' % result)
         try:
             if result and result.get('results'):
                 result = result.get('results')[0]
                 movie_id = str(result.get('id'))
-                logger.debug('Matching result: %s' % result)
+                logger.debug(u'Matching result: %s' % result)
                 matching_year = result.get('release_date', '1900-01-01')
                 matched = re.match('(?:\d{4})', matching_year)
                 if matched:
@@ -228,15 +228,15 @@ class Sorter:
                                                                                            matched.group(0),
                                                                                            year))
                         else:
-                            logger.info('Year matched for %s' % file_name)
+                            logger.info(u'Year matched for %s' % file_name)
                 percent = letter_coverage(name, result['title'])
                 if percent > 65.0:
-                    logger.info('Title matched %s, %s at (%s%%)' % (name, result['title'], percent))
+                    logger.info(u'Title matched %s, %s at (%s%%)' % (name, result['title'], percent))
                 else:
                     raise Exception('Title did not match %s, %s with (%s%%)' % (name, result['title'], percent))
 
                 imdb_id = self.mii_tmdb.get_movie_imdb_id(movie_id)
-                logger.debug('Matching (id/imdb)  %s/%s' % (movie_id, imdb_id))
+                logger.debug(u'Matching (id/imdb)  %s/%s' % (movie_id, imdb_id))
                 if imdb_id:
                     imdb_id = imdb_id.get('imdb_id')
                     self.create_dir_and_move_movie(result['title'], year, imdb_id, file_name)
@@ -274,32 +274,32 @@ class Sorter:
             exist, movie = get_movie(movie_name, year=year)
             if exist and os.path.exists(movie.abs_folder_path):
                 if movie.file_size > os.path.getsize(file_path):
-                    logger.info('Do not sort as already existing bigger movie exists')
+                    logger.info(u'Do not sort as already existing bigger movie exists')
                     self.move_to_unsorted(file_path)
                     return False
                 elif movie.file_size == os.path.getsize(file_path):
-                    logger.info('Same size movie exists, deleting source')
+                    logger.info(u'Same size movie exists, deleting source')
                     tools.delete_dir(file_path)
                     return False
                 else:
-                    logger.info('Moving the old movie folder to unsorted as new file is bigger')
+                    logger.info(u'Moving the old movie folder to unsorted as new file is bigger')
                     self.move_to_unsorted(movie.abs_folder_path)
-            logger.debug('Custom folder name :%s' % custom_movie_dir)
+            logger.debug(u'Custom folder name :%s' % custom_movie_dir)
             created_movie_dir = tools.make_dir(os.path.join(self.alphabetical_movie_dir, custom_movie_dir))
-            logger.debug('Created folder path :%s' % created_movie_dir)
+            logger.debug(u'Created folder path :%s' % created_movie_dir)
             if movie:
                 movie.year = year or ''
                 movie.folder_path = created_movie_dir
                 movie.save()
-                logger.info('Existing Movie object updated')
+                logger.info(u'Existing Movie object updated')
             else:
                 movie = insert_movie(movie_name, year, created_movie_dir, os.path.getsize(file_path))
-                logger.info('Created Movie object')
+                logger.info(u'Created Movie object')
             if imdb_id:
                 movie.imdb_id = imdb_id
                 movie.save()
             new_name = re.sub('.*(\.[a-zA-Z0-9]*)$', '%s\g<1>' % re.sub(' ', '.', custom_movie_dir), filename)
-            logger.info('Moving %s, with new name %s' % (filename, new_name))
+            logger.info(u'Moving %s, with new name %s' % (filename, new_name))
             os.rename(file_path, os.path.join(created_movie_dir, new_name))
             return True
         except OSError:
@@ -365,19 +365,19 @@ def rename_serie(file_name):
 
 
 def compare(file_name, api_result):
-    logger.info('Comparing Opensubtitle api_result with file_name for safety')
+    logger.info(u'Comparing Opensubtitle api_result with file_name for safety')
     score = 0
     regex_result = is_serie(file_name)
     if regex_result:
         # Movie type consistency issue
         if api_result.get('MovieKind') == 'movie':
-            logger.info('Type Inconsistent : ' + api_result.get('MovieKind') + ' expected Tv Series/Episode')
+            logger.info(u'Type Inconsistent : ' + api_result.get('MovieKind') + ' expected Tv Series/Episode')
             return False, 0
         matching_pattern = re.search('(.*)[sS]0*(\d+)[eE]0*(\d+)', file_name) or re.search('(.*)(\d?\d)x(\d?\d)',
                                                                                            file_name)
         if not all([api_result.get('SeriesSeason') == matching_pattern.group(2),
                     api_result.get('SeriesEpisode') == matching_pattern.group(3)]):
-            logger.info('SXXEXX inconsistent : S%sE%s, expected : S%sE%s' % (api_result.get('SeriesSeason'),
+            logger.info(u'SXXEXX inconsistent : S%sE%s, expected : S%sE%s' % (api_result.get('SeriesSeason'),
                                                                              api_result.get('SeriesEpisode'),
                                                                              matching_pattern.group(2),
                                                                              matching_pattern.group(3)))
@@ -391,12 +391,12 @@ def compare(file_name, api_result):
         if letter_coverage(matching_pattern.group(1), api_serie_name) < 65:
             return False, 0
 
-        logger.info('Found a possible match')
+        logger.info(u'Found a possible match')
         return True, letter_coverage(matching_pattern.group(1), api_serie_name)
 
     # Other case it's a movie
     if not (api_result.get('MovieKind') == 'movie'):
-        logger.info('Type Inconsistency, found %s but expected movie' % api_result.get('MovieKind'))
+        logger.info(u'Type Inconsistency, found %s but expected movie' % api_result.get('MovieKind'))
         return False, 0
 
     # Year pattern api_result
@@ -410,12 +410,12 @@ def compare(file_name, api_result):
     name_matching = re.search('([^\(\)]*).+(20[01][0-9]|19[5-9][0-9])', file_name)
     if name_matching:
         if not (letter_coverage(name_matching.group(1), api_result.get('MovieName')) > 65):
-            logger.info('Letter inconsistency : %s, %s' %
+            logger.info(u'Letter inconsistency : %s, %s' %
                         (api_result.get('MovieName'), name_matching.group(1)))
             return False, 0
         else:
             score += letter_coverage(name_matching.group(1), api_result.get('MovieName'))
-    logger.info('Found a perfect match')
+    logger.info(u'Found a perfect match')
 
     return True, score
 
@@ -425,10 +425,10 @@ def get_best_match(api_result_list, file_name):
     for api_result in api_result_list:
         matching, score = compare(file_name.lower(), api_result)
         if matching:
-            logger.info('Comparison returned true, moving on')
+            logger.info(u'Comparison returned true, moving on')
             scores.append((matching, score, api_result))
         else:
-            logger.info('Comparison returned false, inconsistencies exist')
+            logger.info(u'Comparison returned false, inconsistencies exist')
 
     scores = sorted(scores, key=(lambda x: x[2]))
     if scores and scores[0][1] > 0:
@@ -452,14 +452,14 @@ def format_serie_name(serie_name):
 
 def apply_custom_renaming(serie_name):
     lower_serie_name = serie_name.lower()
-    logger.info('Custom renaming :%s' % lower_serie_name)
+    logger.info(u'Custom renaming :%s' % lower_serie_name)
     for old, new in settings.CUSTOM_RENAMING.items():
         old = old.lower()
         new = new.lower()
-        logger.debug('Applying filter : %s -> %s' % (old, new))
+        logger.debug(u'Applying filter : %s -> %s' % (old, new))
         result = re.sub(old, new, lower_serie_name)
         if not (result == lower_serie_name):
-            logger.debug('Renamed : %s to %s' % (lower_serie_name, result))
+            logger.debug(u'Renamed : %s to %s' % (lower_serie_name, result))
             return result
     return serie_name
 

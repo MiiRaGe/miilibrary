@@ -59,6 +59,6 @@ def match(entry, filters):
     # The logger could also be a report so it has to be the same.
     for re_filter in filters:
         if re.search(re_filter, entry['title']):
-            logger.info('Filter is matching: %s <-> %s' % (re_filter, entry['title']))
+            logger.info(u'Filter is matching: %s <-> %s' % (re_filter, entry['title']))
             return True, re_filter
     return False, None
