@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 # Create the directory @param(path) and return the path after creation [Error safe]
 def make_dir(path):
     # Avoid the raise of IOError exception by checking if the directory exists first
-    os.makedirs(path)
     try:
         os.makedirs(path)
     except OSError as e:
         if e.errno != 17:
+            raise e
             logger.warning('Exception in make_dir(%s): %s' % (e.filename, repr(e)))
     return path
 
