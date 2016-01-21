@@ -54,11 +54,12 @@ class Indexer:
             insert_report(logger.finalize_report(), report_type='indexer')
 
     def get_dict_index(self):
-        logger.info("****************************************")
-        logger.info("**********      Indexer       **********")
-        logger.info("****************************************")
+        logger.info(u'****************************************')
+        logger.info(u'**********      Indexer       **********')
+        logger.info(u'****************************************')
         index_dict = defaultdict(dict)
         for folder in os.listdir(self.alphabetical_dir):
+            folder = folder.decode('utf-8')
             logger.info(u'------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
             if os.path.isdir(folder_abs):
@@ -74,7 +75,7 @@ class Indexer:
                     imdb_data = self.mii_osdb.get_imdb_information(imdb_id)
                     if imdb_data:
                         logger.info(u'Found imdb data from opensubtitle:')
-                        logger.debug("\tData: %s" % imdb_data)
+                        logger.debug(u'\tData: %s' % imdb_data)
                         for index_type, value in self.index_mapping.items():
                             new_index_for_movie = self.index_values(self.index_mapping[index_type][1](imdb_data),
                                                                     folder,
@@ -101,7 +102,7 @@ class Indexer:
                         value = '%s' % int(value)
                     index_dict[value] = [(folder, folder_abs)]
             except Exception as e:
-                logger.exception("\tFailed with exception :%s" % repr(e))
+                logger.exception(u'\tFailed with exception :%s' % repr(e))
             return index_dict
 
     @staticmethod

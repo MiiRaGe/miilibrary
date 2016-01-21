@@ -19,8 +19,6 @@ class Sorter:
     mii_tmdb = mii_cache_wrapper.MiiTheMovieDB()
     mii_osdb = mii_cache_wrapper.MiiOpenSubtitleDB()
 
-    """ Sorter Module """
-
     def __init__(self):
         if settings.REPORT_ENABLED:
             logger.create_report()
@@ -47,9 +45,9 @@ class Sorter:
         self.hash_array = list(set(self.hash_array))
 
     def sort(self):
-        logger.info("****************************************")
-        logger.info("**********       Sorter       **********")
-        logger.info("****************************************")
+        logger.info(u'****************************************')
+        logger.info(u'**********       Sorter       **********')
+        logger.info(u'****************************************')
         # TODO optimize sorting
         self.map = {}
         self.hash_array = []
@@ -57,7 +55,7 @@ class Sorter:
             self.create_hash_list(media)
 
         for movie_hash in sorted(self.hash_array):
-            file_name = self.map.get(movie_hash)
+            file_name = self.map.get(movie_hash).decode('utf-8')
             logger.info(u'------ %s ------' % file_name)
             result = self.mii_osdb.get_subtitles(movie_hash,
                                                  str(get_size(os.path.join(self.data_dir, file_name))))
@@ -70,7 +68,7 @@ class Sorter:
                     try:
                         is_sorted = self.sort_open_subtitle_info(result)
                     except Exception as e:
-                        logger.exception('Error when sorting open_subtitle_info: %s, %s' % (file_name, repr(e)))
+                        logger.exception(u'Error when sorting open_subtitle_info: %s, %s' % (file_name, repr(e)))
             else:
                 result = self.mii_osdb.get_movie_name(movie_hash, number='2')
                 if result:
@@ -305,7 +303,7 @@ class Sorter:
         except OSError:
             logger.error('Can\'t create %s' % custom_movie_dir)
         except Exception, e:
-            logger.exception('Found an exception when moving movie : %s' % repr(e))
+            logger.exception(u'Found an exception when moving movie : %s' % repr(e))
         return False
 
 
@@ -500,5 +498,5 @@ def letter_coverage(file_name, api_name):
 
         return percent_coverage * size_factor
     except ZeroDivisionError:
-        logger.exception('Empty title name, can\'t compare')
+        logger.exception(u'Empty title name, can\'t compare')
         return 0
