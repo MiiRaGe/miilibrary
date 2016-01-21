@@ -39,7 +39,7 @@ def check_feed_and_download_torrents():
     logger.info(u'Initializing feed')
     feed = feedparser.parse(settings.RSS_URL)
     if feed['status'] != 200:
-        logger.error('Server response not 200: %s' % feed['status'])
+        logger.error(u'Server response not 200: %s' % feed['status'])
         return
 
     FeedEntries.objects.create(json_entries=json.dumps(get_dict_from_feeds(feed['entries'])))

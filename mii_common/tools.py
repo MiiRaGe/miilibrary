@@ -15,7 +15,7 @@ def make_dir(path):
     except OSError as e:
         if e.errno != 17:
             raise e
-            logger.warning('Exception in make_dir(%s): %s' % (e.filename, repr(e)))
+            logger.warning(u'Exception in make_dir(%s): %s' % (e.filename, repr(e)))
     return path
 
 
@@ -57,9 +57,9 @@ def dict_apply(path, dictionnary, symlink_method=None):
                     else:
                         symlink_method(abs_path_to_name, os.path.join(current_path, name))
                 except OSError as e:
-                    logger.error('Tried to symlink: "%s" to "%s/%s"' % (abs_path_to_name,
+                    logger.error(u'Tried to symlink: "%s" to "%s/%s"' % (abs_path_to_name,
                                                                         current_path,
                                                                         name))
-                    logger.error('Error: %s' % e)
+                    logger.error(u'Error: %s' % e)
         else:
             dict_apply(current_path, leaf, symlink_method=symlink_method)

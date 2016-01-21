@@ -150,7 +150,7 @@ class Sorter:
         new_file_name += extension
         new_file_name = re.sub('[\s\.]+', '.', new_file_name)
         result_dir = tools.make_dir(os.path.join(self.serie_dir, name))
-        season_dir = tools.make_dir(os.path.join('%s/Season %s' % (result_dir, season)))
+        season_dir = tools.make_dir(os.path.join(u'%s/Season %s' % (result_dir, season)))
 
         file_path = os.path.join(self.data_dir, file_name)
         try:
@@ -188,7 +188,7 @@ class Sorter:
                 os.rename(file_path, os.path.join(season_dir, new_file_name))
                 return True
         except OSError:
-            logger.error(('Can\'t move %s' % file_path))
+            logger.error(u'Can\'t move %s' % file_path)
             return False
 
     def sort_tv_serie(self, media):
@@ -222,7 +222,7 @@ class Sorter:
                         year = matched.group(0)
                     else:
                         if year != matched.group(0):
-                            logger.error('Year not matching for %s, Got %s expected %s' % (file_name,
+                            logger.error(u'Year not matching for %s, Got %s expected %s' % (file_name,
                                                                                            matched.group(0),
                                                                                            year))
                         else:
@@ -240,7 +240,7 @@ class Sorter:
                     self.create_dir_and_move_movie(result['title'], year, imdb_id, file_name)
                     return True
         except Exception, e:
-            logger.warning('Found and exception while matching file with tmdb : %s' % repr(e))
+            logger.warning(u'Found and exception while matching file with tmdb : %s' % repr(e))
         self.move_to_unsorted(self.data_dir, file_name)
         return False
 
@@ -257,7 +257,7 @@ class Sorter:
             else:
                 os.rename(file_dir, os.path.join(self.unsorted_dir, file_name_ext))
         except OSError:
-            logger.error('Can\'t create %s' % file_name)
+            logger.error(u'Can\'t create %s' % file_name)
 
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
         # Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
@@ -301,7 +301,7 @@ class Sorter:
             os.rename(file_path, os.path.join(created_movie_dir, new_name))
             return True
         except OSError:
-            logger.error('Can\'t create %s' % custom_movie_dir)
+            logger.error(u'Can\'t create %s' % custom_movie_dir)
         except Exception, e:
             logger.exception(u'Found an exception when moving movie : %s' % repr(e))
         return False

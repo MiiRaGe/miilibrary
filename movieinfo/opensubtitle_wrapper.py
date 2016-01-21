@@ -50,7 +50,7 @@ class OpenSubtitleWrapper:
                 logger.info("Login into openSubtitle...")
                 username = settings.OPENSUBTITLE_LOGIN
                 password = settings.OPENSUBTITLE_PASSWORD
-                logger.warning('Trying to login')
+                logger.warning(u'Trying to login')
                 result = self.server.LogIn(username, password, "gb", "miinaslibraryUA")
                 self.token = result.get("token")
                 status = result.get("status")

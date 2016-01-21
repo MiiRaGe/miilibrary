@@ -25,7 +25,7 @@ class TestOpenSubtitleWrapperLogin(TestCase):
         assert self.os.login_successful
 
     def test_simple_login_error(self):
-        fake_server.LogIn.side_effect = ProtocolError('', '', '', '')
+        fake_server.LogIn.side_effect = Protocolerror(u'', '', '', '')
         self.os.log_in(retry=False)
         assert not self.os.token
         assert not self.os.login_successful
@@ -38,7 +38,7 @@ class TestOpenSubtitleWrapperLogin(TestCase):
 
     @mock.patch('movieinfo.opensubtitle_wrapper.time.sleep')
     def test_simple_login_error_with_retry(self, sleep):
-        fake_server.LogIn.side_effect = ProtocolError('', '', '', '')
+        fake_server.LogIn.side_effect = Protocolerror(u'', '', '', '')
         self.os.log_in(retry=True, max_retries=3)
         assert not self.os.token
         assert not self.os.login_successful
@@ -106,7 +106,7 @@ class TestOpenSubtitleWrapperDecorators(TestCase):
             def t(self):
                 if self.count < 2:
                     self.count += 1
-                    raise ProtocolError('', '', '', '')
+                    raise Protocolerror(u'', '', '', '')
                 else:
                     return 'Test Passed'
 
