@@ -57,13 +57,14 @@
 
                 <div class="btn-group" role="group" aria-label="...">
                     <form id="not_seen_form" method="post" action="./rate">
+                        {% csrf_token %}
                         <input type="hidden" name="action" value="not_seen"/>
                         <input type="hidden" name="movie_id" value="{{ movie.id }}"/>
                         <button class="btn btn-default height-40"
                                 onclick="document.getElementById('not_seen_form').submit()">Movie not seen
                         </button>
-                        <button class="btn btn-default height-40" onclick="window.location.reload()">Skip</button>
                     </form>
+                    <button class="btn btn-default height-40" onclick="window.location.reload()">Skip</button>
                 </div>
             </div>
             <div class="col-md-4">
