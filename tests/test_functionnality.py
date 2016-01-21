@@ -181,7 +181,7 @@ class TestSpecificUnpacker(TestMiilibrary):
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unrar_raising_error(self, unrar):
         self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
-        unrar.side_effect = CalledProcesserror(u'', '', '')
+        unrar.side_effect = CalledProcessError(u'', '', '')
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.extracted == 0
 
