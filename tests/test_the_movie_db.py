@@ -26,5 +26,5 @@ class TestOpenSubtitleWrapperLogin(TestCase):
         assert self.tmdb.get_movie_name('the dark knight', 2008) == return_value
 
     def test_get_url_error(self, urlopen):
-        urlopen.return_value = mock.MagicMock(read=mock.MagicMock(side_effect=HTTPerror(u'', '', '', '', None)))
+        urlopen.return_value = mock.MagicMock(read=mock.MagicMock(side_effect=HTTPError(u'', '', '', '', None)))
         assert self.tmdb.get_url('') is False

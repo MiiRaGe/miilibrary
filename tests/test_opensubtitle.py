@@ -1,9 +1,7 @@
 import mock
 import socket
-
 from xmlrpclib import ProtocolError
 from django.test import override_settings, TestCase
-
 from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper, needs_login, retry_when_failing
 
 fake_server = mock.MagicMock()
@@ -25,7 +23,7 @@ class TestOpenSubtitleWrapperLogin(TestCase):
         assert self.os.login_successful
 
     def test_simple_login_error(self):
-        fake_server.LogIn.side_effect = Protocolerror(u'', '', '', '')
+        fake_server.LogIn.side_effect = ProtocolError(u'', '', '', '')
         self.os.log_in(retry=False)
         assert not self.os.token
         assert not self.os.login_successful
@@ -38,7 +36,7 @@ class TestOpenSubtitleWrapperLogin(TestCase):
 
     @mock.patch('movieinfo.opensubtitle_wrapper.time.sleep')
     def test_simple_login_error_with_retry(self, sleep):
-        fake_server.LogIn.side_effect = Protocolerror(u'', '', '', '')
+        fake_server.LogIn.side_effect = ProtocolError(u'', '', '', '')
         self.os.log_in(retry=True, max_retries=3)
         assert not self.os.token
         assert not self.os.login_successful
@@ -78,17 +76,20 @@ class TestOpenSubtitleWrapperDecorators(TestCase):
     def test_true_login(self):
         class Dummy:
             login_successful = False
+
             @needs_login
             def t(self):
                 return 'Test Passed'
 
             def log_in(self):
                 self.login_successful = True
+
         assert Dummy().t() == 'Test Passed'
 
     def test_login_broken(self):
         class Dummy:
             login_successful = False
+
             @needs_login
             def t(self):
                 return 'Test Passed'
@@ -102,11 +103,12 @@ class TestOpenSubtitleWrapperDecorators(TestCase):
     def test_retry_while_failing(self, sleep):
         class Dummy:
             count = 0
+
             @retry_when_failing
             def t(self):
                 if self.count < 2:
                     self.count += 1
-                    raise Protocolerror(u'', '', '', '')
+                    raise ProtocolError(u'', '', '', '')
                 else:
                     return 'Test Passed'
 
