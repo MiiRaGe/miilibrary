@@ -2,18 +2,16 @@ import json
 import logging
 import re
 import os
-
 from collections import defaultdict
 from django.conf import settings
+from django.utils.encoding import smart_unicode
 from pyreport.reporter import Report
-
 from middleware import mii_cache_wrapper
 from middleware.remote_execution import symlink
 from mii_common import tools
 from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie, insert_report
-
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +61,8 @@ class Indexer:
             logger.info(u'------ %s ------' % folder)
             folder_abs = os.path.join(self.alphabetical_dir, folder)
             if os.path.isdir(folder_abs):
-                index_dict['Search'].update(dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
+                index_dict['Search'].update(
+                    dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
                 matched = re.match('([^\(]*) \((\d{4})\).*', folder)
                 if matched:
                     movie_name = matched.group(1)
@@ -82,7 +81,8 @@ class Indexer:
                                                                     folder_abs,
                                                                     index_type,
                                                                     movie=movie)
-                            index_dict[value[0]].update(dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
+                            index_dict[value[0]].update(
+                                dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
                     self.movie_list.append(movie)
 
         add_number_and_simplify(index_dict['Search'])
@@ -117,7 +117,8 @@ class Indexer:
         elif link_type in ['Actors', 'Directors']:
             person, _ = Person.objects.get_or_create(name=value)
             MovieRelation.objects.get_or_create(person=person, movie=movie, type=link_type)
-            logger.debug(u'Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))
+            logger.debug(
+                u'Link is saved :%s,%s,%s' % (smart_unicode(person.name), smart_unicode(movie.title), link_type))
 
 
 def dump_to_json_file(index_dict):
