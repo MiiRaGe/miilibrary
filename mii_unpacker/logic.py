@@ -51,7 +51,7 @@ class RecursiveUnrarer:
         logger.debug(u'%sEntering : %s' % (indent, current_directory))
         indent += "\t"
         for data_file in os.listdir(current_directory):
-            data_file = data_file.decode('utf-8')
+            data_file = smart_unicode(data_file)
             full_file_path = os.path.join(current_directory, data_file)
             if os.path.isfile(full_file_path):
                 if data_file.endswith(u'.part01.rar'):
