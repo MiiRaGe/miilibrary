@@ -11,13 +11,13 @@ from mii_common.tools import make_dir, delete_dir, listdir_abs, dict_apply
 class TestTools(TestCase):
     def test_make_dir(self, os):
         make_dir('/test_dir/')
-        os.makedirs.assert_called_with('/test_dir/')
+        os.mkdir.assert_called_with('/test_dir/')
 
     @mock.patch('mii_common.tools.logger')
     def test_make_dir_unexpected_error(self, logger, os):
-        os.makedirs.side_effect = OSError()
+        os.mkdir.side_effect = OSError()
         make_dir('/test_dir/')
-        os.makedirs.assert_called_with('/test_dir/')
+        os.mkdir.assert_called_with('/test_dir/')
         assert logger.warning.called
 
 

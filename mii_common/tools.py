@@ -11,10 +11,9 @@ logger = logging.getLogger(__name__)
 def make_dir(path):
     # Avoid the raise of IOError exception by checking if the directory exists first
     try:
-        os.makedirs(path)
+        os.mkdir(path)
     except OSError as e:
         if e.errno != 17:
-            raise e
             logger.warning(u'Exception in make_dir(%s): %s' % (e.filename, repr(e)))
     return path
 

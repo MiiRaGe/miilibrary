@@ -31,7 +31,8 @@ class TestApplyIndex(TestMiilibrary):
         index_path = os.path.join(self.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
         self.fs.CreateFile(index_path,
                            contents=json.dumps(fake_index))
-        tools.make_dir(os.path.join(self.DESTINATION_FOLDER, 'Movie', 'Index'))
+        movies = tools.make_dir(os.path.join(self.DESTINATION_FOLDER, 'Movies'))
+        tools.make_dir(os.path.join(movies, 'Index'))
         assert os.path.exists(index_path)
         apply_index(self.DESTINATION_FOLDER, 'lol.json')
         assert dict_apply.called
