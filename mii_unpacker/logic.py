@@ -61,14 +61,14 @@ class RecursiveUnrarer:
                     logger.debug(u'%sBypassing :%s' % (indent, data_file))
 
                 elif data_file.endswith(".rar"):
-                    logger.debug(u'%sExtracting :%s' % (indent, data_file))
+                    logger.debug(u'%sExtracting :%s' % (indent, smart_unicode(data_file)))
                     self.unrar(full_file_path, data_file)
 
                 elif re.match(".*\.(mkv|avi|mp4|mpg)$", data_file) and \
                                 os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 1000000:
                     # Moving every movie type, cleanup later
                     if self.link_video(current_directory, data_file):
-                        logger.debug(u'%sMoving :%s to the data folder...' % (indent, data_file))
+                        logger.debug(u'%sMoving :%s to the data folder...' % (indent, smart_unicode(data_file)))
 
             elif os.path.isdir(full_file_path) and full_file_path is not self.destination_dir:
                 self.level += 1
@@ -94,6 +94,7 @@ class RecursiveUnrarer:
         self.removed = 0
         for media_file in os.listdir(self.destination_dir):
             # If it's not a movie media_file or if the size < MINIMUM_SIZE Mo (samples)
+            media_file = smart_unicode(media_file)
             logger.debug(u'Reading (cleanup):%s' % media_file)
             if not re.match(".*\.(mkv|avi|mp4|mpg)", media_file):
                 logger.debug(u'Removing (Reason : not a movie):')
@@ -111,6 +112,7 @@ class RecursiveUnrarer:
     def link_video(self, source_path, file_to_link):
         source_file = os.path.join(source_path, file_to_link)
         destination_file = os.path.join(self.destination_dir, file_to_link)
+        file_to_link = smart_unicode(file_to_link)
         if Unpacked.objects.filter(filename=file_to_link).exists():
             logger.error(u'Not linking, same file exist (weight wise)')
             return False
