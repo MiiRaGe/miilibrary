@@ -6,8 +6,10 @@
 
 ### Dependencies ###
 
-* Python 2.6-2.7 
+* Python 2.7
+* Django 1.9
 * See requirements.txt for full module dependencies
+* The requirements are meant to be "bleeding edge" (contact for a list of working dependencies if latest not working)
 
 ### Setting up ###
 
