@@ -42,7 +42,7 @@ class MiiTheMovieDB(MiiCachedData):
     }
     type = 'tmdb'
 
-    def get_movie_name(self, name, year):
+    def get_movie_name(self, name, year=None):
         """
         Return the result of movie query by name/year to The Movie DB
         :param string name: name of the movie

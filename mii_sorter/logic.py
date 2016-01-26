@@ -213,10 +213,13 @@ class Sorter:
             return False
         name = info.get('title')
         year = info.get('year')
-        import pdb; pdb.set_trace()
         logger.info(u'Name/Year found from file_name : Name = <%s>, Year = <%s>' % (name, year))
         result = self.mii_tmdb.get_movie_name(name, year)
         logger.debug(u'Result from tmdb: %s' % result)
+        if not result or not result.get('results'):
+            logger.debug(u'Trying without the year')
+            result = self.mii_tmdb.get_movie_name(name)
+            logger.debug(u'Result from tmdb: %s' % result)
         try:
             if result and result.get('results'):
                 result = result.get('results')[0]
