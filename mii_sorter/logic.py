@@ -100,8 +100,8 @@ class Sorter:
         if not os.path.exists(self.new_dir):
             logger.error(u'New does not exist')
             return
-        
-        for whatsnew in WhatsNew.objects.all().order_by('-date')[:30]:
+
+        for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
             if not os.path.exists(whatsnew.path):
                 continue
             dir = tools.make_dir(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
