@@ -14,6 +14,7 @@ def make_dir(path):
         os.mkdir(path)
     except OSError as e:
         if e.errno != 17:
+            raise e
             logger.warning(u'Exception in make_dir(%s): %s' % (e.filename, repr(e)))
     return path
 

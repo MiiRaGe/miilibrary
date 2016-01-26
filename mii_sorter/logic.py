@@ -1,6 +1,8 @@
 import logging
 import os
 import re
+from time import sleep
+
 from pyreport.reporter import Report
 from middleware.remote_execution import symlink, remove_dir
 from django.conf import settings
@@ -93,8 +95,13 @@ class Sorter:
 
     def update_new(self):
         remove_dir(self.new_dir)
+        sleep(3)
         self.new_dir = tools.make_dir(self.new_dir)
-        for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
+        if not os.path.exists(self.new_dir):
+            logger.error(u'New does not exist')
+            return
+        
+        for whatsnew in WhatsNew.objects.all().order_by('-date')[:30]:
             if not os.path.exists(whatsnew.path):
                 continue
             dir = tools.make_dir(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
