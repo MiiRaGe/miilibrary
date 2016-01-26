@@ -95,7 +95,6 @@ class Sorter:
 
     def update_new(self):
         remove_dir(self.new_dir)
-        sleep(3)
         self.new_dir = tools.make_dir(self.new_dir)
         if not os.path.exists(self.new_dir):
             logger.error(u'New does not exist')

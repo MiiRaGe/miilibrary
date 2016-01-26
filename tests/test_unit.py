@@ -145,6 +145,10 @@ class TestSorter(TestCase):
         res = get_info(name)
         assert res['title'] == 'Iron Man 3'
 
+        name = 'Kingsman.The.Secret.Service.2014.BluRay.1080p.HEVC.DTSHD-7.1.x265-EMYRS.mkv'
+        res = get_info(name)
+        assert res['title']
+
     def test_get_best_match(self):
         data = [
             {
