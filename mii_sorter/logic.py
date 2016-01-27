@@ -27,7 +27,7 @@ class Sorter:
         self.hash_array = []
         self.map = {}
         self.media_dir = settings.DESTINATION_FOLDER
-        self.new_dir = tools.make_dir(os.path.join(self.media_dir, 'New'))
+        self.new_dir = os.path.join(self.media_dir, 'New')
         self.data_dir = os.path.join(self.media_dir, 'data')
         self.serie_dir = os.path.join(self.media_dir, 'TVSeries')
         self.movie_dir = os.path.join(self.media_dir, 'Movies')
@@ -38,6 +38,9 @@ class Sorter:
         tools.make_dir(self.movie_dir)
         tools.make_dir(self.alphabetical_movie_dir)
         tools.make_dir(self.unsorted_dir)
+        if os.path.exists(self.new_dir):
+            remove_dir(self.new_dir)
+        tools.make_dir(self.new_dir)
 
     def create_hash_list(self, media):
         file_path = os.path.join(self.data_dir, media)
@@ -94,12 +97,7 @@ class Sorter:
             insert_report(logger.finalize_report(), report_type='sorting')
 
     def update_new(self):
-        remove_dir(self.new_dir)
         self.new_dir = tools.make_dir(self.new_dir)
-        if not os.path.exists(self.new_dir):
-            logger.error(u'New does not exist')
-            return
-
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
             if not os.path.exists(whatsnew.path):
                 continue
