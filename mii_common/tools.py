@@ -15,7 +15,6 @@ def make_dir(path):
     except OSError as e:
         if e.errno != 17:
             logger.warning(u'Exception in make_dir(%s): %s' % (e.filename, repr(e)))
-            raise e
     return path
 
 # Create the directorise @param(path) and return the directory_path after creation [Error safe]
@@ -27,7 +26,6 @@ def make_dirs(path):
     except OSError as e:
         if e.errno != 17:
             logger.warning(u'Exception in make_dir(%s): %s' % (e.filename, repr(e)))
-            raise e
     return path
 
 
