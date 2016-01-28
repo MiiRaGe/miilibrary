@@ -101,7 +101,7 @@ class Sorter:
         for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
             if not os.path.exists(whatsnew.path):
                 continue
-            dir = tools.make_dir(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
+            dir = tools.make_dirs(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
             if os.path.isdir(whatsnew.path):
                 logger.debug(u'Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))
                 symlink(whatsnew.path, os.path.join(dir, whatsnew.name))
