@@ -6,7 +6,7 @@ django-supervisor
 django-dbbackup
 factory-boy
 gunicorn
-mysql-python
+mysqlclient
 pytest
 pytest-django
 pytest-cov
