@@ -97,17 +97,24 @@ class Sorter:
             insert_report(logger.finalize_report(), report_type='sorting')
 
     def update_new(self):
+        logger.debug(u'Does New folder exists? %s' % os.path.exists(self.new_dir))
         self.new_dir = tools.make_dir(self.new_dir)
-        for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
-            if not os.path.exists(whatsnew.path):
-                continue
-            dir = tools.make_dirs(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
-            if os.path.isdir(whatsnew.path):
-                logger.debug(u'Trying to link directory %s to %s' % (whatsnew.path, whatsnew.name))
-                symlink(whatsnew.path, os.path.join(dir, whatsnew.name))
-            else:
-                logger.debug(u'Trying to link file %s to %s' % (whatsnew.path, whatsnew.name))
-                symlink(whatsnew.path, os.path.join(dir, whatsnew.path.split('/')[-1]))
+        logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
+        try:
+            for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
+                if not os.path.exists(whatsnew.path):
+                    continue
+                logger.debug(u'Creating %s directory' % whatsnew.get_displayable_date())
+                relative_date_directory = tools.make_dirs(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
+                logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
+                if os.path.isdir(whatsnew.path):
+                    logger.info(u'Linking directory %s to %s' % (whatsnew.path, whatsnew.name))
+                    symlink(whatsnew.path, os.path.join(relative_date_directory, whatsnew.name))
+                else:
+                    logger.info(u'Linking file %s to %s' % (whatsnew.path, whatsnew.name))
+                    symlink(whatsnew.path, os.path.join(relative_date_directory, whatsnew.path.split('/')[-1]))
+        except Exception as e:
+            logger.exception(u'Exception when updating new entry, %s' % repr(e))
 
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get('MovieHash'))
