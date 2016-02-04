@@ -38,8 +38,6 @@ class Sorter:
         tools.make_dir(self.movie_dir)
         tools.make_dir(self.alphabetical_movie_dir)
         tools.make_dir(self.unsorted_dir)
-        if os.path.exists(self.new_dir):
-            remove_dir(self.new_dir)
         tools.make_dir(self.new_dir)
 
     def create_hash_list(self, media):
@@ -98,6 +96,10 @@ class Sorter:
 
     def update_new(self):
         logger.debug(u'Does New folder exists? %s' % os.path.exists(self.new_dir))
+        if os.path.exists(self.new_dir):
+            logger.debug(u'Deleting the New folder')
+            remove_dir(self.new_dir)
+        logger.debug(u'Creating the new folder')
         self.new_dir = tools.make_dir(self.new_dir)
         logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
         try:
