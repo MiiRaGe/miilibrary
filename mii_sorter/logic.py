@@ -100,7 +100,15 @@ class Sorter:
             logger.debug(u'Deleting the New folder')
             remove_dir(self.new_dir)
         logger.debug(u'Creating the new folder')
-        self.new_dir = tools.make_dir(self.new_dir)
+        retry = 0
+        while not os.path.exists(self.new_dir):
+            self.new_dir = tools.make_dir(self.new_dir)
+            if not os.path.exists(self.new_dir):
+                retry += 1
+                sleep(1)
+                if retry == 5:
+                    logger.debug(u'Retried too much waiting for folder to create')
+                    return
         logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
         try:
             for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
