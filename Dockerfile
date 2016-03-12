@@ -19,4 +19,4 @@ COPY . /app
 
 CMD ["pip", "install", "-r", "/app/requirements.txt"]
 
-CMD ["python", "/app/hello.py"]
+CMD ["python", "/app/manage.py"]
