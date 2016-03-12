@@ -17,6 +17,6 @@ RUN apt-get update && apt-get install -y python
 
 COPY . /app
 
-RUN pip install -r /app/requirements.txt
+#RUN pip install -r /app/requirements.txt
 
-CMD ["python", "/app/manage.py"]
+CMD ["python", "/app/main.py"]
