@@ -1,5 +1,5 @@
 FROM resin/rpi-raspbian:wheezy-2015-01-15
 
-RUN apt-get install sshd
+RUN apt-get install openssh-server
 
 CMD sshd
