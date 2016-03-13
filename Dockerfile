@@ -13,7 +13,7 @@ RUN mkdir /root/.ssh && echo $PUBLIC_KEY > /root/.ssh/authorized_keys
 RUN apt-get install -yq cifs-utils
 
 
-RUN apt-get install -y python python-pip git setuptools
+RUN apt-get install -y python python-pip git python-setuptools
 
 COPY . /app
 
