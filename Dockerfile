@@ -17,7 +17,7 @@ RUN apt-get install -y python python-pip git
 
 COPY . /app
 
-RUN pip install -r /app/requirements.txt
+RUN pip install --no-input -r /app/requirements.txt
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
