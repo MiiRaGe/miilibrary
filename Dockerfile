@@ -12,7 +12,7 @@ RUN mkdir /root/.ssh && echo $PUBLIC_KEY > /root/.ssh/authorized_keys
 
 RUN apt-get install -yq cifs-utils
 
-RUN /app/init_smb_and_ssh.sh.sh
+RUN /app/init_smb_and_ssh.sh
 
 RUN apt-get install -y python python-pip
 
