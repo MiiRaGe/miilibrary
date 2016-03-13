@@ -1,8 +1,7 @@
 FROM resin/rpi-raspbian:wheezy-2015-01-15
 
 RUN apt-get update && apt-get install -yq \
-    openssh-server && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    openssh-server
 
 RUN mkdir /var/run/sshd \
     && echo 'root:resin' | chpasswd \
@@ -20,5 +19,7 @@ RUN apt-get install -y python python-pip
 COPY . /app
 
 #RUN pip install -r /app/requirements.txt
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 CMD ["python", "/app/main.py"]
