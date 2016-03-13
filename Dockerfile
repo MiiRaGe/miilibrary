@@ -11,11 +11,11 @@ RUN mkdir /var/run/sshd \
 
 RUN mkdir /root/.ssh && echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8Jh2kY2RDKiUoLcNCBnkglAaIsKnY+IfLus1ohhkcX5JZ8q9c0wUthskqg5i8GP2WNP5Ii1deGOBVlXHBkCXNiyVISbKbd9mWxAT+udBG1JZu9DhZKiTQc9t7z/kZLMvTuulXIehBWXZcEtm8eHyKTtwHH08R3TEUrvu6150KxfMEQSJHN7M3BA6Uf4g+6aU1UCp7mBlDYOMimR5AE4UiWJOOQo3zvyM25NxaHFFCtr+ArJaw+KTrMtLf7efY2xIPga75sKdGkm73JZZS1atIstYZRY7k2X1/WOdd9/0oRucqc9MPL/l2hmaoZYhQCgGknsxKJ6QkrlZWJaSGx3gV MiiRaGe@Alexiss-MacBook-Pro.local' > /root/.ssh/authorized_keys
 
-RUN /app/init_smb_and_ssh.sh.sh
-
 RUN apt-get install -yq cifs-utils
 
-RUN apt-get update && apt-get install -y python python-pip
+RUN /app/init_smb_and_ssh.sh.sh
+
+RUN apt-get install -y python python-pip
 
 COPY . /app
 

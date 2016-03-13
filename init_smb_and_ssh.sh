@@ -6,4 +6,5 @@ then
  mount -t cifs $SMB_PATH $MOUNT_FOLDER -o user=$SMB_LOGIN,pass=$SMB_PASSWORD
 fi;
 
+echo "Running ssh deamon";
 /usr/sbin/sshd &
