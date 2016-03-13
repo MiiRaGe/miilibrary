@@ -17,10 +17,8 @@ RUN apt-get install -y python python-pip
 
 COPY . /app
 
-RUN /app/init_smb_and_ssh.sh
-
-#RUN pip install -r /app/requirements.txt
+RUN pip install -r /app/requirements.txt
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-CMD ["python", "/app/main.py"]
+RUN /app/start_app.sh

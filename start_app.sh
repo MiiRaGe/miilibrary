@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ $SMB_LOGIN && $SMB_PASSWORD && $MOUNT_FOLDER && $SMB_PATH ]];
 then
@@ -9,4 +9,6 @@ else
 fi;
 
 echo "Running ssh deamon";
-/usr/sbin/sshd
+/usr/sbin/sshd &
+
+python /app/main.py
