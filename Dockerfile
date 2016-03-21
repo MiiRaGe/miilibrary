@@ -1,6 +1,6 @@
 FROM resin/rpi-raspbian:wheezy-2015-01-15
 
-RUN apt-get update && apt-get install -yq python python-pip git python-setuptools \\
+RUN apt-get update && apt-get install -yq python python-pip git python-setuptools \
     openssh-server cifs-utils
 
 RUN mkdir /var/run/sshd \
