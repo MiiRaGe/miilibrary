@@ -1,6 +1,6 @@
 FROM resin/rpi-raspbian:latest
 
-RUN apt-get update && apt-get upgrade && apt-get install -yq python python-pip git python-setuptools \
+RUN apt-get update && apt-get upgrade && apt-get install -yq python python-dev python-pip git python-setuptools \
     openssh-server cifs-utils build-essential
 
 RUN mkdir /var/run/sshd \
