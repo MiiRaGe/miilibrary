@@ -1,7 +1,7 @@
 FROM resin/rpi-raspbian:latest
 
-RUN apt-get update && apt-get install -yq python python-pip git python-setuptools \
-    openssh-server cifs-utils
+RUN apt-get update && apt-get upgrade && apt-get install -yq python python-pip git python-setuptools \
+    openssh-server cifs-utils build-essential
 
 RUN mkdir /var/run/sshd \
     && echo 'root:resin' | chpasswd \
