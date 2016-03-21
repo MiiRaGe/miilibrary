@@ -23,4 +23,4 @@ CMD ["/app/init_smb.sh"]
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 
-CMD ["python", "/app/manage.py", "supervisor"]
+CMD ["python", "/app/main.py"]
