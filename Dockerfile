@@ -1,7 +1,7 @@
 FROM resin/rpi-raspbian:wheezy-2015-01-15
 
-RUN apt-get update && apt-get install -yq \
-    openssh-server
+RUN apt-get update && apt-get install -yq python python-pip git python-setuptools \\
+    openssh-server cifs-utils
 
 RUN mkdir /var/run/sshd \
     && echo 'root:resin' | chpasswd \
@@ -10,15 +10,15 @@ RUN mkdir /var/run/sshd \
 
 RUN mkdir /root/.ssh && echo $PUBLIC_KEY > /root/.ssh/authorized_keys
 
-RUN apt-get install -yq cifs-utils
-
-
-RUN apt-get install -y python python-pip git python-setuptools
-
 COPY . /app
 
 RUN pip install --no-input -r /app/requirements.txt
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN /app/start_app.sh
+CMD ["/app/init_smb.sh"]
+
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
+
+CMV ["python", "/app/main.py"]

@@ -7,8 +7,3 @@ then
 else
  echo "SMB detail not found, not mounting network drive"
 fi;
-
-echo "Running ssh deamon";
-/usr/sbin/sshd &
-
-python /app/main.py
