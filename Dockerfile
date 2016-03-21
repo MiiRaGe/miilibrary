@@ -1,6 +1,6 @@
 FROM resin/rpi-raspbian:latest
 
-RUN apt-get update && apt-get upgrade && apt-get install -yq python python-dev python-pip git python-setuptools \
+RUN apt-get update && apt-get install -yq python python-dev python-pip git python-setuptools \
     openssh-server cifs-utils build-essential
 
 RUN mkdir /var/run/sshd \
@@ -18,9 +18,7 @@ RUN pip install --no-input -r /app/requirements.txt
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-CMD ["/app/init_smb.sh"]
 
-EXPOSE 22
-CMD ["/usr/sbin/sshd", "-D"]
+RUN ["/usr/sbin/sshd", "-D"]
 
-CMD ["python", "/app/main.py"]
+CMD ["/app/start_app.sh"]

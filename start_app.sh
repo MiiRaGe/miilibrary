@@ -7,3 +7,5 @@ then
 else
  echo "SMB detail not found, not mounting network drive"
 fi;
+
+./main.py
