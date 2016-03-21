@@ -19,6 +19,6 @@ RUN pip install --no-input -r /app/requirements.txt
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-RUN ["/usr/sbin/sshd", "-D"]
+RUN ["/usr/sbin/sshd"]
 
 CMD ["/app/start_app.sh"]
