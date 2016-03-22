@@ -8,4 +8,8 @@ else
  echo "SMB detail not found, not mounting network drive"
 fi;
 
+mkdir /root/.ssh && echo $PUBLIC_KEY > /root/.ssh/authorized_keys
+
+/usr/sbin/sshd
+
 ./main.py
