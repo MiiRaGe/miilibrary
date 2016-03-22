@@ -49,7 +49,11 @@ def remove_dir(path):
 
 def map_to_nas(local_path):
     """
-    This method maps between the compute executing the code, and the NAS on which the file are actually located.
+    This method maps between the files path mounted on the server executing the code, and the NAS on which the file are
+    actually located.
+    On the server, the folder can be mounted on /mnt/MoviesSeries
+    But on the NAS the folder is actually /share/MD0_DATA/MoviesSeries, so if you want to do a symlink, you have to know
+    The correct path on the NAS from the path you have with the mounted folder.
     You can have a smb server linked to you local filesystem to browse, remove, create dir, but you can't link file
     as you need knowledge on the actual filesystem which the nas does.
     :param local_path:
