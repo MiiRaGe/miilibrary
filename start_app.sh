@@ -8,8 +8,39 @@ else
  echo "SMB detail not found, not mounting network drive"
 fi;
 
+echo "Copying public key to authorized_keys"
 mkdir /root/.ssh && echo $PUBLIC_KEY > /root/.ssh/authorized_keys
+echo "Key Copied"
 
+echo "Starting SSHD"
 /usr/sbin/sshd
+echo "SSHD started"
 
+if [ ! -d /data/mysql ]; then
+    echo "Creating mysql folder in persistent storage"
+	mkdir -p /data/mysql
+	cp -r /var/lib/mysql/* /data/mysql
+	rm -rf /var/lib/mysql
+	chown -R mysql:mysql /data/mysql
+fi
+
+echo "Starting Mysql"
+service mysql start
+echo "Mysql Started"
+
+echo "Creating db and user if not exist"
+MYSQL=`which mysql`
+
+Q1="CREATE DATABASE IF NOT EXISTS $DB_NAME;"
+Q2="GRANT ALL ON *.* TO '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
+Q3="FLUSH PRIVILEGES;"
+SQL="${Q1}${Q2}${Q3}"
+
+$MYSQL -uroot -proot -e "$SQL"
+echo "User created"
+
+echo "Running migrations"
+python /app/manage.py migrate
+
+echo "Starting main app"
 python /app/main.py

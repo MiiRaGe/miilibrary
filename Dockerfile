@@ -1,8 +1,15 @@
 FROM resin/rpi-raspbian:latest
 
 RUN apt-get update && apt-get install -yq python python-dev python-pip git python-setuptools \
-    openssh-server cifs-utils build-essential \
- && apt-get clean && rm -rf /var/lib/apt/lists/*
+    openssh-server cifs-utils build-essential debconf-utils
+
+RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections  \
+		&& echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
+
+RUN apt-get install -y mysql-server && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i -e "s@^datadir.*@datadir = /data/mysql@" /etc/mysql/my.cnf
+
 
 RUN mkdir /var/run/sshd \
     && echo 'root:resin' | chpasswd \
