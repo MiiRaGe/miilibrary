@@ -61,7 +61,7 @@ echo "Nginx Started"
 cd /app
 
 echo "Static File"
-python /app/manage.py collectstatic
+python /app/manage.py collectstatic --noinput
 
 echo "Running migrations"
 python /app/manage.py migrate
