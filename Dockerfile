@@ -1,10 +1,11 @@
 FROM resin/rpi-raspbian:latest
 
 RUN apt-get update && apt-get install -yq python python-dev python-pip git python-setuptools \
-    openssh-server cifs-utils build-essential debconf-utils rabbitmq-server nginx
+    openssh-server cifs-utils build-essential debconf-utils rabbitmq-server
 
 RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections  \
 		&& echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
+run apt-get install -y nginx nginx-light
 
 RUN apt-get install -y mysql-server && apt-get clean && rm -rf /var/lib/apt/lists/*
 
