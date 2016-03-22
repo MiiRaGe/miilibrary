@@ -39,8 +39,12 @@ SQL="${Q1}${Q2}${Q3}"
 $MYSQL -uroot -proot -e "$SQL"
 echo "User created"
 
+echo "Starting rabbitmq"
+rabbitmq-server &
+echo "Rabbitmq started"
+
 echo "Running migrations"
 python /app/manage.py migrate
 
 echo "Starting main app"
-python /app/main.py
+python /app/manage.py supervisor
