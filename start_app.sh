@@ -43,6 +43,23 @@ echo "Starting rabbitmq"
 rabbitmq-server &
 echo "Rabbitmq started"
 
+echo "Configuring nginx"
+if [ -f /etc/nginx/sites-enabled/default ];
+then
+	rm -f /etc/nginx/sites-enabled/default;
+fi
+
+if [ ! -f /etc/nginx/sites-available/miilibrary ]; then
+	cd /etc/nginx/sites-available && mv /app/miilibrary.nginx miilibrary;
+fi
+
+cd /etc/nginx/sites-enabled && ln -sf ../sites-available/miilibrary miilibrary;
+
+service nginx start
+echo "Nginx Started"
+
+cd /app
+
 echo "Running migrations"
 python /app/manage.py migrate
 
