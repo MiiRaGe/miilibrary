@@ -12,4 +12,4 @@ mkdir /root/.ssh && echo $PUBLIC_KEY > /root/.ssh/authorized_keys
 
 /usr/sbin/sshd
 
-./main.py
+python /app/main.py
