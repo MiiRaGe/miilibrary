@@ -16,6 +16,10 @@ echo "Starting SSHD"
 /usr/sbin/sshd
 echo "SSHD started"
 
+echo "Starting memcached"
+memcached -u memcache -d
+echo "memcached started"
+
 if [ ! -d /data/mysql ]; then
     echo "Creating mysql folder in persistent storage"
 	mkdir -p /data/mysql
