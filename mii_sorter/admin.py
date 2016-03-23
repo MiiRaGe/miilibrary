@@ -1,5 +1,5 @@
 from django.contrib.admin import ModelAdmin, site
-from mii_sorter.models import Episode, Season, Serie
+from mii_sorter.models import Episode, Season, Serie, RegexRenaming
 
 __author__ = 'MiiRaGe'
 
@@ -34,3 +34,4 @@ class EpisodeAdmin(ModelAdmin):
 site.register(Episode, EpisodeAdmin)
 site.register(Season, SeasonAdmin)
 site.register(Serie, SerieAdmin)
+site.register(RegexRenaming)
