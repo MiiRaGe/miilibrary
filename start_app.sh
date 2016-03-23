@@ -25,9 +25,10 @@ if [ ! -d /data/mysql ]; then
 	mkdir -p /data/mysql
 	cp -r /var/lib/mysql/* /data/mysql
 	rm -rf /var/lib/mysql
-	chown -R mysql:mysql /data/mysql
 fi
 
+echo "Making sure the user is correct for mysqld"
+chown -R mysql:mysql /data/mysql
 echo "Starting Mysql"
 service mysql start
 echo "Mysql Started"
