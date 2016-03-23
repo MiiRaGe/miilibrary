@@ -17,11 +17,11 @@ RUN mkdir /var/run/sshd \
     && sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
 
-COPY . /app
-
 RUN pip install --upgrade setuptools
 
-RUN pip install --no-input -r /app/requirements.txt
+RUN pip install --no-input -r requirements.txt
+
+COPY . /app
 
 RUN ["/usr/sbin/sshd"]
 
