@@ -19,7 +19,9 @@ RUN mkdir /var/run/sshd \
 
 RUN pip install --upgrade setuptools
 
-RUN pip install --no-input -r ./requirements.txt
+ADD requirements.txt /
+
+RUN pip install --no-input -r requirements.txt
 
 COPY . /app
 
