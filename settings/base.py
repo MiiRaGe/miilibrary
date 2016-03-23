@@ -57,6 +57,7 @@ LOCAL_ROOT = environ.get('LOCAL_ROOT', '/mnt/smb_folder/')
 REMOTE_FILE_OPERATION_ENABLED = bool(environ.get('REMOTE_FILE_OPERATION_ENABLED', False))
 NAS_IP = environ.get('NAS_IP', '')
 NAS_USERNAME = environ.get('NAS_USERNAME', 'foo')
+NAS_PASSWORD = environ.get('NAS_PASSWORD', 'bar')
 NAS_ROOT = environ.get('NAS_ROOT', '/share/MD0_DATA/')
 REMOTE_UNRAR_PATH = environ.get('NAS_UNRAR_PATH', u"/usr/local/sbin/unrar")
 
@@ -64,7 +65,7 @@ REMOTE_UNRAR_PATH = environ.get('NAS_UNRAR_PATH', u"/usr/local/sbin/unrar")
 # This is enabling dumping the index data in a json file at the root of the MoviesSeries folder for another programm to index
 DUMP_INDEX_JSON_FILE_NAME = environ.get('DUMP_INDEX_JSON_FILE_NAME', 'data.json')
 
-REPORT_ENABLED = environ.get('REPORT_ENABLED', True)
+REPORT_ENABLED = bool(environ.get('REPORT_ENABLED', True))
 
 # Django-dbbackup settings
 DBBACKUP_STORAGE = environ.get('DBBACKUP_STORAGE', 'dbbackup.storage.filesystem_storage')

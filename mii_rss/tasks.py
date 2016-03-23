@@ -10,7 +10,7 @@ from django.utils import timezone
 from pyreport.reporter import Report
 from mii_celery import app
 from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, match
-from mii_rss.models import FeedEntries
+from mii_rss.models import FeedEntries, FeedFilter
 from mii_sorter.models import insert_report
 
 logger = logging.getLogger(__name__)
@@ -51,15 +51,16 @@ def check_feed_and_download_torrents():
 
 
 def process_feeds(entries):
+    filters = dict(FeedFilter.objects.all().values_list('regex', 'name'))
     for entry in entries:
         entry['title'] = entry['title'].lower()
         logger.info(u'Entry : %s' % entry['title'])
-        matched, re_filter = match(entry, settings.RSS_FILTERS.keys())
+        matched, re_filter = match(entry, filters.keys())
         if matched:
             file_name = re.search('/([^\/]*\.torrent)\?', entry['link']).group(1)
             logger.info(u'Torrent filename : %s' % file_name)
             if os.path.exists(os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name)) or \
-                    already_exists(settings.RSS_FILTERS[re_filter], entry['title']):
+                    already_exists(filters[re_filter], entry['title']):
                 logger.info(u'Skipped, already exists')
                 continue
             created = get_or_create_downloading_object(re_filter, entry['title'])

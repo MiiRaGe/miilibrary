@@ -4,7 +4,7 @@ from django.utils import timezone
 from factory import DjangoModelFactory
 from factory.fuzzy import FuzzyInteger, FuzzyChoice, FuzzyDateTime
 
-from mii_rss.models import FeedDownloaded, FeedEntries
+from mii_rss.models import FeedDownloaded, FeedEntries, FeedFilter
 
 
 class FeedDownloadedFactory(DjangoModelFactory):
@@ -22,3 +22,11 @@ class FeedEntriesFactory(DjangoModelFactory):
         model = FeedEntries
     json_entries = '{"entries": [{"link": "/file.torrent?", "title": "file"}]}'
     date = FuzzyDateTime(timezone.now() - timedelta(days=2))
+
+
+class FeedFilterFactory(DjangoModelFactory):
+    class Meta:
+        model = FeedFilter
+
+    regex = ''
+    name = ''

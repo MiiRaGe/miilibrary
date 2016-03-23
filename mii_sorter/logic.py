@@ -8,7 +8,8 @@ from middleware.remote_execution import symlink, remove_dir
 from django.conf import settings
 from middleware import mii_cache_wrapper
 from mii_common import tools
-from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, insert_report
+from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, insert_report, \
+    RegexRenaming
 from movieinfo import hash_tool as ht
 
 logger = logging.getLogger(__name__)
@@ -476,7 +477,8 @@ def format_serie_name(serie_name):
 def apply_custom_renaming(serie_name):
     lower_serie_name = serie_name.lower()
     logger.info(u'Custom renaming :%s' % lower_serie_name)
-    for old, new in settings.CUSTOM_RENAMING.items():
+    custom_renaming = RegexRenaming.objects.all().values_list('old', 'new')
+    for old, new in custom_renaming:
         old = old.lower()
         new = new.lower()
         logger.debug(u'Applying filter : %s -> %s' % (old, new))

@@ -19,3 +19,8 @@ class FeedEntries(Model):
 
     class Meta:
         get_latest_by = 'date'
+
+
+class FeedFilter(Model):
+    regex = CharField(max_length=255)
+    name = CharField(max_length=255, unique=True)

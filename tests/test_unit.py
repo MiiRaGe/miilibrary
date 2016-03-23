@@ -1,14 +1,16 @@
 from django.test import TestCase, override_settings
 
 from analysis.season_tool import analyse_series
-from mii_sorter.factories import EpisodeFactory
+from mii_sorter.factories import EpisodeFactory, RegexRenamingFactory
 from mii_sorter.logic import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_quality, get_info, get_best_match
 from mii_indexer.logic import dict_merge_list_extend
 
 
-@override_settings(CUSTOM_RENAMING={'BARNABY': 'Barbie'})
 class TestSorter(TestCase):
+    def setUp(self):
+        RegexRenamingFactory.create(old='BARNABY', new='Barbie')
+
     def test_is_serie(self):
         assert is_serie('downton_abbey.5x08.720p_hdtv_x264-fov.mkv')
         assert not is_serie('23name,asefjklS03esfsjkdlS05E1')

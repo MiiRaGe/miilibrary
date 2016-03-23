@@ -2,7 +2,7 @@ import mock
 from django.test import TestCase, override_settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FakeFsTestCase
 
-from mii_rss.factories import FeedEntriesFactory
+from mii_rss.factories import FeedEntriesFactory, FeedFilterFactory
 from mii_rss.logic import already_exists, match, get_or_create_downloading_object, get_dict_from_feeds
 from mii_rss.models import FeedDownloaded, FeedEntries
 from mii_rss.tasks import check_feed_and_download_torrents, recheck_feed_and_download_torrents
@@ -99,10 +99,11 @@ class TestRSS(TestCase):
         assert resulting_dict == {'entries': [{'title': 'title', 'link': 'link'} for x in range(0, 5)]}
 
 
-@override_settings(RSS_FILTERS={'non_matching': 'test_entry'}, TORRENT_WATCHED_FOLDER='/')
+@override_settings(TORRENT_WATCHED_FOLDER='/')
 class TestTask(FakeFsTestCase, TestCase):
     def setUp(self):
         self.setUpPyfakefs()
+        FeedFilterFactory.create(regex='non_matching', name='test_entry')
 
     @mock.patch('mii_rss.tasks.logger')
     @mock.patch('mii_rss.tasks.feedparser')

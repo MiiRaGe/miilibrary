@@ -5,7 +5,7 @@ from django.conf import settings
 from factory import DjangoModelFactory, Sequence, SubFactory
 from factory.fuzzy import FuzzyInteger, FuzzyChoice
 
-from mii_sorter.models import Episode, Season, Serie, Movie
+from mii_sorter.models import Episode, Season, Serie, Movie, RegexRenaming
 
 
 class SerieFactory(DjangoModelFactory):
@@ -50,3 +50,10 @@ class MovieFactory(DjangoModelFactory):
     seen = False
     indexed = False
 
+
+class RegexRenamingFactory(DjangoModelFactory):
+    class Meta:
+        model = RegexRenaming
+
+    old = ''
+    new = ''
