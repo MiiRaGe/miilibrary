@@ -31,7 +31,13 @@ class EpisodeAdmin(ModelAdmin):
     def serie_name(self, obj):
         return obj.season.serie.name
 
+
+class RegexRenamingAdmin(ModelAdmin):
+    model = RegexRenaming
+    list_display = ('old', 'new')
+
+
 site.register(Episode, EpisodeAdmin)
 site.register(Season, SeasonAdmin)
 site.register(Serie, SerieAdmin)
-site.register(RegexRenaming)
+site.register(RegexRenaming, RegexRenamingAdmin)
