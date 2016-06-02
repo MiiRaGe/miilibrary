@@ -3,7 +3,7 @@
 ### Status ###
 [![Build Status](https://travis-ci.org/MiiRaGe/miilibrary.svg?branch=master)](https://travis-ci.org/MiiRaGe/miilibrary)
 [![Coverage Status](https://coveralls.io/repos/MiiRaGe/miilibrary/badge.svg?branch=master&service=github)](https://coveralls.io/github/MiiRaGe/miilibrary?branch=master)
-
+[![Requirements Status](https://requires.io/github/MiiRaGe/miilibrary/requirements.svg?branch=master)](https://requires.io/github/MiiRaGe/miilibrary/requirements/?branch=master)
 ### Dependencies ###
 
 * Python 2.7
