@@ -4,10 +4,12 @@ import os
 import shutil
 import settings
 import logging
-logging.basicConfig(filename='example.log',level=logging.DEBUG)
+
+logging.basicConfig(filename='example.log', level=logging.DEBUG)
 
 from mii_common import tools
 from time import sleep
+
 
 def apply_index(path, json_file_name):
     json_file_path = os.path.join(path, json_file_name)
@@ -21,18 +23,18 @@ def apply_index(path, json_file_name):
         shutil.rmtree(index_path)
     retry = 0
     while os.path.exists(index_path):
-	retry += 1
-        print 'Sleeping until deleted'
-	sleep(10)
-	if retry == 5:
-	    return
+        retry += 1
+        logging.debug(u'Sleeping until deleted')
+        sleep(10)
+        if retry == 5:
+            return
+
     current_path_root = tools.make_dir(index_path)
     tools.dict_apply(current_path_root, dict_index, symlink_method=os.symlink)
     os.remove(json_file_path)
 
-
 if __name__ == '__main__':
     try:
-    	apply_index(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
+        apply_index(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
     except Exception as e:
-        logging.exception('Something fucked up ' + repr(e))
+        logging.exception(u'Something fucked up ' + repr(e))
