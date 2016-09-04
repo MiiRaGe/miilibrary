@@ -1,6 +1,6 @@
 celery
 coveralls
-django
+django<1.10
 django-celery
 django-supervisor
 django-dbbackup
