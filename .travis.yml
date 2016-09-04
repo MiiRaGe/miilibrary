@@ -1,7 +1,6 @@
 language: python
 python:
   - "2.7"
-  - "pypy"
 #  - "3.4"
 # command to install dependencies
 install:
@@ -9,4 +8,5 @@ install:
  - pip install -r requirements.txt
 # command to run tests
 script: py.test --cov=.
+dist: trusty
 after_success: coveralls
