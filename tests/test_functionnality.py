@@ -72,16 +72,15 @@ class TestMain(TestMiilibrary):
                     '4 day(s) ago', '4 week(s) ago', '5 day(s) ago', '6 day(s) ago', 'Yesterday']
         assert sorted(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New'))) == sorted(expected)
 
-
     def test_index(self):
         self._fill_movie()
         movie1 = Movie.objects.create(title='Thor', year='2011', imdb_id='0800369', file_size=10)
-        movie1.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)', 'Thor.(2011).720p.mkv')
+        movie1.folder_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)')
         movie1.save()
         movie2 = Movie.objects.create(title='Thor- The Dark World', year='2013', imdb_id='1981115', file_size=10)
-        movie2.file_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)',
-                                        'Thor-.The.Dark.World.(2013).720p.mkv')
+        movie2.folder_path = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)')
         movie2.save()
+
         self.indexer.index()
         index_root_folder = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index')
         index_year_folder = os.path.join(index_root_folder, 'Years')

@@ -11,7 +11,7 @@ from middleware.remote_execution import symlink
 from mii_common import tools
 from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
-from mii_sorter.models import get_movie, insert_report
+from mii_sorter.models import get_movie, insert_report, Movie
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,6 @@ class Indexer:
 
     def __init__(self):
         # All directory is always created by sorter and contains all movie sorted alphabetically
-        self.source_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies')
-        self.alphabetical_dir = os.path.join(self.source_dir, "All")
-        self.index_dir = tools.make_dir(os.path.join(self.source_dir, "Index"))
         self.index_mapping = {
             'genre_dir': ('Genres', lambda x: x.get('genres'), 'Tag'),
             'rating_dir': ('Ratings', lambda x: [str(float(x.get('rating', 0)))], 'Rating'),
@@ -44,10 +41,12 @@ class Indexer:
         if settings.DUMP_INDEX_JSON_FILE_NAME:
             dump_to_json_file(dict_index)
         else:
+            source_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies')
+            index_dir = tools.make_dir(os.path.join(source_dir, "Index"))
             if settings.REMOTE_FILE_OPERATION_ENABLED:
-                dict_apply(self.index_dir, dict_index, symlink_method=symlink)
+                dict_apply(index_dir, dict_index, symlink_method=symlink)
             else:
-                dict_apply(self.index_dir, dict_index)
+                dict_apply(index_dir, dict_index)
         if settings.REPORT_ENABLED:
             insert_report(logger.finalize_report(), report_type='indexer')
 
@@ -56,18 +55,13 @@ class Indexer:
         logger.info(u'**********      Indexer       **********')
         logger.info(u'****************************************')
         index_dict = defaultdict(dict)
-        for folder in os.listdir(self.alphabetical_dir):
-            folder = folder.decode('utf-8')
-            logger.info(u'------ %s ------' % folder)
-            folder_abs = os.path.join(self.alphabetical_dir, folder)
-            if os.path.isdir(folder_abs):
+        for movie in Movie.objects.all():
+            movie_name = u'%s (%s)' % (movie.title, movie.year)
+            logger.info(u'------ %s ------' % movie_name)
+
+            if os.path.isdir(movie.abs_folder_path):
                 index_dict['Search'].update(
-                    dict_merge_list_extend(index_dict['Search'], search_index((folder, folder_abs,))))
-                matched = re.match('([^\(]*) \((\d{4})\).*', folder)
-                if matched:
-                    movie_name = matched.group(1)
-                    year = matched.group(2)
-                    found, movie = get_movie(movie_name, year)
+                    dict_merge_list_extend(index_dict['Search'], search_index((movie_name, movie.abs_folder_path,))))
 
                 if movie and movie.imdb_id and not movie.indexed:
                     imdb_id = movie.imdb_id
@@ -77,8 +71,8 @@ class Indexer:
                         logger.debug(u'\tData: %s' % imdb_data)
                         for index_type, value in self.index_mapping.items():
                             new_index_for_movie = self.index_values(self.index_mapping[index_type][1](imdb_data),
-                                                                    folder,
-                                                                    folder_abs,
+                                                                    movie_name,
+                                                                    movie.abs_folder_path,
                                                                     index_type,
                                                                     movie=movie)
                             index_dict[value[0]].update(
