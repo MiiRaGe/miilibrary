@@ -3,6 +3,8 @@ import json
 import os
 import shutil
 import settings
+import logging
+logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
 from mii_common import tools
 from time import sleep
@@ -30,4 +32,7 @@ def apply_index(path, json_file_name):
 
 
 if __name__ == '__main__':
-    apply_index(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
+    try:
+    	apply_index(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
+    except Exception as e:
+        logging.exception('Something fucked up ' + repr(e))
