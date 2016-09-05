@@ -1,7 +1,5 @@
 import logging
 
-from raven import Client
-
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -11,7 +9,6 @@ from django.utils.encoding import smart_unicode
 from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
-client = Client(settings.SENTRY_URL)
 
 
 class Movie(Model):
@@ -32,15 +29,11 @@ class Movie(Model):
 
     @property
     def abs_folder_path(self):
-        try:
-            return self.folder_path.replace(u'{destination_dir}', settings.DESTINATION_FOLDER).encode('utf-8')
-        except Exception:
-            client.capture_exceptions()
-            return self.folder_path.encode('utf-8')
+        return self.folder_path.replace(settings.DESTINATION_PLACEHOLDER, settings.DESTINATION_FOLDER).encode('utf-8')
 
     def save(self, *args, **kwargs):
         if self.folder_path:
-            self.folder_path = self.folder_path.replace(settings.DESTINATION_FOLDER, u'{destination_dir}')
+            self.folder_path = self.folder_path.replace(settings.DESTINATION_FOLDER, settings.DESTINATION_PLACEHOLDER)
         if self.imdb_id and 't' in self.imdb_id:
             self.imdb_id.replace('t', '')
         return super(Movie, self).save(*args, **kwargs)

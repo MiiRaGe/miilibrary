@@ -72,3 +72,4 @@ DBBACKUP_STORAGE = environ.get('DBBACKUP_STORAGE', 'dbbackup.storage.filesystem_
 DBBACKUP_BACKUP_DIRECTORY = environ.get('DBBACKUP_BACKUP_DIRECTORY', '/tmp/backup/')
 
 SENTRY_URL = environ.get('SENTRY_URL', '')
+DESTINATION_PLACEHOLDER = u'{destination_folder}'

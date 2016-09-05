@@ -8,12 +8,12 @@ from mii_sorter.models import Movie, Episode
 
 def change_folder_path_to_abs(apps, schema_editor):
     for movie in Movie.objects.all():
-        folder_path = movie.folder_path.replace(settings.NAS_ROOT, settings.LOCAL_ROOT).replace(settings.DESTINATION_FOLDER, '{destination_folder}')
+        folder_path = movie.folder_path.replace(settings.NAS_ROOT, settings.LOCAL_ROOT).replace(settings.DESTINATION_FOLDER, settings.DESTINATION_PLACEHOLDER)
         movie.folder_path = folder_path
         movie.save()
 
     for episode in Episode.objects.all():
-        file_path = episode.file_path.replace(settings.NAS_ROOT, settings.LOCAL_ROOT).replace(settings.DESTINATION_FOLDER, '{destination_folder}')
+        file_path = episode.file_path.replace(settings.NAS_ROOT, settings.LOCAL_ROOT).replace(settings.DESTINATION_FOLDER, settings.DESTINATION_PLACEHOLDER)
         episode.file_path = file_path
         episode.save()
 
