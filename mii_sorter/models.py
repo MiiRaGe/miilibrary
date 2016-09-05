@@ -35,7 +35,7 @@ class Movie(Model):
 
     def save(self, *args, **kwargs):
         if self.folder_path:
-            self.folder_path = self.folder_path.replace(settings.DESTINATION_FOLDER, '{destination_dir}')
+            self.folder_path = self.folder_path.replace(settings.DESTINATION_FOLDER, u'{destination_dir}')
         if self.imdb_id and 't' in self.imdb_id:
             self.imdb_id.replace('t', '')
         return super(Movie, self).save(*args, **kwargs)

@@ -70,3 +70,5 @@ REPORT_ENABLED = bool(environ.get('REPORT_ENABLED', True))
 # Django-dbbackup settings
 DBBACKUP_STORAGE = environ.get('DBBACKUP_STORAGE', 'dbbackup.storage.filesystem_storage')
 DBBACKUP_BACKUP_DIRECTORY = environ.get('DBBACKUP_BACKUP_DIRECTORY', '/tmp/backup/')
+
+SENTRY_URL = ''

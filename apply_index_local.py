@@ -3,9 +3,10 @@ import json
 import os
 import shutil
 import settings
-import logging
 
-logging.basicConfig(filename='example.log', level=logging.DEBUG)
+from raven import Client
+
+client = Client(settings.SENTRY_URL)
 
 from mii_common import tools
 from time import sleep
@@ -24,7 +25,7 @@ def apply_index(path, json_file_name):
     retry = 0
     while os.path.exists(index_path):
         retry += 1
-        logging.debug(u'Sleeping until deleted')
+        client.captureMessage(u'Sleeping until deleted')
         sleep(10)
         if retry == 5:
             return
@@ -36,5 +37,5 @@ def apply_index(path, json_file_name):
 if __name__ == '__main__':
     try:
         apply_index(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
-    except Exception as e:
-        logging.exception(u'Something fucked up ' + repr(e))
+    except Exception:
+        client.captureException()

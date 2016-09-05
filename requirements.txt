@@ -16,6 +16,7 @@ python-memcached
 python-coveralls
 python-jsonrpc
 mysql-python
+raven
 requests
 git+https://github.com/jmcgeheeiv/pyfakefs.git
 git+https://github.com/MiiRaGe/pyreport.git
