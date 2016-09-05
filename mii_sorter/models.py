@@ -29,9 +29,9 @@ class Movie(Model):
     @property
     def abs_folder_path(self):
         try:
-            return self.folder_path.format(destination_dir=settings.DESTINATION_FOLDER)
+            return self.folder_path.format(destination_dir=settings.DESTINATION_FOLDER).encode('utf-8')
         except Exception:
-            return self.folder_path
+            return self.folder_path.encode('utf-8')
 
     def save(self, *args, **kwargs):
         if self.folder_path:
