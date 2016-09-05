@@ -3,6 +3,8 @@ import logging
 import re
 import os
 from collections import defaultdict
+from raven import Client
+
 from django.conf import settings
 from django.utils.encoding import smart_unicode
 from pyreport.reporter import Report
@@ -14,6 +16,7 @@ from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
 from mii_sorter.models import get_movie, insert_report, Movie
 
 logger = logging.getLogger(__name__)
+client = Client(settings.SENTRY_URL)
 
 if settings.REPORT_ENABLED:
     logger = Report()
@@ -77,6 +80,8 @@ class Indexer:
                             index_dict[value[0]].update(
                                 dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
                     self.movie_list.append(movie)
+            else:
+                client.captureMessage(u'Movie folder does not exist', data={'movie_path': movie.abs_folder_path})
 
         add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
