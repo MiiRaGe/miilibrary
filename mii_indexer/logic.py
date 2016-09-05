@@ -63,9 +63,8 @@ class Indexer:
                 index_dict['Search'].update(
                     dict_merge_list_extend(index_dict['Search'], search_index((movie_name, movie.abs_folder_path,))))
 
-                if movie and movie.imdb_id and not movie.indexed:
-                    imdb_id = movie.imdb_id
-                    imdb_data = self.mii_osdb.get_imdb_information(imdb_id)
+                if movie.imdb_id:
+                    imdb_data = self.mii_osdb.get_imdb_information(movie.imdb_id)
                     if imdb_data:
                         logger.info(u'Found imdb data from opensubtitle:')
                         logger.debug(u'\tData: %s' % imdb_data)
