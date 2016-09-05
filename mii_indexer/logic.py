@@ -81,7 +81,8 @@ class Indexer:
                                 dict_merge_list_extend(index_dict[value[0]], new_index_for_movie))
                     self.movie_list.append(movie)
             else:
-                client.captureMessage(u'Movie folder does not exist', data={'movie_path': movie.abs_folder_path})
+                client.captureMessage(u'Movie folder does not exist', extra={'movie_path': movie.abs_folder_path,
+                                                                             'folder_path': movie.folder_path})
 
         add_number_and_simplify(index_dict['Search'])
         remove_single_movie_person(index_dict)
