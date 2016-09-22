@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^movies$', mii_interface_views.movies, name='movies'),
     url(r'^series$', mii_interface_views.series, name='series'),
     url(r'^rate$', mii_interface_views.rate, name='rate'),
+    url(r'^discrepancies', mii_interface_views.discrepancies, name='discrepancies'),
     url(r'^reports$', mii_interface_views.reports, name='reports'),
     url(r'^report/(?P<report_id>[0-9]+)/$', mii_interface_views.report, name='report'),
     url(r'^play', mii_interface_views.play, name='play'),

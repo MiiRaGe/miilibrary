@@ -1,0 +1,24 @@
+{% extends 'mii_interface/base.html' %}
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('#navigation-bar').find('li.active').toggleClass('active')
+        $('#navigation-bar').find('#nav-discrepancies').toggleClass('active')
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<h1>Movies Discrepancies</h1>
+<ul>
+    {% for movie in movie_discrepancy %}
+        <li>{{ movie.title }} ({{ movie.id }})</li>
+    {% endfor %}
+</ul>
+<h1>Object Discrepancies</h1>
+<ul>
+    {% for folder in folder_discrepancy %}
+        <li>{{ folder.folder }} (Object: {{ folder.movie_folder }})</li>
+    {% endfor %}
+</ul>
+{% endblock %}

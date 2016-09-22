@@ -1,12 +1,16 @@
 import json
+import os
+import re
 from collections import defaultdict
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 
 from middleware.remote_execution import remote_play
+from mii_common import tools
 from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
 from mii_sorter.models import Movie, Serie, Episode
@@ -34,12 +38,14 @@ def series(request):
                                                                'season__serie__name')
     organised_episodes = defaultdict(lambda: defaultdict(list))
     for episode in episodes:
-        organised_episodes[episode['season__serie__name']][episode['season__number']].append((episode['number'], episode['id']))
+        organised_episodes[episode['season__serie__name']][episode['season__number']].append(
+            (episode['number'], episode['id']))
 
     for key, value in organised_episodes.items():
         organised_episodes[key] = dict(value)
 
-    return render(request, 'mii_interface/serie.html', dict(series=sorted(dict(organised_episodes).items(), key=lambda x:x[0])))
+    return render(request, 'mii_interface/serie.html',
+                  dict(series=sorted(dict(organised_episodes).items(), key=lambda x: x[0])))
 
 
 def rate(request):
@@ -77,6 +83,31 @@ def rate(request):
     return render(request, 'mii_interface/rate.html',
                   dict(questions=questions, movie=movie, movies_choices_json=movies_choices_json,
                        genres=genres, actors=actors, directors=directors))
+
+
+def discrepancies(request):
+    movies = Movie.objects.all()
+    movie_discrepancy = []
+    for movie in movies:
+        if not os.path.exists(movie.abs_folder_path):
+            movie_discrepancy.append({'title': movie.title, 'id': movie.id})
+
+    folder_discrepancy = []
+    compiled_re = re.compile(u'^(.+) \((\d{4})\).+$')
+    for movie_folder in os.listdir(os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All')):
+        matched_info = compiled_re.match(movie_folder)
+        if not matched_info:
+            folder_discrepancy.append({'folder': movie_folder, 'error': matched_info})
+            continue
+        movie_object = Movie.objects.filter(title=matched_info.group(1), year=matched_info.group(2)).first()
+        if not movie_object:
+            folder_discrepancy.append({'folder': movie_folder})
+        elif movie_object.abs_folder_path != os.path.join(settings.DESTINATION_FOLDER, movie_folder):
+            folder_discrepancy.append({'folder': movie_folder, 'movie_folder': movie_object.abs_folder_path})
+    return render(request,
+                  'mii_interface/discrepancies.html',
+                  {'movie_discrepancy': sorted(movie_discrepancy, key=lambda x: x['title']),
+                   'folder_discrepancy': sorted(folder_discrepancy, key=lambda x: x['folder'])})
 
 
 def reports(request):
