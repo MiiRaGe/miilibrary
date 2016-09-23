@@ -22,7 +22,7 @@ RUN pip install --upgrade setuptools
 
 ADD requirements.txt /
 
-RUN pip install -U pip && pip install --no-input -r requirements.txt
+RUN pip install -U --force-reinstall pip && pip install --no-input -r requirements.txt
 
 COPY . /app
 

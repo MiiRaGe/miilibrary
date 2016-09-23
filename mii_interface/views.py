@@ -94,16 +94,20 @@ def discrepancies(request):
 
     folder_discrepancy = []
     compiled_re = re.compile(u'^(.+) \((\d{4})\).+$')
-    for movie_folder in os.listdir(os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All')):
+    folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All')
+    for movie_folder in os.listdir(folder_dir):
+        movie_path = os.path.join(folder_dir, movie_folder)
         matched_info = compiled_re.match(movie_folder)
         if not matched_info:
-            folder_discrepancy.append({'folder': movie_folder, 'error': matched_info})
+            folder_discrepancy.append({'folder': movie_path, 'error': matched_info})
             continue
-        movie_object = Movie.objects.filter(title=matched_info.group(1), year=matched_info.group(2)).first()
+        title = matched_info.group(1)
+        year = matched_info.group(2)
+        movie_object = Movie.objects.filter(title=title, year=year).first()
         if not movie_object:
-            folder_discrepancy.append({'folder': movie_folder})
-        elif movie_object.abs_folder_path != os.path.join(settings.DESTINATION_FOLDER, movie_folder):
-            folder_discrepancy.append({'folder': movie_folder, 'movie_folder': movie_object.abs_folder_path})
+            folder_discrepancy.append({'folder': movie_path})
+        elif movie_object.abs_folder_path != movie_path:
+            folder_discrepancy.append({'folder': movie_path, 'movie_folder': movie_object.abs_folder_path})
     return render(request,
                   'mii_interface/discrepancies.html',
                   {'movie_discrepancy': sorted(movie_discrepancy, key=lambda x: x['title']),
