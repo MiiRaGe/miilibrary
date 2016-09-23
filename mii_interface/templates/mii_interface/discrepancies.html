@@ -9,6 +9,9 @@
 {% endblock %}
 
 {% block content %}
+    <form method="POST" href=".">
+    <button type="submit">Fix Discrepancies ?</button>
+    </form>
 <h1>Movies Discrepancies</h1>
 <ul>
     {% for movie in movie_discrepancy %}
@@ -18,7 +21,7 @@
 <h1>Object Discrepancies</h1>
 <ul>
     {% for folder in folder_discrepancy %}
-        <li>{{ folder.folder }} (Object: {{ folder.movie_folder }})</li>
+        <li><span class="{% if folder.folder_exists %}text-success{% endif %}">{{ folder.folder }}</span> {% if folder.movie_folder %}<span class="{% if folder.movie_folder_exists %}text-success{% endif %}">(Object: {{ folder.movie_folder }})</span>{% endif %}</li>
     {% endfor %}
 </ul>
 {% endblock %}

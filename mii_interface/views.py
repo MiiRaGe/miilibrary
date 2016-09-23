@@ -107,7 +107,34 @@ def discrepancies(request):
         if not movie_object:
             folder_discrepancy.append({'folder': movie_path})
         elif movie_object.abs_folder_path != movie_path:
-            folder_discrepancy.append({'folder': movie_path, 'movie_folder': movie_object.abs_folder_path})
+            folder_discrepancy.append({'folder': movie_path,
+                                       'folder_exists': os.path.exists(movie_path),
+                                       'movie_id': movie_object.id,
+                                       'movie_folder': movie_object.abs_folder_path,
+                                       'movie_folder_exists': os.path.exists(movie_object.abs_folder_path)})
+    if request.method == 'POST':
+        Movie.objects.filter(id__in=[x['id'] for x in movie_discrepancy]).delete()
+        media_dir = os.path.join(settings.DESTINATION_FOLDER, 'data')
+        for discrepancy in folder_discrepancy:
+            if not discrepancy.get('movie_folder'):
+                for dirpath, dirnames, filenames in os.walk(discrepancy.get('folder')):
+                    for filename in filenames:
+                        os.rename(os.path.join(dirpath, filename), os.path.join(media_dir, filename))
+                        if os.path.exists(os.path.join(dirpath, filename)):
+                            raise Exception('Stopping because file wasn\'t deleted')
+                tools.delete_dir(discrepancy.get('folder'))
+            else:
+                if discrepancy['movie_folder_exists']:
+                    for dirpath, dirnames, filenames in os.walk(discrepancy['movie_folder']):
+                        for filename in filenames:
+                            os.rename(os.path.join(dirpath, filename), os.path.join(media_dir, filename))
+                            if os.path.exists(os.path.join(dirpath, filename)):
+                                raise Exception('Stopping because file wasn\'t deleted')
+                    tools.delete_dir(discrepancy['movie_folder'])
+                movie = Movie.objects.get(id=discrepancy['movie_id'])
+                movie.folder_path = discrepancy['folder']
+                movie.save()
+        return redirect('discrepancies')
     return render(request,
                   'mii_interface/discrepancies.html',
                   {'movie_discrepancy': sorted(movie_discrepancy, key=lambda x: x['title']),
