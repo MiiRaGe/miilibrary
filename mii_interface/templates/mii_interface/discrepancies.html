@@ -10,6 +10,7 @@
 
 {% block content %}
     <form method="POST" href=".">
+    {% csrf_token %}
     <button type="submit">Fix Discrepancies ?</button>
     </form>
 <h1>Movies Discrepancies</h1>

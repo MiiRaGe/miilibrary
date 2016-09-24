@@ -69,6 +69,7 @@ class Sorter:
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
                 if result:
+                    logger.debug(u'Result from opensubtitle for %s : %s' % (file_name, result))
                     try:
                         is_sorted = self.sort_open_subtitle_info(result)
                     except Exception as e:
@@ -130,11 +131,13 @@ class Sorter:
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get('MovieHash'))
         if result.get('MovieKind') == 'movie':
+            logger.info(u'It\'s a movie')
             return self.create_dir_and_move_movie(result.get('MovieName'),
                                                   result.get('MovieYear'),
                                                   result.get('IDMovieImdb'),
                                                   file_name)
         else:
+            logger.info(u'It\'s a serie')
             parsing = re.match('"(.*)"(.*)', result.get('MovieName'))
             serie_title = ""
             if parsing:
@@ -249,8 +252,8 @@ class Sorter:
                     else:
                         if year != matched.group(0):
                             logger.error(u'Year not matching for %s, Got %s expected %s' % (file_name,
-                                                                                           matched.group(0),
-                                                                                           year))
+                                                                                            matched.group(0),
+                                                                                            year))
                         else:
                             logger.info(u'Year matched for %s' % file_name)
                 percent = letter_coverage(name, result['title'])
@@ -286,6 +289,7 @@ class Sorter:
             logger.error(u'Can\'t create %s' % file_name)
 
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
+        logger.info(u'Create and move movie %s, %s, %s, %s' % (movie_name, year, imdb_id, filename))
         # Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
         movie_name = re.sub('[\*\:]', '-', movie_name)
         file_path = os.path.join(self.data_dir, filename)
@@ -395,16 +399,16 @@ def compare(file_name, api_result):
     if regex_result:
         # Movie type consistency issue
         if api_result.get('MovieKind') == 'movie':
-            logger.info(u'Type Inconsistent : ' + api_result.get('MovieKind') + ' expected Tv Series/Episode')
+            logger.info(u'Type Inconsistent : ' + api_result.get('MovieKind') + u' expected Tv Series/Episode')
             return False, 0
         matching_pattern = re.search('(.*)[sS]0*(\d+)[eE]0*(\d+)', file_name) or re.search('(.*)(\d?\d)x(\d?\d)',
                                                                                            file_name)
         if not all([api_result.get('SeriesSeason') == matching_pattern.group(2),
                     api_result.get('SeriesEpisode') == matching_pattern.group(3)]):
             logger.info(u'SXXEXX inconsistent : S%sE%s, expected : S%sE%s' % (api_result.get('SeriesSeason'),
-                                                                             api_result.get('SeriesEpisode'),
-                                                                             matching_pattern.group(2),
-                                                                             matching_pattern.group(3)))
+                                                                              api_result.get('SeriesEpisode'),
+                                                                              matching_pattern.group(2),
+                                                                              matching_pattern.group(3)))
             return False, 0
 
         # Weak comparison using letters
@@ -426,7 +430,7 @@ def compare(file_name, api_result):
     # Year pattern api_result
     name_year_matching = re.search('([^\(\)]*).(20[01][0-9]|19[5-9][0-9])?', file_name)
     if name_year_matching.group(2) and not (name_year_matching.group(2) == api_result.get('MovieYear')):
-        logger.info("Year Inconsistent, found %s but expected %s" %
+        logger.info(u"Year Inconsistent, found %s but expected %s" %
                     (api_result.get('MovieYear'), name_year_matching.group(2)))
         return False, 0
     else:
