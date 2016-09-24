@@ -93,7 +93,7 @@ def discrepancies(request):
             movie_discrepancy.append({'title': movie.title, 'id': movie.id})
 
     folder_discrepancy = []
-    compiled_re = re.compile(u'^(.+) \((\d{4})\).+$')
+    compiled_re = re.compile(u'^(.+) \((\d{4})\).*$')
     folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All')
     for movie_folder in os.listdir(folder_dir):
         movie_path = os.path.join(folder_dir, movie_folder)
