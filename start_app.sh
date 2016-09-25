@@ -72,4 +72,4 @@ echo "Running migrations"
 python /app/manage.py migrate
 
 echo "Starting main app"
-python /app/manage.py supervisor
+/bin/superviso
