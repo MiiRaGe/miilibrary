@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^report/(?P<report_id>[0-9]+)/$', mii_interface_views.report, name='report'),
     url(r'^play', mii_interface_views.play, name='play'),
     url(r'^rpc/index$', mii_indexer_views.start_index, name='start_index'),
+    url(r'^rpc/apply_index', mii_indexer_views.start_apply_index, name='apply_index'),
     url(r'^rpc/sort$', mii_sorter_views.start_sort, name='start_sort'),
     url(r'^rpc/unpack$', mii_unpacker_views.start_unpacker, name='start_unpacker'),
     url(r'^rpc/rss', mii_rss_views.check_feeds, name='check_feeds'),

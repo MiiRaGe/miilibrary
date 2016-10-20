@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from celery import task
 from middleware.decorators import single_instance_task
+from middleware.remote_execution import shell
 
 from mii_indexer.logic import Indexer
 
@@ -11,3 +12,11 @@ from mii_indexer.logic import Indexer
 def index_movies():
     indexer = Indexer()
     indexer.index()
+
+
+@task(serializer='json')
+@single_instance_task(60*30)
+def apply_local_index():
+    if shell:
+        # Make it more generic... Or wait for the object server
+        shell.run([u"python", u"/share/MD0_DATA/miilibrary/apply_index_local.py"])
