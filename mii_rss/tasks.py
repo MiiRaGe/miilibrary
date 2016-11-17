@@ -72,7 +72,7 @@ def process_feeds(entries):
                 logger.info(u'Skipped, same episode already downloading.')
                 continue
             logger.info(u'Added torrent')
-            add_torrent_to_transmission(entry['link'])
+            add_torrent_to_transmission.delay(entry['link'])
 
 
 @app.task(serializer='json', bind=True)
