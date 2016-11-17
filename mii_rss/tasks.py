@@ -5,7 +5,10 @@ import re
 import urllib
 import feedparser
 from datetime import timedelta
+
+import requests
 from django.conf import settings
+from django.core.cache import cache
 from django.utils import timezone
 from pyreport.reporter import Report
 from mii_celery import app
@@ -69,4 +72,24 @@ def process_feeds(entries):
                 logger.info(u'Skipped, same episode already downloading.')
                 continue
             logger.info(u'Added torrent')
-            urllib.urlretrieve(entry['link'], os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name))
+            add_torrent_to_transmission(entry['link'])
+
+
+@app.task(serializer='json', bind=True)
+def add_torrent_to_transmission(self, url_link):
+    filename = url_link
+    parameters = {
+        "arguments": {
+            "filename": filename,
+            "download-dir": settings.SOURCE_FOLDER,
+            "paused": "false"
+        },
+        "method": "torrent-add"
+    }
+    headers = {}
+    if cache.get('X-Transmission-Session-Id'):
+        headers['X-Transmission-Session-Id'] = cache.get('X-Transmission-Session-Id')
+    response = requests.post(settings.TRANSMISSION_RPC_URL, parameters, headers=headers, auth=(settings.TRANSMISSION_RPC_USERNAME, settings.TRANSMISSION_RPC_PASSWORD))
+    if response.status_code == '409':
+        cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
+        self.retry(countdown=10, max_retries=5)
