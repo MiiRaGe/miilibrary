@@ -93,3 +93,7 @@ def add_torrent_to_transmission(self, url_link):
     if response.status_code == '409':
         cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
         self.retry(countdown=10, max_retries=5)
+    elif response.status_code == '500':
+        raise Exception('The task actually failed %s', response.content)
+    elif response.status_code != '200':
+        raise Exception('The task actually failed with status %s', response.status_code)
