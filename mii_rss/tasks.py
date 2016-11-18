@@ -1,7 +1,9 @@
+import base64
 import json
 import logging
 import os
 import re
+import tempfile
 import urllib
 import feedparser
 from datetime import timedelta
@@ -77,10 +79,10 @@ def process_feeds(entries):
 
 @app.task(serializer='json', bind=True)
 def add_torrent_to_transmission(self, url_link):
-    filename = url_link
+    resp = requests.get(url_link)
     parameters = {
         "arguments": {
-            "filename": filename,
+            "metadata": base64.b64encode(resp.content),
             "download-dir": settings.SOURCE_FOLDER,
             "paused": "false"
         },
@@ -96,4 +98,5 @@ def add_torrent_to_transmission(self, url_link):
     elif response.status_code == 500:
         raise Exception('The task actually failed %s', response.content)
     elif response.status_code != 200:
+        import pdb; pdb.set_trace()
         raise Exception('The task actually failed with status %s', response.status_code)

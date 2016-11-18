@@ -1,11 +1,14 @@
 celery<4.0
 coveralls
+cryptography
 django<1.10
 django-celery
 django-supervisor
 django-dbbackup
 factory-boy
 gunicorn
+pyasn1
+pyopenssl
 pytest
 pytest-django
 pytest-cov
@@ -16,6 +19,7 @@ python-memcached
 python-coveralls
 python-jsonrpc
 mysql-python
+ndg-httpsclient
 raven
 requests
 git+https://github.com/jmcgeheeiv/pyfakefs.git
