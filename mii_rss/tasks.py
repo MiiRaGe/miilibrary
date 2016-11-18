@@ -90,10 +90,10 @@ def add_torrent_to_transmission(self, url_link):
     if cache.get('X-Transmission-Session-Id'):
         headers['X-Transmission-Session-Id'] = cache.get('X-Transmission-Session-Id')
     response = requests.post(settings.TRANSMISSION_RPC_URL, parameters, headers=headers, auth=(settings.TRANSMISSION_RPC_USERNAME, settings.TRANSMISSION_RPC_PASSWORD))
-    if response.status_code == '409':
+    if response.status_code == 409:
         cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
         self.retry(countdown=10, max_retries=5)
-    elif response.status_code == '500':
+    elif response.status_code == 500:
         raise Exception('The task actually failed %s', response.content)
-    elif response.status_code != '200':
+    elif response.status_code != 200:
         raise Exception('The task actually failed with status %s', response.status_code)
