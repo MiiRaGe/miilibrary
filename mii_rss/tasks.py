@@ -84,7 +84,7 @@ def add_torrent_to_transmission(self, url_link):
         "arguments": {
             "metadata": base64.b64encode(resp.content),
             "download-dir": settings.SOURCE_FOLDER,
-            "paused": "false"
+            "paused": False
         },
         "method": "torrent-add"
     }
