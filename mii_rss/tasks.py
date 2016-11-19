@@ -79,24 +79,45 @@ def process_feeds(entries):
 
 @app.task(serializer='json', bind=True)
 def add_torrent_to_transmission(self, url_link):
-    resp = requests.get(url_link)
+    if cache.get(url_link) and False:
+        print u'Fetching data from the cache'
+        content = cache.get(url_link)
+    else:
+        print u'Getting data from the url'
+        resp = requests.get(url_link)
+        content = resp.content
+        key = 'base64,'
+        if key in content:
+            index = content.index(key)
+            content = content[index + len(key):]
+        content = base64.b64encode(content)
+        cache.set(url_link, content, 600)
+        print u'Seting data in the cache'
+
     parameters = {
+        "method": "torrent-add",
         "arguments": {
-            "metadata": base64.b64encode(resp.content),
+            "metainfo": content,
             "download-dir": settings.SOURCE_FOLDER,
             "paused": False
-        },
-        "method": "torrent-add"
+        }
     }
-    headers = {}
+    headers = {
+        'Content-Type': 'json'
+    }
     if cache.get('X-Transmission-Session-Id'):
+        print u'Getting session id from cache'
         headers['X-Transmission-Session-Id'] = cache.get('X-Transmission-Session-Id')
-    response = requests.post(settings.TRANSMISSION_RPC_URL, parameters, headers=headers, auth=(settings.TRANSMISSION_RPC_USERNAME, settings.TRANSMISSION_RPC_PASSWORD))
+    print u'Posting torrent to transmission'
+    response = requests.post(settings.TRANSMISSION_RPC_URL, json=parameters, headers=headers, auth=(settings.TRANSMISSION_RPC_USERNAME, settings.TRANSMISSION_RPC_PASSWORD))
+    print u'Got Answer %s' % response.status_code
     if response.status_code == 409:
         cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
         self.retry(countdown=10, max_retries=5)
     elif response.status_code == 500:
         raise Exception('The task actually failed %s', response.content)
     elif response.status_code != 200:
-        import pdb; pdb.set_trace()
         raise Exception('The task actually failed with status %s', response.status_code)
+    result_dict = json.loads(response.content)
+    if result_dict['result'] != 'success':
+        raise Exception('Adding new Torrent failed: %s' % result_dict)
