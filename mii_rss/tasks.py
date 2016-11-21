@@ -13,6 +13,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 from pyreport.reporter import Report
+
+from middleware.remote_execution import map_to_nas
 from mii_celery import app
 from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, match
 from mii_rss.models import FeedEntries, FeedFilter
@@ -98,7 +100,7 @@ def add_torrent_to_transmission(self, url_link):
         "method": "torrent-add",
         "arguments": {
             "metainfo": content,
-            "download-dir": settings.SOURCE_FOLDER,
+            "download-dir": map_to_nas(settings.SOURCE_FOLDER),
             "paused": False
         }
     }
