@@ -72,9 +72,4 @@ echo "Running migrations"
 python /app/manage.py migrate
 
 echo "Starting main app"
-while :
-do
-	echo "Press [CTRL+C] to stop.."
-	sleep 10
-done
-#python /app/manage.py supervisor
+supervisord -c /etc/supervisor/supervisord.conf
