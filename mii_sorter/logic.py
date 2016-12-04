@@ -268,7 +268,7 @@ class Sorter:
                     imdb_id = imdb_id.get('imdb_id')
                     self.create_dir_and_move_movie(result['title'], year, imdb_id, file_name)
                     return True
-        except Exception, e:
+        except Exception as e:
             logger.warning(u'Found and exception while matching file with tmdb : %s' % repr(e))
         self.move_to_unsorted(self.data_dir, file_name)
         return False
@@ -332,7 +332,7 @@ class Sorter:
             return True
         except OSError:
             logger.error(u'Can\'t create %s' % custom_movie_dir)
-        except Exception, e:
+        except Exception as e:
             logger.exception(u'Found an exception when moving movie : %s' % repr(e))
         return False
 

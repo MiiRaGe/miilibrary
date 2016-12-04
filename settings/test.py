@@ -11,8 +11,9 @@ from settings.base import DATABASES
 
 
 DATABASES['default'] = {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': 'test_db.db'
+    'USERNAME': 'root',
+    'HOST': '127.0.0.1',
+    'NAME': 'testdb'
 }
 
 REMOTE_FILE_OPERATION_ENABLED = False

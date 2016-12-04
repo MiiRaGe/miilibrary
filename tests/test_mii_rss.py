@@ -1,3 +1,5 @@
+from http.client import responses
+
 import mock
 from django.test import TestCase, override_settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FakeFsTestCase
@@ -123,35 +125,35 @@ class TestTask(FakeFsTestCase, TestCase):
         feedparser.parse.return_value = {'status': 200, 'entries': [{'title': 'arrow', 'link': None}]}
         check_feed_and_download_torrents()
 
-    @mock.patch('mii_rss.tasks.urllib')
+    @mock.patch('mii_rss.tasks.add_torrent_to_transmission')
     @mock.patch('mii_rss.tasks.feedparser')
-    def test_task_feed_matching_already_exist(self, feedparser, urllib):
+    def test_task_feed_matching_already_exist(self, feedparser, add_torrent_to_transmission):
         self.fs.CreateFile('/test.torrent')
         feedparser.parse.return_value = {'status': 200,
                                          'entries': [{'title': 'non_matching', 'link': '/test.torrent?'}]
                                          }
         check_feed_and_download_torrents()
-        assert not urllib.urlretrieve.called
+        assert not add_torrent_to_transmission.delay.called
 
-    @mock.patch('mii_rss.tasks.urllib')
+    @mock.patch('mii_rss.tasks.add_torrent_to_transmission')
     @mock.patch('mii_rss.tasks.feedparser')
-    def test_task_feed_matching_downloading(self, feedparser, urllib):
+    def test_task_feed_matching_downloading(self, feedparser, add_torrent_to_transmission):
         feedparser.parse.return_value = {'status': 200,
                                          'entries': [{'title': 'non_matching', 'link': '/test.torrent?'}]
                                          }
         check_feed_and_download_torrents()
-        assert urllib.urlretrieve.called
+        assert add_torrent_to_transmission.delay.called
 
-    @mock.patch('mii_rss.tasks.urllib')
+    @mock.patch('mii_rss.tasks.add_torrent_to_transmission')
     @mock.patch('mii_rss.tasks.feedparser')
     @mock.patch('mii_rss.tasks.get_or_create_downloading_object')
-    def test_task_feed_matching_already_downloading(self, get_or_create, feedparser, urllib):
+    def test_task_feed_matching_already_downloading(self, get_or_create, feedparser, add_torrent_to_transmission):
         get_or_create.return_value = False
         feedparser.parse.return_value = {'status': 200,
                                          'entries': [{'title': 'non_matching', 'link': '/test.torrent?'}]
                                          }
         check_feed_and_download_torrents()
-        assert not urllib.urlretrieve.called
+        assert not add_torrent_to_transmission.delay.called
 
     @mock.patch('mii_rss.tasks.process_feeds')
     def test_recheck_feeds(self, process_feeds):

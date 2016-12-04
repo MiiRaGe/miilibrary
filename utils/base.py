@@ -11,8 +11,8 @@ from mii_common import tools
 from mii_indexer.logic import Indexer
 from mii_sorter.logic import Sorter
 from mii_unpacker.logic import RecursiveUnrarer
-from mock_osdb import *
-from mock_tmdb import *
+from utils.mock_osdb import mock_get_movie_names, mock_get_movie_names2, mock_get_imdb_information, mock_get_subtitles
+from utils.mock_tmdb import mock_get_movie_name, mock_get_movie_imdb_id
 
 mii_osdb_mock = mock.MagicMock()
 mii_osdb_mock.get_movie_name = mock_get_movie_names2

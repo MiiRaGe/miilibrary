@@ -3,8 +3,6 @@ import json
 import logging
 import os
 import re
-import tempfile
-import urllib
 import feedparser
 from datetime import timedelta
 
@@ -82,10 +80,10 @@ def process_feeds(entries):
 @app.task(serializer='json', bind=True)
 def add_torrent_to_transmission(self, url_link):
     if cache.get(url_link):
-        print u'Fetching data from the cache'
+        print(u'Fetching data from the cache')
         content = cache.get(url_link)
     else:
-        print u'Getting data from the url'
+        print(u'Getting data from the url')
         resp = requests.get(url_link)
         content = resp.content
         key = 'base64,'
@@ -94,7 +92,7 @@ def add_torrent_to_transmission(self, url_link):
             content = content[index + len(key):]
         content = base64.b64encode(content)
         cache.set(url_link, content, 600)
-        print u'Seting data in the cache'
+        print(u'Seting data in the cache')
 
     parameters = {
         "method": "torrent-add",
@@ -108,11 +106,11 @@ def add_torrent_to_transmission(self, url_link):
         'Content-Type': 'json'
     }
     if cache.get('X-Transmission-Session-Id'):
-        print u'Getting session id from cache'
+        print(u'Getting session id from cache')
         headers['X-Transmission-Session-Id'] = cache.get('X-Transmission-Session-Id')
-    print u'Posting torrent to transmission'
+    print(u'Posting torrent to transmission')
     response = requests.post(settings.TRANSMISSION_RPC_URL, json=parameters, headers=headers, auth=(settings.TRANSMISSION_RPC_USERNAME, settings.TRANSMISSION_RPC_PASSWORD))
-    print u'Got Answer %s' % response.status_code
+    print(u'Got Answer %s' % response.status_code)
     if response.status_code == 409:
         cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
         self.retry(countdown=10, max_retries=5)

@@ -1,8 +1,7 @@
 import cgi
 import json
 import re
-
-from urllib2 import Request, urlopen, HTTPError
+import requests
 
 
 class TheMovieDBWrapper:
@@ -25,9 +24,5 @@ class TheMovieDBWrapper:
 
     @staticmethod
     def get_url(url):
-        search_request = Request(url, headers={"Accept": "application/json"})
-        try:
-            response_body = urlopen(search_request).read()
-        except HTTPError:
-            return False
-        return json.loads(response_body)
+        response = requests.get(url, headers={"Accept": "application/json"})
+        return json.loads(response.content)

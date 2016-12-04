@@ -4,7 +4,6 @@ import re
 import shutil
 import subprocess
 
-from django.utils.encoding import smart_unicode
 from pyreport import reporter
 from django.conf import settings
 from middleware.remote_execution import link, unrar
@@ -51,7 +50,7 @@ class RecursiveUnrarer:
         logger.debug(u'%sEntering : %s' % (indent, current_directory))
         indent += "\t"
         for data_file in os.listdir(current_directory):
-            data_file = smart_unicode(data_file)
+            data_file = data_file
             full_file_path = os.path.join(current_directory, data_file)
             if os.path.isfile(full_file_path):
                 if data_file.endswith(u'.part01.rar'):

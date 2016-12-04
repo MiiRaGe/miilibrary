@@ -5,7 +5,6 @@ import subprocess
 import pyjsonrpc
 import spur
 from django.conf import settings
-from django.utils.encoding import smart_unicode
 from mii_common.tools import delete_dir
 
 shell = None
@@ -60,7 +59,7 @@ def map_to_nas(local_path):
     :param local_path:
     :return:
     """
-    return smart_unicode(local_path.replace(settings.LOCAL_ROOT, settings.NAS_ROOT))
+    return local_path.replace(settings.LOCAL_ROOT, settings.NAS_ROOT)
 
 
 def remote_play(path):

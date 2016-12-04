@@ -19,14 +19,14 @@ def hash_file(name):
         if filesize < 65536 * 2: 
             return 'SizeError'
          
-        for x in range(65536 / bytesize): 
+        for x in range(65536 // bytesize):
             buffer_temp = file_descripter.read(bytesize)
             (l_value,) = struct.unpack(longlongformat, buffer_temp)
             hash_temp += l_value
             hash_temp &= 0xFFFFFFFFFFFFFFFF  # to remain as 64bit number
 
         file_descripter.seek(max(0, filesize - 65536), 0)
-        for x in range(65536 / bytesize): 
+        for x in range(65536 // bytesize):
                 buffer_temp = file_descripter.read(bytesize)
                 (l_value,) = struct.unpack(longlongformat, buffer_temp)
                 hash_temp += l_value
