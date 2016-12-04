@@ -1,6 +1,6 @@
 import mock
 import socket
-from xmlrpclib import ProtocolError
+from xmlrpc.client import ProtocolError
 from django.test import override_settings, TestCase
 from movieinfo.opensubtitle_wrapper import OpenSubtitleWrapper, needs_login, retry_when_failing
 

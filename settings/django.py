@@ -146,7 +146,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'djcelery',
-    'djsupervisor',
     'dbbackup',
     'middleware',
     'mii_interface',

@@ -1,8 +1,5 @@
-import commands
 import logging
 import os
-import shutil
-import subprocess
 
 logger = logging.getLogger(__name__)
 
