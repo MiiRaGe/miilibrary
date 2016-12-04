@@ -94,7 +94,6 @@ class RecursiveUnrarer:
         self.removed = 0
         for media_file in os.listdir(self.destination_dir):
             # If it's not a movie media_file or if the size < MINIMUM_SIZE Mo (samples)
-            media_file = media_file.decode('utf-8')
             logger.debug(u'Reading (cleanup):%s' % media_file)
             if not re.match(".*\.(mkv|avi|mp4|mpg)", media_file):
                 logger.debug(u'Removing (Reason : not a movie):')

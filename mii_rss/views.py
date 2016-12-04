@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from tasks import check_feed_and_download_torrents, recheck_feed_and_download_torrents
+from mii_rss.tasks import check_feed_and_download_torrents, recheck_feed_and_download_torrents
 
 
 def check_feeds(request):

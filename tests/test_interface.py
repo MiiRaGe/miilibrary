@@ -1,6 +1,7 @@
 import mock
 
 from django.test import TestCase
+from django.test import override_settings
 
 from mii_indexer.factories import MovieRelationFactory, MovieTaggingFactory
 from mii_interface.factories import ReportFactory
@@ -9,6 +10,7 @@ from mii_sorter.factories import EpisodeFactory, MovieFactory
 from mii_sorter.models import Movie
 
 
+@override_settings(DESTINATION_FOLDER='/home/destination')
 class TestViews(TestCase):
     def setUp(self):
         MovieTaggingFactory.create_batch(3)
@@ -89,6 +91,7 @@ class TestViews(TestCase):
         assert response.status_code == 200
 
 
+@override_settings(DESTINATION_FOLDER='/home/destination')
 class TestMiiRating(TestCase):
     def test_mii_rating_save_question(self):
         movie = MovieFactory.create(seen=None)

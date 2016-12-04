@@ -25,4 +25,4 @@ class TheMovieDBWrapper:
     @staticmethod
     def get_url(url):
         response = requests.get(url, headers={"Accept": "application/json"})
-        return json.loads(response.content)
+        return json.loads(response.content.decode('utf8'))

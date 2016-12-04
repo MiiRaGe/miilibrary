@@ -11,8 +11,9 @@ from settings.base import DATABASES
 
 
 DATABASES['default'] = {
-    'USERNAME': 'root',
+    'USER': 'root',
     'HOST': '127.0.0.1',
+    'ENGINE': 'django.db.backends.mysql',
     'NAME': 'testdb'
 }
 

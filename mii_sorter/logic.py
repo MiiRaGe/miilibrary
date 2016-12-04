@@ -59,7 +59,7 @@ class Sorter:
             self.create_hash_list(media)
 
         for movie_hash in sorted(self.hash_array):
-            file_name = self.map.get(movie_hash).decode('utf-8')
+            file_name = self.map.get(movie_hash)
             logger.info(u'------ %s ------' % file_name)
             result = self.mii_osdb.get_subtitles(movie_hash,
                                                  str(get_size(os.path.join(self.data_dir, file_name))))
@@ -458,7 +458,7 @@ def get_best_match(api_result_list, file_name):
         else:
             logger.info(u'Comparison returned false, inconsistencies exist')
 
-    scores = sorted(scores, key=(lambda x: x[2]))
+    scores = sorted(scores, key=(lambda x: x[1]), reverse=True)
     if scores and scores[0][1] > 0:
         return scores[0][2]
     else:

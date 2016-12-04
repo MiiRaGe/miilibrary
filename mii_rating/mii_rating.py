@@ -1,5 +1,5 @@
-from constant.questions import questions
-from .models import MovieQuestionSet, QuestionAnswer
+from mii_rating.constant.questions import questions
+from mii_rating.models import MovieQuestionSet, QuestionAnswer
 from mii_sorter.models import Movie
 
 

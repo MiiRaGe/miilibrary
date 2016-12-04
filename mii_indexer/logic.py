@@ -61,7 +61,7 @@ class Indexer:
             movie_name = u'%s (%s)' % (movie.title, movie.year)
             logger.info(u'------ %s ------' % movie_name)
 
-            if os.path.isdir(movie.abs_folder_path):
+            if os.path.isdir(movie.abs_folder_path.decode('utf8')):
                 index_dict['Search'].update(
                     dict_merge_list_extend(index_dict['Search'], search_index((movie_name, movie.abs_folder_path,))))
 
@@ -161,7 +161,7 @@ def dict_merge_list_extend(d1, d2):
 
 
 def add_number_and_simplify(d1):
-    for key in d1.keys():
+    for key in list(d1.keys()):
         count = get_count(d1[key])
         new_value = d1.pop(key)
         if count == 1:
@@ -180,6 +180,9 @@ def get_count(d1):
 
 
 def remove_single_movie_person(index_dict):
+    key_to_remove = []
     for actor, value in index_dict['Actors'].items():
         if len(value) <= 1:
-            del index_dict['Actors'][actor]
+            key_to_remove.append(actor)
+    for key in key_to_remove:
+        del index_dict['Actors'][key]
