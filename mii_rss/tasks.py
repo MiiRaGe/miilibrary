@@ -81,7 +81,7 @@ def process_feeds(entries):
 
 @app.task(serializer='json', bind=True)
 def add_torrent_to_transmission(self, url_link):
-    if cache.get(url_link) and False:
+    if cache.get(url_link):
         print u'Fetching data from the cache'
         content = cache.get(url_link)
     else:

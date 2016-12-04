@@ -18,7 +18,7 @@ mock
 python-memcached
 python-coveralls
 python-jsonrpc
-mysql-python
+mysqlclient
 ndg-httpsclient
 raven
 requests
