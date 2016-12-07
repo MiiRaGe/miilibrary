@@ -28,7 +28,7 @@ class Movie(Model):
 
     @property
     def abs_folder_path(self):
-        return self.folder_path.replace(settings.DESTINATION_PLACEHOLDER, settings.DESTINATION_FOLDER).encode('utf-8')
+        return self.folder_path.replace(settings.DESTINATION_PLACEHOLDER, settings.DESTINATION_FOLDER)
 
     def save(self, *args, **kwargs):
         if self.folder_path:

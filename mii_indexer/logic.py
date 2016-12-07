@@ -61,7 +61,7 @@ class Indexer:
             movie_name = u'%s (%s)' % (movie.title, movie.year)
             logger.info(u'------ %s ------' % movie_name)
 
-            if os.path.isdir(movie.abs_folder_path.decode('utf8')):
+            if os.path.isdir(movie.abs_folder_path):
                 index_dict['Search'].update(
                     dict_merge_list_extend(index_dict['Search'], search_index((movie_name, movie.abs_folder_path,))))
 
