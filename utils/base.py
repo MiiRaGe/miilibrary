@@ -55,8 +55,8 @@ class TestMiilibrary(TestCase, DjTestCase):
                 self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2-sample.mkv', contents=self._generate_data(1))
                 self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.srt', contents=self._generate_data(1))
                 self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.The.Dark.World.mkv',
-                                   contents='Thor2' * 65535)
-            except IOError:
+                                   contents='Not Thor' * 65535)
+            except IOError as e:
                 pass
         self.recursive_unrarer = RecursiveUnrarer()
         self.recursive_unrarer.unrar = fake_unrar
@@ -77,7 +77,7 @@ class TestMiilibrary(TestCase, DjTestCase):
         lazy_creation('The.big.bank.theory.S01E01.mkv', contents='TheBig' * 65535)
         lazy_creation('Thor.(2011).720p.mkv', contents='Thor' * 65535)
         lazy_creation('Thor.(2011).mkv', contents='Tho' * 65535)
-        lazy_creation('Thor.The.Dark.World.mkv', contents='Tho' * 65535)
+        lazy_creation('Thor.The.Dark.World.mkv', contents='Not Thor' * 65535)
 
     def _fill_movie(self):
         os.mkdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)'))

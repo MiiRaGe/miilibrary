@@ -217,3 +217,7 @@ def insert_movie(title, year, path, size):
 
 def insert_report(report_html, report_type=''):
     Report.objects.create(report_type=report_type, report_html=report_html)
+
+
+def update_whatsnew(movie):
+    WhatsNew.objects.update_or_create(name='%s (%s)' % (movie.title, movie.year), defaults={'date': timezone.now(), 'path': movie.abs_folder_path})

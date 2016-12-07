@@ -39,7 +39,6 @@ class TestMain(TestMiilibrary):
         self.sorter.sort()
         assert Movie.objects.get(title='Thor', year=2011)
         assert Movie.objects.get(title='Thor- The Dark World', year=2013)
-
         assert len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All'))) == 2
         assert 'Thor- The Dark World (2013)' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
         assert 'Thor (2011)' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
