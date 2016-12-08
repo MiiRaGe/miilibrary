@@ -6,6 +6,7 @@ for setting in dir(config_module):
     if setting == setting.upper():
         locals()[setting] = getattr(config_module, setting)
 
+from settings.django import DATABASES
 from os import environ
 
 #MiiNASLibrary configuration file
