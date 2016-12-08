@@ -3,6 +3,7 @@ services:
 
 before_install:
   - mysql -e 'CREATE DATABASE IF NOT EXISTS testdb;'
+  - mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('changeme');"
 
 language: python
 python:

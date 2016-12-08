@@ -12,7 +12,7 @@ from settings.base import DATABASES
 
 DATABASES['default'] = {
     'USER': 'root',
-    'PASSWORD': '',
+    'PASSWORD': 'changeme',
     'HOST': '127.0.0.1',
     'ENGINE': 'django.db.backends.mysql',
     'NAME': 'testdb'
