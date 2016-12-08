@@ -1,8 +1,8 @@
 services:
   - mysql
 
-before_script:
-  - mysql -e 'create database testdb;'
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS testdb;'
 
 language: python
 python:
