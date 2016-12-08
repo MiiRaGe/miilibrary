@@ -1,7 +1,6 @@
-FROM resin/rpi-raspbian:latest
+FROM resin/raspberrypi2-python:3.5.2
 
-RUN apt-get update && apt-get install -yq python3 python3-dev python-pip git python-setuptools \
-    openssh-server cifs-utils build-essential debconf-utils rabbitmq-server libmysqlclient-dev memcached libffi-dev \
+RUN apt-get update && apt-get install -yq openssh-server cifs-utils build-essential debconf-utils rabbitmq-server libmysqlclient-dev memcached libffi-dev \
     libssl-dev supervisor  rsyslog
 
 RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections  \
@@ -18,11 +17,11 @@ RUN mkdir /var/run/sshd \
     && sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
 
-RUN pip3 install --upgrade setuptools
+RUN pip install --upgrade setuptools
 
 ADD requirements.txt /
 
-RUN pip3 install -U --force-reinstall pip && pip install --no-input -r requirements.txt
+RUN pip install -U --force-reinstall pip && pip install --no-input -r requirements.txt
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
