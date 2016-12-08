@@ -16,10 +16,11 @@ feedparser
 mock
 python-memcached
 python-coveralls
-python-jsonrpc
 mysqlclient
 ndg-httpsclient
 raven
 requests
-git+https://github.com/jmcgeheeiv/pyfakefs.git
+responses
+git+https://github.com/MiiRaGe/pyfakefs.git
 git+https://github.com/MiiRaGe/pyreport.git
+git+https://github.com/F483/python-jsonrpc.git

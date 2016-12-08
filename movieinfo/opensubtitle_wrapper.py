@@ -1,7 +1,7 @@
 import logging
 import socket
 import time
-from xmlrpclib import ProtocolError, ServerProxy
+from xmlrpc.client import ProtocolError, ServerProxy
 from django.conf import settings
 
 logger = logging.getLogger(__name__)

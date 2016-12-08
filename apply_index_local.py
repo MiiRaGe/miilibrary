@@ -17,7 +17,8 @@ def apply_index(path, json_file_name):
     if not os.path.exists(json_file_path):
         return
     with open(json_file_path, 'rb') as inputfile:
-        dict_index = json.load(inputfile)
+        input_json = inputfile.read().decode('utf8')
+        dict_index = json.loads(input_json)
 
     index_path = os.path.join(path, 'Movies', 'Index')
     if os.path.exists(index_path):

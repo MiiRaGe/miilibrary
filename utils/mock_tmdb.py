@@ -5,6 +5,7 @@ def mock_get_movie_name(name, year):
     }
     return data.get('%s/%s' % (name, year))
 
+
 def mock_get_movie_imdb_id(id):
     data = {
         '10195': {u'poster_path': u'/bIuOWTtyFPjsFDevqvF3QrD1aun.jpg', u'production_countries': [{u'iso_3166_1': u'US', u'name': u'United States of America'}], u'revenue': 444115007, u'overview': u"Against his father Odin's will, The Mighty Thor -a powerful but arrogant warrior god -recklessly reignites an ancient war. Thor is cast down to Earth and forced to live among humans as punishment. Once here, Thor learns what it takes to be a true hero when the most dangerous villain of his world sends the darkest forces of Asgard to invade Earth.", u'id': 10195, u'genres': [{u'id': 28, u'name': u'Action'}, {u'id': 12, u'name': u'Adventure'}, {u'id': 14, u'name': u'Fantasy'}], u'title': u'Thor', u'tagline': u'Two worlds. One hero.', u'vote_count': 2587, u'homepage': u'http://thor.marvel.com/', u'belongs_to_collection': {u'backdrop_path': u'/3KL8UNKFWgIKXzLHjwY0uwgjzYl.jpg', u'poster_path': u'/7vx64r9HS57yz2T53i31SdmqdEi.jpg', u'id': 131296, u'name': u'Thor Collection'}, u'status': u'Released', u'spoken_languages': [{u'iso_639_1': u'en', u'name': u'English'}], u'imdb_id': u'tt0800369', u'adult': False, u'backdrop_path': u'/siiHsWPaP2r8hqPiQsry61gCjGY.jpg', u'production_companies': [{u'name': u'Marvel Studios', u'id': 420}, {u'name': u'Marvel Entertainment', u'id': 7505}], u'release_date': u'2011-05-06', u'popularity': 10.6783505729882, u'original_title': u'Thor', u'budget': 150000000, u'vote_average': 6.3, u'runtime': 115},

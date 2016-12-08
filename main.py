@@ -1,6 +1,6 @@
 from time import sleep
-print "hello from python..."
+print("hello from python...")
 
 while 1:
-    print 'waiting'
+    print('waiting')
     sleep(60)

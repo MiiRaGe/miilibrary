@@ -9,7 +9,7 @@ from django.conf import settings
 from middleware import mii_cache_wrapper
 from mii_common import tools
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, insert_report, \
-    RegexRenaming
+    RegexRenaming, update_whatsnew
 from movieinfo import hash_tool as ht
 
 logger = logging.getLogger(__name__)
@@ -44,6 +44,7 @@ class Sorter:
     def create_hash_list(self, media):
         file_path = os.path.join(self.data_dir, media)
         movie_hash = str(ht.hash_file(file_path))
+        print('file: %s, hash: %s' % (file_path, movie_hash))
         self.map[movie_hash] = media
         self.hash_array.append(movie_hash)
         self.hash_array = list(set(self.hash_array))
@@ -55,17 +56,21 @@ class Sorter:
         # TODO optimize sorting
         self.map = {}
         self.hash_array = []
+        print(os.listdir(self.data_dir))
         for media in os.listdir(self.data_dir):
             self.create_hash_list(media)
-
+        print(self.hash_array)
+        print(self.map)
         for movie_hash in sorted(self.hash_array):
-            file_name = self.map.get(movie_hash).decode('utf-8')
+            file_name = self.map.get(movie_hash)
+            print('Sorting %s' % file_name)
             logger.info(u'------ %s ------' % file_name)
             result = self.mii_osdb.get_subtitles(movie_hash,
                                                  str(get_size(os.path.join(self.data_dir, file_name))))
             is_sorted = False
             if result:
                 logger.info(u'Got Result from opensubtitle for %s' % file_name)
+                print('Found result for %s' % file_name)
                 if isinstance(result, list):
                     result = get_best_match(result, file_name)
                 if result:
@@ -73,9 +78,11 @@ class Sorter:
                     try:
                         is_sorted = self.sort_open_subtitle_info(result)
                     except Exception as e:
+                        print('Failed sorting %s' % repr(e))
                         logger.exception(u'Error when sorting open_subtitle_info: %s, %s' % (file_name, repr(e)))
             else:
                 result = self.mii_osdb.get_movie_name(movie_hash, number='2')
+                print('Found result osdb for %s' % file_name)
                 if result:
                     logger.info(result)
                     result = result.get(movie_hash)
@@ -85,6 +92,7 @@ class Sorter:
                         is_sorted = self.sort_open_subtitle_info(result)
 
             if not is_sorted:
+                print('Not a movie? %s' % file_name)
                 if is_serie(self.map.get(movie_hash)):
                     self.sort_tv_serie(file_name)
                     logger.info(u'Sorted the TV Serie : %s' % file_name)
@@ -130,6 +138,7 @@ class Sorter:
 
     def sort_open_subtitle_info(self, result):
         file_name = self.map.get(result.get('MovieHash'))
+        print('Sorting %s' % file_name)
         if result.get('MovieKind') == 'movie':
             logger.info(u'It\'s a movie')
             return self.create_dir_and_move_movie(result.get('MovieName'),
@@ -268,7 +277,7 @@ class Sorter:
                     imdb_id = imdb_id.get('imdb_id')
                     self.create_dir_and_move_movie(result['title'], year, imdb_id, file_name)
                     return True
-        except Exception, e:
+        except Exception as e:
             logger.warning(u'Found and exception while matching file with tmdb : %s' % repr(e))
         self.move_to_unsorted(self.data_dir, file_name)
         return False
@@ -299,6 +308,7 @@ class Sorter:
         if quality:
             custom_movie_dir += ' [' + quality + ']'
         try:
+            print('Movie name %s' % movie_name)
             exist, movie = get_movie(movie_name, year=year)
             if exist and os.path.exists(movie.abs_folder_path):
                 if movie.file_size > os.path.getsize(file_path):
@@ -319,6 +329,7 @@ class Sorter:
                 movie.year = year or ''
                 movie.folder_path = created_movie_dir
                 movie.save()
+                update_whatsnew(movie)
                 logger.info(u'Existing Movie object updated')
             else:
                 movie = insert_movie(movie_name, year, created_movie_dir, os.path.getsize(file_path))
@@ -332,7 +343,7 @@ class Sorter:
             return True
         except OSError:
             logger.error(u'Can\'t create %s' % custom_movie_dir)
-        except Exception, e:
+        except Exception as e:
             logger.exception(u'Found an exception when moving movie : %s' % repr(e))
         return False
 
@@ -458,7 +469,7 @@ def get_best_match(api_result_list, file_name):
         else:
             logger.info(u'Comparison returned false, inconsistencies exist')
 
-    scores = sorted(scores, key=(lambda x: x[2]))
+    scores = sorted(scores, key=(lambda x: x[1]), reverse=True)
     if scores and scores[0][1] > 0:
         return scores[0][2]
     else:

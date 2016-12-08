@@ -1,7 +1,14 @@
+services:
+  - mysql
+
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS testdb;'
+  - mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('changeme');"
+
 language: python
 python:
-  - "2.7.10"
-#  - "3.4"
+  - "3.5"
+  - "3.6"
 # command to install dependencies
 install:
  - pip install -U pip

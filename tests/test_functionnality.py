@@ -39,7 +39,6 @@ class TestMain(TestMiilibrary):
         self.sorter.sort()
         assert Movie.objects.get(title='Thor', year=2011)
         assert Movie.objects.get(title='Thor- The Dark World', year=2013)
-
         assert len(os.listdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All'))) == 2
         assert 'Thor- The Dark World (2013)' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
         assert 'Thor (2011)' in os.listdir(os.path.join(self.DESTINATION_FOLDER, 'New', 'Today'))
@@ -89,15 +88,15 @@ class TestMain(TestMiilibrary):
         index_ratings_folder = os.path.join(index_root_folder, 'Ratings')
         index_actor_folder = os.path.join(index_root_folder, 'Actors')
 
-        assert os.listdir(index_year_folder) == ['2011', '2013']
-        assert os.listdir(index_genre_folder) == ['Action', 'Adventure', 'Bullshit', 'Fantasy', 'London', 'Romance']
-        assert os.listdir(index_directors_folder) == ['Alan Taylor', 'Joss Whedon', 'Kenneth Branagh']
+        assert sorted(os.listdir(index_year_folder)) == sorted(['2011', '2013'])
+        assert sorted(os.listdir(index_genre_folder)) == sorted(['Action', 'Adventure', 'Bullshit', 'Fantasy', 'London', 'Romance'])
+        assert sorted(os.listdir(index_directors_folder)) == sorted(['Alan Taylor', 'Joss Whedon', 'Kenneth Branagh'])
 
         assert 'Chris Hemsworth' in os.listdir(index_actor_folder)
         assert 'Natalie Portman' in os.listdir(index_actor_folder)
         assert 'Tom Hiddleston' in os.listdir(index_actor_folder)
-        assert os.listdir(index_ratings_folder) == ['7.0', '9.5']
-        assert os.listdir(os.path.join(index_ratings_folder, '7.0')) == ['Thor (2011)']
+        assert sorted(os.listdir(index_ratings_folder)) == sorted(['7.0', '9.5'])
+        assert sorted(os.listdir(os.path.join(index_ratings_folder, '7.0'))) == sorted(['Thor (2011)'])
 
     def test_unpack_sort_index(self):
         self.recursive_unrarer.run()

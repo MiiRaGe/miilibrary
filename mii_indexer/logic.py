@@ -6,14 +6,13 @@ from collections import defaultdict
 from raven import Client
 
 from django.conf import settings
-from django.utils.encoding import smart_unicode
 from pyreport.reporter import Report
 from middleware import mii_cache_wrapper
 from middleware.remote_execution import symlink
 from mii_common import tools
 from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
-from mii_sorter.models import get_movie, insert_report, Movie
+from mii_sorter.models import insert_report, Movie
 
 logger = logging.getLogger(__name__)
 client = Client(settings.SENTRY_URL)
@@ -117,7 +116,7 @@ class Indexer:
             person, _ = Person.objects.get_or_create(name=value)
             MovieRelation.objects.get_or_create(person=person, movie=movie, type=link_type)
             logger.debug(
-                u'Link is saved :%s,%s,%s' % (smart_unicode(person.name), smart_unicode(movie.title), link_type))
+                u'Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))
 
 
 def dump_to_json_file(index_dict):
@@ -127,7 +126,7 @@ def dump_to_json_file(index_dict):
     if os.path.exists(json_path):
         os.remove(json_path)
     with open(json_path, 'w') as outfile:
-        outfile.write(unicode(json_index))
+        outfile.write(json_index)
 
 
 def search_index(folder_and_folder_abs):
@@ -162,7 +161,7 @@ def dict_merge_list_extend(d1, d2):
 
 
 def add_number_and_simplify(d1):
-    for key in d1.keys():
+    for key in list(d1.keys()):
         count = get_count(d1[key])
         new_value = d1.pop(key)
         if count == 1:
@@ -181,6 +180,9 @@ def get_count(d1):
 
 
 def remove_single_movie_person(index_dict):
+    key_to_remove = []
     for actor, value in index_dict['Actors'].items():
         if len(value) <= 1:
-            del index_dict['Actors'][actor]
+            key_to_remove.append(actor)
+    for key in key_to_remove:
+        del index_dict['Actors'][key]

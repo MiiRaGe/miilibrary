@@ -1,6 +1,7 @@
 def mock_get_movie_names(*args, **kwargs):
     return mock_get_subtitles(*args, **kwargs)
 
+
 def mock_get_movie_names2(*args, **kwargs):
     data = {'50423c444e56478c': [
         {'ISO639': 'en', 'SubComments': '0',
@@ -50,6 +51,7 @@ def mock_get_movie_names2(*args, **kwargs):
          'MovieHash': 'f53650824e198c27',
          'MovieName': '"Arrow" Broken Dolls', 'IDMovieImdb': '3126166', 'MovieYear': '2013'}]}
     return data if args[0] in data else {}
+
 
 def mock_get_subtitles(*args, **kwargs):
     data = {'50423c444e56478c': [

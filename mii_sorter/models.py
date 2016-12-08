@@ -5,7 +5,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, NullBooleanField,\
     DateTimeField, BooleanField, CASCADE
-from django.utils.encoding import smart_unicode
 from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ class Movie(Model):
 
     @property
     def abs_folder_path(self):
-        return self.folder_path.replace(settings.DESTINATION_PLACEHOLDER, settings.DESTINATION_FOLDER).encode('utf-8')
+        return self.folder_path.replace(settings.DESTINATION_PLACEHOLDER, settings.DESTINATION_FOLDER)
 
     def save(self, *args, **kwargs):
         if self.folder_path:
@@ -217,4 +216,8 @@ def insert_movie(title, year, path, size):
 
 
 def insert_report(report_html, report_type=''):
-    Report.objects.create(report_type=report_type, report_html=smart_unicode(report_html))
+    Report.objects.create(report_type=report_type, report_html=report_html)
+
+
+def update_whatsnew(movie):
+    WhatsNew.objects.update_or_create(name='%s (%s)' % (movie.title, movie.year), defaults={'date': timezone.now(), 'path': movie.abs_folder_path})
