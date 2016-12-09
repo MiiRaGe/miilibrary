@@ -7,12 +7,12 @@ before_install:
 
 language: python
 python:
+  - "3.4"
   - "3.5"
-  - "3.6"
 # command to install dependencies
 install:
- - pip install -U pip
- - pip install -U pytest
+ - pip install -U --force-reinstall pip
+ - pip install -U --force-reinstall setuptools
  - pip install -r requirements.txt
 # command to run tests
 script: py.test --cov=.

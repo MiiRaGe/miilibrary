@@ -19,7 +19,7 @@ RUN mkdir /var/run/sshd \
 
 ADD requirements.txt /
 
-RUN pip install -U --force-reinstall pip && pip install --no-input -r requirements.txt
+RUN pip install --no-input -r requirements.txt
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
