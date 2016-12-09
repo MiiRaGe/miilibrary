@@ -17,7 +17,7 @@ RUN mkdir /var/run/sshd \
     && sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
 
-RUN pip install --upgrade setuptools
+RUN pip install --force-reinstall --upgrade setuptools
 
 ADD requirements.txt /
 
