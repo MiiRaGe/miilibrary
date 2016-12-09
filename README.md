@@ -6,7 +6,7 @@
 [![Requirements Status](https://requires.io/github/MiiRaGe/miilibrary/requirements.svg?branch=master)](https://requires.io/github/MiiRaGe/miilibrary/requirements/?branch=master)
 ### Dependencies ###
 
-* Python 2.7
+* Python 3.4-3.5
 * Django 1.9
 * See requirements.txt for full module dependencies
 * The requirements are meant to be "bleeding edge" (contact for a list of working dependencies if latest not working)
