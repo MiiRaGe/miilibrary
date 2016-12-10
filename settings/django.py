@@ -23,7 +23,7 @@ DATABASES = {
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -145,7 +145,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'djcelery',
     'dbbackup',
     'middleware',
     'mii_interface',
@@ -154,6 +153,8 @@ INSTALLED_APPS = (
     'mii_sorter',
     'mii_rating',
     'mii_indexer',
+    'django_celery_results',
+    'django_celery_beat',
     # 'debug_toolbar',
     # 'devserver',
 )
@@ -193,7 +194,7 @@ CELERY_IMPORTS = (
     'mii_indexer.tasks',
 )
 
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERY_RESULT_BACKEND = 'django-db'
 
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']  # Ignore other content

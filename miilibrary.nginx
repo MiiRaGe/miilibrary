@@ -17,6 +17,18 @@ server {
 
     client_max_body_size 0;
 
+    location /celery {
+        client_max_body_size 0;
+        proxy_pass http://localhost:5555/;
+        proxy_redirect off;
+        proxy_read_timeout 5m;
+
+        # make sure these HTTP headers are set properly
+        proxy_set_header Host            $host;
+        proxy_set_header X-Real-IP       $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
     # Attempt to serve files first, then pass the request up to Gunicorn
     try_files $uri @gunicorn;
 

@@ -1,10 +1,12 @@
-celery<4.0
+celery
 coveralls
 cryptography
 django<1.10
-django-celery
+django-celery-results
+django-celery-beat
 django-dbbackup
 factory-boy
+flower
 gunicorn
 pyasn1
 pyopenssl
