@@ -193,7 +193,7 @@ CELERY_IMPORTS = (
     'mii_indexer.tasks',
 )
 
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']  # Ignore other content
