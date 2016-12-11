@@ -20,6 +20,8 @@ def save_question_answers(movie_id, question_answers={}):
     del question_answers['action']
     del question_answers['movie_id']
     for question_type, answer in question_answers.items():
+        if question_type == 'csrfmiddlewaretoken':
+            continue
         QuestionAnswer.objects.create(question_set_id=question_set.id, question_type=question_type, answer=answer[0])
 
 
