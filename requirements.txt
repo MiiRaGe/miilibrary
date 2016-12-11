@@ -1,7 +1,7 @@
 celery
 coveralls
 cryptography
-django<1.10
+django
 django-celery-results
 django-celery-beat
 django-dbbackup
