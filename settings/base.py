@@ -8,6 +8,7 @@ for setting in dir(config_module):
 
 from settings.django import DATABASES
 from os import environ
+from settings.base import ALLOWED_HOSTS
 
 #MiiNASLibrary configuration file
 
@@ -76,8 +77,8 @@ DUMP_INDEX_JSON_FILE_NAME = environ.get('DUMP_INDEX_JSON_FILE_NAME', 'data.json'
 REPORT_ENABLED = bool(environ.get('REPORT_ENABLED', True))
 
 # Django-dbbackup settings
-DBBACKUP_STORAGE = environ.get('DBBACKUP_STORAGE', 'dbbackup.storage.filesystem_storage')
-DBBACKUP_BACKUP_DIRECTORY = environ.get('DBBACKUP_BACKUP_DIRECTORY', '/tmp/backup/')
+DBBACKUP_STORAGE = environ.get('DBBACKUP_STORAGE', 'django.core.files.storage.FileSystemStorage')
+DBBACKUP_STORAGE_OPTIONS = {'location': environ.get('DBBACKUP_BACKUP_DIRECTORY', '/tmp/backup/')}
 
 SENTRY_URL = environ.get('SENTRY_URL', '')
 DESTINATION_PLACEHOLDER = u'{destination_folder}'
