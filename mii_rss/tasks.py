@@ -90,7 +90,7 @@ def add_torrent_to_transmission(self, url_link):
         if key in content:
             index = content.index(key)
             content = content[index + len(key):]
-        content = base64.b64encode(content)
+        content = base64.b64encode(content).decode('utf8')
         cache.set(url_link, content, 600)
         print(u'Seting data in the cache')
 
