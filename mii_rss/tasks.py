@@ -86,7 +86,7 @@ def add_torrent_to_transmission(self, url_link):
         print(u'Getting data from the url')
         resp = requests.get(url_link)
         content = resp.content
-        key = 'base64,'
+        key = 'base64,'.encode('utf8')
         if key in content:
             index = content.index(key)
             content = content[index + len(key):]
@@ -115,9 +115,9 @@ def add_torrent_to_transmission(self, url_link):
         cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
         self.retry(countdown=10, max_retries=5)
     elif response.status_code == 500:
-        raise Exception('The task actually failed %s', response.content)
+        raise Exception('The task actually failed %s', response.content.decode('utf8'))
     elif response.status_code != 200:
         raise Exception('The task actually failed with status %s', response.status_code)
-    result_dict = json.loads(response.content)
+    result_dict = json.loads(response.content.decode('utf8'))
     if result_dict['result'] != 'success':
         raise Exception('Adding new Torrent failed: %s' % result_dict)
