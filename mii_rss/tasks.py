@@ -1,3 +1,5 @@
+import hashlib
+
 import base64
 import json
 import logging
@@ -77,11 +79,15 @@ def process_feeds(entries):
             add_torrent_to_transmission.delay(entry['link'])
 
 
+def get_hashed_link(url_link):
+    return hashlib.sha224(url_link).hexdigest()
+
+
 @app.task(serializer='json', bind=True)
 def add_torrent_to_transmission(self, url_link):
-    if cache.get(url_link):
+    if cache.get(get_hashed_link(url_link)):
         print(u'Fetching data from the cache')
-        content = cache.get(url_link)
+        content = cache.get(get_hashed_link(url_link))
     else:
         print(u'Getting data from the url')
         resp = requests.get(url_link)
@@ -91,7 +97,7 @@ def add_torrent_to_transmission(self, url_link):
             index = content.index(key)
             content = content[index + len(key):]
         content = base64.b64encode(content).decode('utf8')
-        cache.set(url_link, content, 600)
+        cache.set(get_hashed_link(url_link), content, 600)
         print(u'Seting data in the cache')
 
     parameters = {
