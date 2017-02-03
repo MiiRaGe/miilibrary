@@ -19,7 +19,7 @@ def apply_index(path, json_file_name):
     with open(json_file_path, 'rb') as inputfile:
         input_json = inputfile.read().decode('utf8')
         dict_index = json.loads(input_json)
-
+    client.captureMessage(u'Opened the json file')
     index_path = os.path.join(path, 'Movies', 'Index')
     if os.path.exists(index_path):
         shutil.rmtree(index_path)
