@@ -1,6 +1,7 @@
 from django.test import TestCase, override_settings
 
 from analysis.season_tool import analyse_series
+from mii_rss.tasks import get_hashed_link
 from mii_sorter.factories import EpisodeFactory, RegexRenamingFactory
 from mii_sorter.logic import is_serie, apply_custom_renaming, change_token_to_dot, format_serie_name, compare, \
     letter_coverage, rename_serie, get_quality, get_info, get_best_match
@@ -274,3 +275,9 @@ class TestAnalysis(TestCase):
         report = analyse_series()
         assert len(report['test'][1]) == 1
         assert report['test'][1][0] == 'Episode 2 missing'
+
+
+class TestRssUtil(TestCase):
+    def test_get_hashed_link(self):
+        test_url = 'http://path.to.torrent/'
+        assert get_hashed_link(test_url)

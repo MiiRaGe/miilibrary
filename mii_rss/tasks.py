@@ -80,6 +80,8 @@ def process_feeds(entries):
 
 
 def get_hashed_link(url_link):
+    if isinstance(url_link, str):
+        url_link = url_link.encode('utf8')
     return hashlib.sha224(url_link).hexdigest()
 
 
