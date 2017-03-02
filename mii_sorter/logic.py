@@ -67,7 +67,7 @@ class Sorter:
             special_handled = False
 
             for special in specials_names:
-                if re.match(special['regex'], file_name):
+                if re.match(special['regex'], file_name.lower()):
                     special_handled = True
                     self.create_dir_and_move_special(special['name'], file_name)
                     break
