@@ -184,7 +184,7 @@ class Sorter:
         special_file = os.path.join(special_dir, file_name)
         file_path = os.path.join(self.data_dir, file_name)
         today = timezone.now()
-        new_name = '%s_%s' % (name, today.strptime('%d-%B-%Y'))
+        new_name = '%s_%s' % (name, today.strftime('%d-%B-%Y'))
         try:
             if os.path.exists(special_file):
                 self.move_to_unsorted(file_path)
