@@ -9,7 +9,7 @@ from django.conf import settings
 from middleware import mii_cache_wrapper
 from mii_common import tools
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, insert_report, \
-    RegexRenaming, update_whatsnew
+    RegexRenaming, update_whatsnew, SpecialHandling
 from movieinfo import hash_tool as ht
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ class Sorter:
         self.data_dir = os.path.join(self.media_dir, 'data')
         self.serie_dir = os.path.join(self.media_dir, 'TVSeries')
         self.movie_dir = os.path.join(self.media_dir, 'Movies')
+        self.special_dir = os.path.join(self.media_dir, 'Specials')
         self.unsorted_dir = os.path.join(self.media_dir, 'unsorted')
         self.alphabetical_movie_dir = os.path.join(self.movie_dir, 'All')
         self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
@@ -56,13 +57,23 @@ class Sorter:
         # TODO optimize sorting
         self.map = {}
         self.hash_array = []
-        print(os.listdir(self.data_dir))
         for media in os.listdir(self.data_dir):
             self.create_hash_list(media)
-        print(self.hash_array)
-        print(self.map)
+
+        specials_names = SpecialHandling.objects.all().values('regex', 'name')
         for movie_hash in sorted(self.hash_array):
             file_name = self.map.get(movie_hash)
+
+            special_handled = False
+
+            for special in specials_names:
+                if re.match(special['regex'], file_name):
+                    special_handled = True
+                    self.create_dir_and_move_special(special['name'], file_name)
+                    break
+            if special_handled:
+                continue
+
             print('Sorting %s' % file_name)
             logger.info(u'------ %s ------' % file_name)
             result = self.mii_osdb.get_subtitles(movie_hash,
@@ -165,6 +176,21 @@ class Sorter:
                                                   result.get('SeriesEpisode'),
                                                   serie_title,
                                                   file_name)
+
+    def create_dir_and_move_special(self, name, file_name):
+        special_dir = tools.make_dir(os.path.join(self.special_dir, name))
+        special_file = tools.make_dir(os.path.join(special_dir, file_name))
+        file_path = os.path.join(self.data_dir, file_name)
+        try:
+            if os.path.exists(special_file):
+                self.move_to_unsorted(file_path)
+                logger.info(u'Moving the source to unsorted, special already exists :%s' % special_file)
+                return False
+            os.rename(file_path, special_file)
+            return True
+        except OSError:
+            logger.error(u'Can\'t move %s' % file_path)
+            return False
 
     def create_dir_and_move_serie(self, name, season, episode_number, title, file_name):
         name = format_serie_name(apply_custom_renaming(name))

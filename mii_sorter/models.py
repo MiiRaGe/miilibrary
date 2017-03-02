@@ -118,6 +118,11 @@ class RegexRenaming(Model):
     new = CharField(max_length=255)
 
 
+class SpecialHandling(Model):
+    regex = CharField(max_length=255)
+    name = CharField(max_length=255)
+
+
 def get_serie_episode(name, season, episode):
     """
     Look for the same episode in the db, return the file_path of the existing one if any.

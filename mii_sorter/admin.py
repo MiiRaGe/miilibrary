@@ -11,7 +11,7 @@ class SerieAdmin(ModelAdmin):
 
 class SeasonAdmin(ModelAdmin):
     model = Season
-    list_select_related = ('serie__name',)
+    list_select_related = ('serie',)
     list_display = ('serie_name', 'number')
     list_filter = ('serie__name', 'number')
 
@@ -21,7 +21,7 @@ class SeasonAdmin(ModelAdmin):
 
 class EpisodeAdmin(ModelAdmin):
     model = Episode
-    list_select_related = ('season__serie__name', 'season__number')
+    list_select_related = ('season__serie', 'season')
     list_display = ('serie_name', 'season_number', 'number')
     list_filter = ('season__serie__name', 'season__number', 'number')
 
