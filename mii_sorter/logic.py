@@ -3,6 +3,7 @@ import os
 import re
 from time import sleep
 
+from django.utils import timezone
 from pyreport.reporter import Report
 from middleware.remote_execution import symlink, remove_dir
 from django.conf import settings
@@ -180,14 +181,17 @@ class Sorter:
 
     def create_dir_and_move_special(self, name, file_name):
         special_dir = tools.make_dir(os.path.join(self.special_dir, name))
-        special_file = tools.make_dir(os.path.join(special_dir, file_name))
+        special_file = os.path.join(special_dir, file_name)
         file_path = os.path.join(self.data_dir, file_name)
+        today = timezone.now()
+        new_name = '%s_%s' % (name, today.strptime('%d-%B-%Y'))
         try:
             if os.path.exists(special_file):
                 self.move_to_unsorted(file_path)
                 logger.info(u'Moving the source to unsorted, special already exists :%s' % special_file)
                 return False
             os.rename(file_path, special_file)
+            WhatsNew.objects.create(new_name, special_file)
             return True
         except OSError as e:
             logger.error(u'Can\'t move %s: %s' % (file_path, repr(e)))
