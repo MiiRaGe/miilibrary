@@ -41,6 +41,7 @@ class Sorter:
         tools.make_dir(self.alphabetical_movie_dir)
         tools.make_dir(self.unsorted_dir)
         tools.make_dir(self.new_dir)
+        tools.make_dir(self.special_dir)
 
     def create_hash_list(self, media):
         file_path = os.path.join(self.data_dir, media)
@@ -188,8 +189,8 @@ class Sorter:
                 return False
             os.rename(file_path, special_file)
             return True
-        except OSError:
-            logger.error(u'Can\'t move %s' % file_path)
+        except OSError as e:
+            logger.error(u'Can\'t move %s: %s' % (file_path, repr(e)))
             return False
 
     def create_dir_and_move_serie(self, name, season, episode_number, title, file_name):
