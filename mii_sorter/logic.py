@@ -2,6 +2,7 @@ import logging
 import os
 import re
 from time import sleep
+from uuid import uuid4
 
 from django.utils import timezone
 from pyreport.reporter import Report
@@ -184,14 +185,14 @@ class Sorter:
         special_file = os.path.join(special_dir, file_name)
         file_path = os.path.join(self.data_dir, file_name)
         today = timezone.now()
-        new_name = '%s_%s' % (name, today.strftime('%d-%B-%Y'))
+        new_name = '%s_%s_%s' % (name, today.strftime('%d-%B-%Y'), (str(uuid4())[:5]))
         try:
             if os.path.exists(special_file):
                 self.move_to_unsorted(file_path)
                 logger.info(u'Moving the source to unsorted, special already exists :%s' % special_file)
                 return False
             os.rename(file_path, special_file)
-            WhatsNew.objects.create(new_name, special_file)
+            WhatsNew.objects.create(name=new_name, file_path=special_file)
             return True
         except OSError as e:
             logger.error(u'Can\'t move %s: %s' % (file_path, repr(e)))
