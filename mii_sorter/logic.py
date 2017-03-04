@@ -192,7 +192,7 @@ class Sorter:
                 logger.info(u'Moving the source to unsorted, special already exists :%s' % special_file)
                 return False
             os.rename(file_path, special_file)
-            WhatsNew.objects.create(name=new_name, file_path=special_file)
+            WhatsNew.objects.create(name=new_name, path=special_file)
             return True
         except OSError as e:
             logger.error(u'Can\'t move %s: %s' % (file_path, repr(e)))
