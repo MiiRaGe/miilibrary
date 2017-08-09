@@ -17,7 +17,7 @@ spur
 feedparser
 mock
 python-coveralls
-python-jsonrpc
+jsonrpc-requests
 python-memcached
 mysqlclient
 ndg-httpsclient

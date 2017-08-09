@@ -1,9 +1,10 @@
 import os
 import shlex
 import subprocess
-
-import pyjsonrpc
 import spur
+
+from jsonrpc_requests import Server
+
 from django.conf import settings
 from mii_common.tools import delete_dir
 
@@ -70,7 +71,7 @@ def remote_play(path):
     """
     smb_path = path.format(destination_dir='smb://MIINAS/MoviesSeries')
     url = "http://192.168.0.149:8080/jsonrpc"
-    http_client = pyjsonrpc.HttpClient(
+    http_client = Server(
         url=url,
         username="kodi",
         password="kodi",
