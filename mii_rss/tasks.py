@@ -88,10 +88,8 @@ def get_hashed_link(url_link):
 @app.task(serializer='json', bind=True)
 def add_torrent_to_transmission(self, url_link):
     if cache.get(get_hashed_link(url_link)):
-        print(u'Fetching data from the cache')
         content = cache.get(get_hashed_link(url_link))
     else:
-        print(u'Getting data from the url')
         resp = requests.get(url_link)
         content = resp.content
         key = 'base64,'.encode('utf8')
@@ -100,7 +98,6 @@ def add_torrent_to_transmission(self, url_link):
             content = content[index + len(key):]
         content = base64.b64encode(content).decode('utf8')
         cache.set(get_hashed_link(url_link), content, 600)
-        print(u'Seting data in the cache')
 
     parameters = {
         "method": "torrent-add",
@@ -114,11 +111,9 @@ def add_torrent_to_transmission(self, url_link):
         'Content-Type': 'json'
     }
     if cache.get('X-Transmission-Session-Id'):
-        print(u'Getting session id from cache')
         headers['X-Transmission-Session-Id'] = cache.get('X-Transmission-Session-Id')
-    print(u'Posting torrent to transmission')
+
     response = requests.post(settings.TRANSMISSION_RPC_URL, json=parameters, headers=headers, auth=(settings.TRANSMISSION_RPC_USERNAME, settings.TRANSMISSION_RPC_PASSWORD))
-    print(u'Got Answer %s' % response.status_code)
     if response.status_code == 409:
         cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
         self.retry(countdown=10, max_retries=5)

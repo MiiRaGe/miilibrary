@@ -1,13 +1,18 @@
-from http.client import responses
+import pytest
+import responses
 
 import mock
+from celery.exceptions import Retry
+from django.core.cache import cache
+from django.test import SimpleTestCase
 from django.test import TestCase, override_settings
 from pyfakefs.fake_filesystem_unittest import TestCase as FakeFsTestCase
 
 from mii_rss.factories import FeedEntriesFactory, FeedFilterFactory
 from mii_rss.logic import already_exists, match, get_or_create_downloading_object, get_dict_from_feeds
 from mii_rss.models import FeedDownloaded, FeedEntries
-from mii_rss.tasks import check_feed_and_download_torrents, recheck_feed_and_download_torrents
+from mii_rss.tasks import check_feed_and_download_torrents, recheck_feed_and_download_torrents, \
+    add_torrent_to_transmission, get_hashed_link
 from mii_sorter.models import Season, Episode
 from mii_sorter.models import Serie
 
@@ -160,3 +165,61 @@ class TestTask(FakeFsTestCase, TestCase):
         FeedEntriesFactory.create_batch(10)
         recheck_feed_and_download_torrents()
         assert process_feeds.called
+
+
+@responses.activate
+@override_settings(TRANSMISSION_RPC_URL='http://url/')
+class TestTaskTransmission(SimpleTestCase):
+    def test_add_t_to_transmission_retry(self):
+        url_link = 'http://t_link'
+        responses.add(responses.GET, url_link,
+                      body='base64,dummy_test', status=200,
+                      content_type='application/text')
+        responses.add(responses.POST, 'http://url/',
+                      status=409,
+                      headers={'X-Transmission-Session-Id': 'special_key'})
+        res = add_torrent_to_transmission(url_link)
+        assert isinstance(res, Retry)
+        assert cache.get('X-Transmission-Session-Id') == 'special_key'
+
+    def test_with_header_and_content_success(self):
+        url_link = 'http://t_link'
+        cache.set(get_hashed_link(url_link), 'dummy')
+        cache.set('X-Transmission-Session-Id') == 'special_key'
+        responses.add(responses.POST, 'http://url/',
+                      status=200,
+                      json={'result': 'success'},
+                      headers={'X-Transmission-Session-Id': 'special_key'})
+
+    def test_with_header_and_content_almost_success(self):
+        url_link = 'http://t_link'
+        cache.set(get_hashed_link(url_link), 'dummy')
+        cache.set('X-Transmission-Session-Id') == 'special_key'
+        responses.add(responses.POST, 'http://url/',
+                      status=200,
+                      json={'result': 'not a success'},
+                      headers={'X-Transmission-Session-Id': 'special_key'})
+        with pytest.raises(Exception):
+            add_torrent_to_transmission(url_link)
+
+    def test_with_header_and_content_500(self):
+        url_link = 'http://t_link'
+        cache.set(get_hashed_link(url_link), 'dummy')
+        cache.set('X-Transmission-Session-Id') == 'special_key'
+        responses.add(responses.POST, 'http://url/',
+                      status=500,
+                      bode='FAILURE',
+                      headers={'X-Transmission-Session-Id': 'special_key'})
+        with pytest.raises(Exception):
+            add_torrent_to_transmission(url_link)
+
+    def test_with_header_and_content_400(self):
+        url_link = 'http://t_link'
+        cache.set(get_hashed_link(url_link), 'dummy')
+        cache.set('X-Transmission-Session-Id') == 'special_key'
+        responses.add(responses.POST, 'http://url/',
+                      status=400,
+                      bode='FAILURE',
+                      headers={'X-Transmission-Session-Id': 'special_key'})
+        with pytest.raises(Exception):
+            add_torrent_to_transmission(url_link)
