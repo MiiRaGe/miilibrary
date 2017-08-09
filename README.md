@@ -7,7 +7,7 @@
 
 ### Concept ###
 
-This project is a media handling library, it's meant to be use on a tinker board connecté with access to a storage (NAS, Hard Drive).
+This project is a media handling library, it's meant to be use on a tinker board connected with access to a storage (NAS, Hard Drive).
 
 It acts as an rpc server, with 3 different actions:
 * Unpack: looks for files in a local folder and extract archive or hard link video medias to a data folder.
