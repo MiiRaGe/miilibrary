@@ -23,6 +23,7 @@ class TestViews(TestCase):
         MovieRelationFactory.create_batch(5)
         EpisodeFactory.create_batch(6)
         ReportFactory.create_batch(5)
+        cls.episode = EpisodeFactory.create()
         cls.report = ReportFactory.create()
 
     def test_index(self):
@@ -95,6 +96,11 @@ class TestViews(TestCase):
         response = self.client.post('/rate', data=data)
         assert Movie.objects.get(id=movie.id).seen is False
         assert response.status_code == 200
+
+    @mock.path('mii_interface.views.remote_play')
+    def test_play(self, remote_play):
+        self.post('/play', data={'episode_id': self.episode.id})
+        remote_play.assert_called_with(self.episode.file_path)
 
 
 @override_settings(DESTINATION_FOLDER='/home/destination')
