@@ -72,8 +72,7 @@ def remote_play(path):
     smb_path = path.format(destination_dir='smb://MIINAS/MoviesSeries')
     url = "http://192.168.0.149:8080/jsonrpc"
     http_client = Server(
-        url=url,
-        username="kodi",
-        password="kodi",
+        url,
+        auth=(settings.JSON_RPC_USERNAME, settings.JSON_RPC_PASSWORD),
     )
     http_client.call('Player.Open', item={'file': smb_path})
