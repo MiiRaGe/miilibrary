@@ -9,10 +9,10 @@
 
 This project is a media handling library, it's meant to be use on a tinker board connecté with access to a storage (NAS, Hard Drive).
 
-It act as an rpc server, with 3 different actions:
-* Unpack, looks for files in a local folder and extract archive or hard link video medias to a data folder.
-* Sort, looks for video medias in the data folder, fetches info on internet via metadata or name, clean name, add them to db and sort them approprietly (Serie/Movie).
-* Index, looks a the video files in db and index them with info from the internet (ratings, years, actors, genre etc)
+It acts as an rpc server, with 3 different actions:
+* Unpack: looks for files in a local folder and extract archive or hard link video medias to a data folder.
+* Sort: looks for video medias in the data folder, fetches info on internet via metadata or name, clean name, add them to db and sort them approprietly (Serie/Movie).
+* Index: looks a the video files in db and index them with info from the internet (ratings, years, actors, genre etc)
 
 
 ### Technical Stack ###
@@ -31,7 +31,7 @@ It uses a local django, local mysql db, a local celery instance and a local rabb
 
 * Install dependencies : pip install -r requirements.txt
 * Run tests : py.test
-* Deployement : Carefully set the parameters in settings/local.py (local copy of base.py)
+* Deployement : Carefully set the parameters in settings/local.py (local copy of base.py) or environment variables
 
 ### Running ###
 
