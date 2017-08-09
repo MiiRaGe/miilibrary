@@ -128,8 +128,8 @@ class TestDiscrepancies(FSTestCase, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.movie_without_path = MovieFactory.create(folder_path='dummy_path.mkv')
-        cls.movie_with_path = MovieFactory.create(folder_path='path_exists.mkv')
-        cls.movie_with_different_path = MovieFactory.create(title='Match', year=2000, folder_path='path_exists.mkv')
+        cls.movie_with_path = MovieFactory.create(folder_path='path_exists')
+        cls.movie_with_different_path = MovieFactory.create(title='Match', year=2000, folder_path='path_exists')
 
     def setUp(self):
         self.setUpPyfakefs()
@@ -138,14 +138,14 @@ class TestDiscrepancies(FSTestCase, TestCase):
         all_movie_dir = tools.make_dir(os.path.join(movie_dir, 'All'))
         self.title_folder = tools.make_dir(os.path.join(all_movie_dir, 'Title (2014)'))
         self.match_folder = tools.make_dir(os.path.join(all_movie_dir, 'Match (2000)'))
-        self.fs.CreateFile('path_exists.mkv', contents='exists')
+        tools.make_dir('path_exists')
 
     @mock.patch('mii_interface.views.render')
     def test_discrepancies(self, render):
-        method = mock.MagicMock()
-        discrepancies(method)
+        request = mock.MagicMock()
+        discrepancies(request)
         render.assert_called_with(
-            method,
+            request,
             mock.ANY,
             {
                 'movie_discrepancy': [
@@ -161,5 +161,22 @@ class TestDiscrepancies(FSTestCase, TestCase):
                         'folder': self.title_folder
                     }
                 ]
+            }
+        )
+
+    @mock.patch('mii_interface.views.render')
+    def test_discrepancies_fixing(self, render):
+        fixing_request = mock.MagicMock()
+        fixing_request.method = 'POST'
+        discrepancies(fixing_request)
+        request = mock.MagicMock()
+        request.method = 'GET'
+        discrepancies(request)
+        render.assert_called_with(
+            request,
+            mock.ANY,
+            {
+                'movie_discrepancy': [],
+                'folder_discrepancy': []
             }
         )

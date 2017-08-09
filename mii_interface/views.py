@@ -118,7 +118,8 @@ def discrepancies(request):
                                        'movie_folder': movie_object.abs_folder_path,
                                        'movie_folder_exists': os.path.exists(movie_object.abs_folder_path)})
     if request.method == 'POST':
-        Movie.objects.filter(id__in=[x['id'] for x in movie_discrepancy]).delete()
+        print(movie_discrepancy)
+        print(Movie.objects.filter(id__in=[x['id'] for x in movie_discrepancy]).delete())
         media_dir = os.path.join(settings.DESTINATION_FOLDER, 'data')
         for discrepancy in folder_discrepancy:
             if not discrepancy.get('movie_folder'):
