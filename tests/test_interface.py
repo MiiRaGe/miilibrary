@@ -99,7 +99,7 @@ class TestViews(TestCase):
 
     @mock.patch('mii_interface.views.remote_play')
     def test_play(self, remote_play):
-        self.post('/play', data={'episode_id': self.episode.id})
+        self.client.post('/play', data={'episode_id': self.episode.id})
         remote_play.assert_called_with(self.episode.file_path)
 
 
@@ -135,7 +135,7 @@ class TestDiscrepancies(FSTestCase, TestCase):
     def setUpTestData(cls):
         cls.movie_without_path = MovieFactory.create(folder_path='dummy_path.mkv')
         cls.movie_with_path = MovieFactory.create(folder_path='path_exists')
-        cls.movie_with_different_path = MovieFactory.create(title='Match', year=2000, folder_path='path_exists')
+        cls.movie_with_different_path = MovieFactory.create(title='Match', year=2000, folder_path='path_exists2')
 
     def setUp(self):
         self.setUpPyfakefs()
@@ -145,6 +145,7 @@ class TestDiscrepancies(FSTestCase, TestCase):
         self.title_folder = tools.make_dir(os.path.join(all_movie_dir, 'Title (2014)'))
         self.match_folder = tools.make_dir(os.path.join(all_movie_dir, 'Match (2000)'))
         tools.make_dir('path_exists')
+        tools.make_dir('path_exists2')
 
     @mock.patch('mii_interface.views.render')
     def test_discrepancies(self, render):
