@@ -75,4 +75,5 @@ def remote_play(path):
         url,
         auth=(settings.JSON_RPC_USERNAME, settings.JSON_RPC_PASSWORD),
     )
-    http_client.call('Player.Open', item={'file': smb_path})
+    http_client.send_request('Player.Open', False, {'item': {'file': smb_path}})
+
