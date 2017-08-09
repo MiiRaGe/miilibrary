@@ -86,6 +86,11 @@ def rate(request):
 
 
 def discrepancies(request):
+    """
+    Compares the state of th db and filesystem, mark discrepancies and fixes them on post
+    :param request:
+    :return:
+    """
     movies = Movie.objects.all()
     movie_discrepancy = []
     for movie in movies:

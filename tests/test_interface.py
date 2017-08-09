@@ -1,10 +1,15 @@
+import os
+
 import mock
 
 from django.test import TestCase
 from django.test import override_settings
+from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 
+from mii_common import tools
 from mii_indexer.factories import MovieRelationFactory, MovieTaggingFactory
 from mii_interface.factories import ReportFactory
+from mii_interface.views import discrepancies
 from mii_rating.models import QuestionAnswer, MovieQuestionSet
 from mii_sorter.factories import EpisodeFactory, MovieFactory
 from mii_sorter.models import Movie
@@ -12,12 +17,13 @@ from mii_sorter.models import Movie
 
 @override_settings(DESTINATION_FOLDER='/home/destination')
 class TestViews(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
         MovieTaggingFactory.create_batch(3)
         MovieRelationFactory.create_batch(5)
         EpisodeFactory.create_batch(6)
         ReportFactory.create_batch(5)
-        self.report = ReportFactory.create()
+        cls.report = ReportFactory.create()
 
     def test_index(self):
         assert self.client.get('/').status_code == 200
@@ -115,3 +121,45 @@ class TestMiiRating(TestCase):
         MovieTaggingFactory.create_batch(5, movie=movie)
         response = self.client.get('/rate')
         assert response.status_code == 200
+
+
+@override_settings(DESTINATION_FOLDER='/processed/')
+class TestDiscrepancies(FSTestCase, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.movie_without_path = MovieFactory.create(folder_path='dummy_path.mkv')
+        cls.movie_with_path = MovieFactory.create(folder_path='path_exists.mkv')
+        cls.movie_with_different_path = MovieFactory.create(title='Match', year=2000, folder_path='path_exists.mkv')
+
+    def setUp(self):
+        self.setUpPyfakefs()
+        dest_dir = tools.make_dir('/processed/')
+        movie_dir = tools.make_dir(os.path.join(dest_dir, 'Movies'))
+        all_movie_dir = tools.make_dir(os.path.join(movie_dir, 'All'))
+        self.title_folder = tools.make_dir(os.path.join(all_movie_dir, 'Title (2014)'))
+        self.match_folder = tools.make_dir(os.path.join(all_movie_dir, 'Match (2000)'))
+        self.fs.CreateFile('path_exists.mkv', contents='exists')
+
+    @mock.patch('mii_interface.views.render')
+    def test_discrepancies(self, render):
+        method = mock.MagicMock()
+        discrepancies(method)
+        render.assert_called_with(
+            method,
+            mock.ANY,
+            {
+                'movie_discrepancy': [
+                    {'title': self.movie_without_path.title, 'id': self.movie_without_path.id}],
+                'folder_discrepancy': [
+                    {'folder_exists': True,
+                     'movie_folder_exists': True,
+                     'movie_id': self.movie_with_different_path.id,
+                     'folder': self.match_folder,
+                     'movie_folder': self.movie_with_different_path.folder_path
+                     },
+                    {
+                        'folder': self.title_folder
+                    }
+                ]
+            }
+        )
