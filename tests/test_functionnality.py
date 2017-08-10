@@ -261,8 +261,10 @@ class TestSpecificSorter(TestMiilibrary):
     def test_sort_open_subtitle_is_called_with_error(self):
         self.fs.CreateFile(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
         self.sorter.sort_open_subtitle_info = mock.MagicMock(side_effect=Exception('test'))
+        self.sorter.sort_movie_from_name = mock.MagicMock()
         self.sorter.sort()
         assert self.sorter.sort_open_subtitle_info.called
+        assert self.sorter.sort_movie_from_name.called
 
     @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
     def test_sort_open_subtitle_info_movie(self):

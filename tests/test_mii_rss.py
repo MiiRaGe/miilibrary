@@ -59,13 +59,6 @@ class TestRSS(TestCase):
         title = 'Saitama.S01.rar'
         assert not already_exists(db_name, title)
 
-    def test_season_already_exists(self):
-        serie = Serie.objects.create(name='Saitama')
-        season = Season.objects.create(number=1, serie=serie)
-        db_name = 'Saitama'
-        title = 'Saitama.S01.rar'
-        assert already_exists(db_name, title)
-
     def test_get_or_create_downloading_object_episode_create(self):
         db_name = 'Saitama'
         title = 'Saitama.S01E01.mkv'
