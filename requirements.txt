@@ -4,7 +4,6 @@ cryptography
 django
 django-celery-results
 django-celery-beat
-django-dbbackup
 factory-boy
 flower
 gunicorn
@@ -26,3 +25,4 @@ requests
 responses
 git+https://github.com/MiiRaGe/pyfakefs.git
 git+https://github.com/MiiRaGe/pyreport.git
+git+https://github.com/MiiRaGe/django-dbbackup.git
