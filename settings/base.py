@@ -90,3 +90,4 @@ TRANSMISSION_RPC_PASSWORD = environ.get('TRANSMISSION_RPC_PASSWORD', u'admin')
 ALLOWED_HOSTS = ALLOWED_HOSTS + [environ.get('EXTRA_ALLOWED_HOST', u'192.168.0.101')]
 JSON_RPC_USERNAME = environ.get('JSON_RPC_USERNAME', 'kodi')
 JSON_RPC_PASSWORD = environ.get('JSON_RPC_PASSWORD', 'kodi')
+DEBUG = bool(environ.get('DEBUG', False))
