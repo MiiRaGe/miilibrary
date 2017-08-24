@@ -14,6 +14,9 @@ def already_exists(db_name, title):
             return True
         else:
             return False
+    matched = re.match('.*%s.*S(\d\d)' % db_name, title)
+    if matched:
+        return True
     return False
 
 

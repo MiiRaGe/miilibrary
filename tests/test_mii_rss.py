@@ -57,7 +57,7 @@ class TestRSS(TestCase):
     def test_season_does_not_exist(self):
         db_name = 'Saitama'
         title = 'Saitama.S01.rar'
-        assert not already_exists(db_name, title)
+        assert already_exists(db_name, title)
 
     def test_get_or_create_downloading_object_episode_create(self):
         db_name = 'Saitama'
