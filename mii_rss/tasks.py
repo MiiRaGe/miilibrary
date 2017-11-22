@@ -5,10 +5,13 @@ import json
 import logging
 import os
 import re
+from time import sleep
+
 import feedparser
 from datetime import timedelta
 
 import requests
+from celery.exceptions import Retry
 from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
@@ -85,8 +88,8 @@ def get_hashed_link(url_link):
     return hashlib.sha224(url_link).hexdigest()
 
 
-@app.task(serializer='json', bind=True)
-def add_torrent_to_transmission(self, url_link):
+@app.task(serializer='json')
+def add_torrent_to_transmission(url_link):
     if cache.get(get_hashed_link(url_link)):
         content = cache.get(get_hashed_link(url_link))
     else:
@@ -107,6 +110,29 @@ def add_torrent_to_transmission(self, url_link):
             "paused": False
         }
     }
+    response_dict = send_to_transmission_with_retry(parameters)
+
+    if response_dict['result'] != 'success':
+        raise Exception('Adding new Torrent failed: %s' % response_dict)
+
+
+def send_to_transmission_with_retry(parameters):
+    max_retries = 5
+    countdown = 1
+
+    tries = 0
+    response = None
+    while tries < max_retries:
+        try:
+            response = send_to_transmission(parameters)
+            break
+        except Retry:
+            tries += 1
+            sleep(countdown)
+    return response
+
+
+def send_to_transmission(parameters):
     headers = {
         'Content-Type': 'json'
     }
@@ -116,11 +142,10 @@ def add_torrent_to_transmission(self, url_link):
     response = requests.post(settings.TRANSMISSION_RPC_URL, json=parameters, headers=headers, auth=(settings.TRANSMISSION_RPC_USERNAME, settings.TRANSMISSION_RPC_PASSWORD))
     if response.status_code == 409:
         cache.set('X-Transmission-Session-Id', response.headers['X-Transmission-Session-Id'], 3600)
-        self.retry(countdown=10, max_retries=5)
+        raise Retry
     elif response.status_code == 500:
         raise Exception('The task actually failed %s', response.content.decode('utf8'))
     elif response.status_code != 200:
         raise Exception('The task actually failed with status %s', response.status_code)
     result_dict = json.loads(response.content.decode('utf8'))
-    if result_dict['result'] != 'success':
-        raise Exception('Adding new Torrent failed: %s' % result_dict)
+    return result_dict

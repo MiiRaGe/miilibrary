@@ -192,6 +192,7 @@ CELERY_IMPORTS = (
     'mii_sorter.tasks',
     'mii_unpacker.tasks',
     'mii_indexer.tasks',
+    'mii_interface.tasks'
 )
 
 CELERY_RESULT_BACKEND = 'django-db'

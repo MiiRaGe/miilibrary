@@ -6,4 +6,4 @@ from dbbackup.management.commands.dbbackup import Command
 
 @task(serializer='json')
 def db_backup():
-    Command().handle(verbosity=1)
+    Command().handle(verbosity=1, clean=True, compress=True)
