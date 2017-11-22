@@ -8,7 +8,7 @@ from django.utils import timezone
 from celery import task
 
 from mii_interface.models import Report
-from mii_rss.models import, FeedEntries
+from mii_rss.models import FeedEntries
 from mii_rss.tasks import send_to_transmission_with_retry
 from mii_sorter.models import WhatsNew
 from mii_unpacker.models import Unpacked
