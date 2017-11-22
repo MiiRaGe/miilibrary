@@ -7,6 +7,9 @@ __author__ = 'MiiRaGe'
 class Tag(Model):
     name = CharField(unique=True, max_length=50)
 
+    def __str__(self):
+        return self.name
+
 
 class MovieTagging(Model):
     movie = ForeignKey(Movie)
@@ -17,9 +20,15 @@ class MovieTagging(Model):
             'movie', 'tag'
         ]
 
+    def __str__(self):
+        return '{} -> {}'.format(self.tag.name, self.movie.title)
+
 
 class Person(Model):
     name = CharField(unique=True, max_length=100)
+
+    def __str__(self):
+        return self.name
 
 
 class MovieRelation(Model):
@@ -31,3 +40,6 @@ class MovieRelation(Model):
         unique_together = [
             'movie', 'person', 'type'
         ]
+
+    def __str__(self):
+        return '{} is {} in {}'.format(self.person.name, self.type, self.movie.title)
