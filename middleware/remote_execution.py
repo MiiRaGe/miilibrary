@@ -39,6 +39,9 @@ class ShellConnection(object):
                 sleep(5)
             raise Exception('NAS unreachable')
 
+    def is_connected(self):
+        return self.shell is not None
+
 shell_connection = ShellConnection()
 
 shell_connection.connect()
@@ -46,7 +49,7 @@ shell_connection.connect()
 
 def link(source_file, destination_file):
     # Source file is the destination of the link and destionation_file is the new link path
-    if shell_connection:
+    if shell_connection.is_connected():
         result = shell_connection.run([u"ln", map_to_nas(source_file), map_to_nas(destination_file)])
         return result.return_code
     return os.link(source_file, destination_file)
@@ -54,7 +57,7 @@ def link(source_file, destination_file):
 
 def symlink(source_file, destination_file):
     # Source file is the destination of the link and destionation_file is the new link path
-    if shell_connection:
+    if shell_connection.is_connected():
         result = shell_connection.run([u"ln", u"-s", map_to_nas(source_file), map_to_nas(destination_file)])
         return result.return_code
     return os.symlink(source_file, destination_file)
@@ -62,7 +65,7 @@ def symlink(source_file, destination_file):
 
 def unrar(source_file, destination_dir):
     # Source file is the archive file and destionation_dir is the extraction directory
-    if shell_connection:
+    if shell_connection.is_connected():
         result = shell_connection.run(
             [settings.REMOTE_UNRAR_PATH, "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
@@ -71,7 +74,7 @@ def unrar(source_file, destination_dir):
 
 def remove_dir(path):
     # This method is extremely dangerous as it will delete everything rm -rf
-    if shell_connection:
+    if shell_connection.is_connected():
         result = shell_connection.run(["rm", "-rf", map_to_nas(path)])
         return result.return_code
     return delete_dir(path)
