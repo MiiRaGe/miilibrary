@@ -12,50 +12,58 @@ from paramiko import SSHException
 
 from mii_common.tools import delete_dir
 
-shell = None
 
+class ShellConnection(object):
+    shell = None
 
-def connect():
-    if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
-        nonlocal shell
-        shell = spur.SshShell(hostname=settings.NAS_IP, username=settings.NAS_USERNAME, password=settings.NAS_PASSWORD,
-                              connect_timeout=3600, missing_host_key=spur.ssh.MissingHostKey.accept)
-connect()
+    def connect(self):
+        if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
+            self.shell = spur.SshShell(
+                hostname=settings.NAS_IP,
+                username=settings.NAS_USERNAME,
+                password=settings.NAS_PASSWORD,
+                connect_timeout=3600,
+                missing_host_key=spur.ssh.MissingHostKey.accept
+            )
 
+    def run(self, *args, **kwargs):
+        if self.shell:
+            max_retries = 10
+            tries = 0
+            while tries < max_retries:
+                try:
+                    result = self.shell.run(*args, **kwargs)
+                    return result
+                except SSHException:
+                    self.connect()
+                sleep(5)
+            raise Exception('NAS unreachable')
 
-def run(*args, **kwargs):
-    max_retries = 10
-    tries = 0
-    while tries < max_retries:
-        try:
-            result = shell.run(*args, **kwargs)
-            return result
-        except SSHException:
-            connect()
-        sleep(5)
-    raise Exception('NAS unreachable')
+shell_connection = ShellConnection()
+
+shell_connection.connect()
 
 
 def link(source_file, destination_file):
     # Source file is the destination of the link and destionation_file is the new link path
-    if shell:
-        result = run([u"ln", map_to_nas(source_file), map_to_nas(destination_file)])
+    if shell_connection:
+        result = shell_connection.run([u"ln", map_to_nas(source_file), map_to_nas(destination_file)])
         return result.return_code
     return os.link(source_file, destination_file)
 
 
 def symlink(source_file, destination_file):
     # Source file is the destination of the link and destionation_file is the new link path
-    if shell:
-        result = run([u"ln", u"-s", map_to_nas(source_file), map_to_nas(destination_file)])
+    if shell_connection:
+        result = shell_connection.run([u"ln", u"-s", map_to_nas(source_file), map_to_nas(destination_file)])
         return result.return_code
     return os.symlink(source_file, destination_file)
 
 
 def unrar(source_file, destination_dir):
     # Source file is the archive file and destionation_dir is the extraction directory
-    if shell:
-        result = run(
+    if shell_connection:
+        result = shell_connection.run(
             [settings.REMOTE_UNRAR_PATH, "e", "-y", map_to_nas(source_file), map_to_nas(destination_dir)])
         return result.return_code
     return subprocess.check_output(shlex.split('unrar e -y %s %s' % (source_file, destination_dir)))
@@ -63,8 +71,8 @@ def unrar(source_file, destination_dir):
 
 def remove_dir(path):
     # This method is extremely dangerous as it will delete everything rm -rf
-    if shell:
-        result = run(["rm", "-rf", map_to_nas(path)])
+    if shell_connection:
+        result = shell_connection.run(["rm", "-rf", map_to_nas(path)])
         return result.return_code
     return delete_dir(path)
 

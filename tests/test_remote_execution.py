@@ -5,7 +5,7 @@ from django.test import TestCase
 from middleware.remote_execution import link, symlink, unrar, remove_dir
 
 
-@mock.patch('middleware.remote_execution.shell')
+@mock.patch('middleware.remote_execution.ShellConnection')
 class TestRemoteExecution(TestCase):
     def test_link(self, shell):
         link('', '')
