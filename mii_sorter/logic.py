@@ -259,7 +259,7 @@ class Sorter:
 
     def sort_tv_serie(self, media):
         new_media = rename_serie(media)
-        self.serie_regex = re.compile('\A(.*)[sS]0*(\d+)[eE](\d\d).*\Z')
+        self.serie_regex = re.compile('\A(.*)[sS]0*(\d+)\s?[eE](\d\d).*\Z')
         result = self.serie_regex.match(new_media)
         if result:
             serie_name = format_serie_name(result.group(1))
@@ -349,7 +349,7 @@ class Sorter:
                     return False
                 elif movie.file_size == os.path.getsize(file_path):
                     logger.info(u'Same size movie exists, deleting source')
-                    tools.delete_dir(file_path)
+                    os.remove(file_path)
                     return False
                 else:
                     logger.info(u'Moving the old movie folder to unsorted as new file is bigger')
@@ -373,8 +373,8 @@ class Sorter:
             logger.info(u'Moving %s, with new name %s' % (filename, new_name))
             os.rename(file_path, os.path.join(created_movie_dir, new_name))
             return True
-        except OSError:
-            logger.error(u'Can\'t create %s' % custom_movie_dir)
+        except OSError as e:
+            logger.error(u'Can\'t create %s: %s' % (custom_movie_dir, repr(e)))
         except Exception as e:
             logger.exception(u'Found an exception when moving movie : %s' % repr(e))
         return False

@@ -18,6 +18,7 @@ class ShellConnection(object):
 
     def connect(self):
         if settings.NAS_IP and settings.NAS_USERNAME and settings.REMOTE_FILE_OPERATION_ENABLED:
+            print('Connecting')
             self.shell = spur.SshShell(
                 hostname=settings.NAS_IP,
                 username=settings.NAS_USERNAME,
@@ -28,7 +29,7 @@ class ShellConnection(object):
 
     def run(self, *args, **kwargs):
         if self.shell:
-            max_retries = 10
+            max_retries = 2
             tries = 0
             while tries < max_retries:
                 try:
@@ -36,7 +37,8 @@ class ShellConnection(object):
                     return result
                 except SSHException:
                     self.connect()
-                sleep(5)
+                print('Connection lost, retrying')
+                sleep(1)
             raise Exception('NAS unreachable')
 
     def is_connected(self):
