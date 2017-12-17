@@ -274,7 +274,7 @@ class Sorter:
         name = info.get('title')
         year = info.get('year')
         logger.info(u'Name/Year found from file_name : Name = <%s>, Year = <%s>' % (name, year))
-        for old, new in RegexRenaming.objects.value_list('old', 'new'):
+        for old, new in RegexRenaming.objects.all().values_list('old', 'new'):
             name = re.sub(old, new, name)
         result = self.mii_tmdb.get_movie_name(name, year)
         logger.debug(u'Result from tmdb: %s' % result)
