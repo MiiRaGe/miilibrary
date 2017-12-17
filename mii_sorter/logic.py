@@ -390,7 +390,7 @@ def get_dir_size(dir_name):
 
 
 def get_info(name):
-    regex_res = re.match('(.+)(20[01][0-9]|19[5-9][0-9])', name)
+    regex_res = re.match('^(.+)(20[0-2][0-9]|19[5-9][0-9])', name)
     if regex_res:
         title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         result = dict(title=title)
