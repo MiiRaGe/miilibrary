@@ -299,11 +299,22 @@ class Sorter:
                                                                                             year))
                         else:
                             logger.info(u'Year matched for %s' % file_name)
-                percent = letter_coverage(name, result['title'])
-                if percent > 65.0:
-                    logger.info(u'Title matched %s, %s at (%s%%)' % (name, result['title'], percent))
-                else:
-                    raise Exception('Title did not match %s, %s with (%s%%)' % (name, result['title'], percent))
+
+                ok = False
+                keys = ['title', 'original_title']
+                percent = 0.0
+                for key in keys:
+                    if not result.get(key):
+                        continue
+                    percent = letter_coverage(name, result[key])
+                    if percent > 65.0:
+                        logger.info(u'Title matched %s, %s at (%s%%)' % (name, result.get(key, key), percent))
+                        ok = True
+                        break
+                if not ok:
+                    raise Exception('Title did not match %s, %s with (%s%%)' % (name,
+                                                                                ','.join([result[x] for x in keys]),
+                                                                                percent))
 
                 imdb_id = self.mii_tmdb.get_movie_imdb_id(movie_id)
                 logger.debug(u'Matching (id/imdb)  %s/%s' % (movie_id, imdb_id))
