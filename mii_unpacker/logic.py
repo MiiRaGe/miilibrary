@@ -101,7 +101,7 @@ class RecursiveUnrarer:
                 self.removed += 1
             else:
                 if os.path.getsize(self.destination_dir + os.path.sep + media_file) < settings.MINIMUM_SIZE * 1000000\
-                        or 'sample' in media_file:
+                        or 'sample' in media_file.lower():
                     logger.debug(u'Removing (Reason : size < %sMo): %s' % (settings.MINIMUM_SIZE, media_file))
                     os.remove(self.destination_dir + os.path.sep + media_file)
                     self.removed += 1
