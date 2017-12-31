@@ -8,14 +8,6 @@ else
  echo "SMB detail not found, not mounting network drive"
 fi;
 
-echo "Copying public key to authorized_keys"
-mkdir /root/.ssh && echo $PUBLIC_KEY > /root/.ssh/authorized_keys
-echo "Key Copied"
-
-echo "Starting SSHD"
-/usr/sbin/sshd
-echo "SSHD started"
-
 echo "Starting memcached"
 memcached -u memcache -d
 echo "memcached started"

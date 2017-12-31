@@ -12,11 +12,6 @@ RUN apt-get install -y mysql-server && apt-get clean && rm -rf /var/lib/apt/list
 
 RUN sed -i -e "s@^datadir.*@datadir = /data/mysql@" /etc/mysql/my.cnf
 
-RUN mkdir /var/run/sshd \
-    && echo 'root:resin' | chpasswd \
-    && sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
-    && sed -i 's/UsePAM yes/UsePAM no/' /etc/ssh/sshd_config
-
 ADD requirements.txt /
 
 RUN pip install --no-input -r requirements.txt
