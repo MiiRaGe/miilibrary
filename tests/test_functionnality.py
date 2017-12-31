@@ -321,15 +321,14 @@ class TestSpecificSorter(TestMiilibrary):
         assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
         self.sorter.move_to_unsorted.assert_called_with(test_file)
 
-    @mock.patch('mii_sorter.logic.tools.delete_dir')
-    def test_create_dir_and_move_movie_same_size(self, delete_dir):
+    def test_create_dir_and_move_movie_same_size(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
         test_file = os.path.join(self.data_path, 'test.mkv')
         self.fs.CreateFile(test_file, contents='test_file')
         self.fs.CreateFile(existing_file, contents='test_file')
         MovieFactory.create(file_size=os.path.getsize(test_file), title='test', folder_path=existing_file, year=1500)
         assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
-        delete_dir.assert_called_with(test_file)
+        assert not os.path.exists(test_file)
 
     @mock.patch('mii_sorter.logic.tools.delete_dir')
     def test_create_dir_and_move_movie_error_handling(self, delete_dir):

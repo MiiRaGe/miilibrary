@@ -16,14 +16,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('type', models.CharField(max_length=10)),
-                ('movie', models.ForeignKey(to='mii_sorter.Movie')),
+                ('movie', models.ForeignKey(to='mii_sorter.Movie', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
             name='MovieTagging',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('movie', models.ForeignKey(to='mii_sorter.Movie')),
+                ('movie', models.ForeignKey(to='mii_sorter.Movie', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -43,12 +43,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='movietagging',
             name='tag',
-            field=models.ForeignKey(to='mii_indexer.Tag'),
+            field=models.ForeignKey(to='mii_indexer.Tag', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='movierelation',
             name='person',
-            field=models.ForeignKey(to='mii_indexer.Person'),
+            field=models.ForeignKey(to='mii_indexer.Person', on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='movietagging',

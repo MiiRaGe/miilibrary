@@ -1,4 +1,4 @@
-from django.db.models import Model, CharField, ForeignKey
+from django.db.models import Model, CharField, ForeignKey, CASCADE
 from mii_sorter.models import Movie
 
 __author__ = 'MiiRaGe'
@@ -12,8 +12,8 @@ class Tag(Model):
 
 
 class MovieTagging(Model):
-    movie = ForeignKey(Movie)
-    tag = ForeignKey(Tag)
+    movie = ForeignKey(Movie, CASCADE)
+    tag = ForeignKey(Tag, CASCADE)
 
     class Meta:
         unique_together = [
@@ -32,8 +32,8 @@ class Person(Model):
 
 
 class MovieRelation(Model):
-    movie = ForeignKey(Movie)
-    person = ForeignKey(Person)
+    movie = ForeignKey(Movie, CASCADE)
+    person = ForeignKey(Person, CASCADE)
     type = CharField(max_length=10)
 
     class Meta:

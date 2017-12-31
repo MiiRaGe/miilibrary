@@ -27,5 +27,5 @@ urlpatterns = [
     url(r'^rpc/rss', mii_rss_views.check_feeds, name='check_feeds'),
     url(r'^rpc/recheck_rss', mii_rss_views.recheck_feeds, name='recheck_feeds'),
     url(r'^rpc/unpack_sort_index', mii_interface_views.start_unpack_sort_indexer, name='unpack_sort_index'),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 ]

@@ -14,7 +14,7 @@ DATABASES['default'] = {
     'USER': 'root',
     'PASSWORD': 'changeme',
     'HOST': '127.0.0.1',
-    'ENGINE': 'django.db.backends.mysql',
+    'ENGINE': 'django.db.backends.sqlite3',
     'NAME': 'testdb'
 }
 
