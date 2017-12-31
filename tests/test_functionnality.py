@@ -11,7 +11,8 @@ from mii_common import tools
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
 from mii_sorter.factories import MovieFactory, EpisodeFactory
-from mii_sorter.logic import Sorter, get_dir_size, get_size
+from mii_sorter.logic import Sorter
+from mii_common.tools import get_size, get_dir_size
 from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
 from mii_unpacker.factories import UnpackedFactory
 from mii_unpacker.logic import RecursiveUnrarer

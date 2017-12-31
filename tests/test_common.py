@@ -25,6 +25,7 @@ class TestWithFakeFS(FakeFSTestCase):
     def setUp(self):
         self.setUpPyfakefs()
         self.fs.CreateFile('/t/blah.mkv')
+        os.mkdir('/test/')
 
     def test_delete_dir(self):
         self.fs.CreateFile('/t/e/s/t/blah.mkv')
@@ -44,21 +45,21 @@ class TestWithFakeFS(FakeFSTestCase):
         assert listdir_abs('/t') == ['/t/blah.mkv']
 
     def test_dict_apply(self):
-        dict_apply('/', {'a': {'b': [('blah', '/t/blah.mkv')]}})
-        assert os.path.exists('/a/b/blah')
+        dict_apply('/test', {'a': {'b': [('blah', '/t/blah.mkv')]}})
+        assert os.path.exists('/test/a/b/blah')
 
     def test_dict_apply_empty_leaf(self):
-        dict_apply('/', {'a': {'b': [('blah', '/t/blah.mkv')], 'c': []}})
-        assert os.path.exists('/a/b/blah')
-        assert not os.path.exists('/a/c/')
+        dict_apply('/test', {'a': {'b': [('blah', '/t/blah.mkv')], 'c': []}})
+        assert os.path.exists('/test/a/b/blah')
+        assert not os.path.exists('/test/a/c/')
 
     def test_dict_apply_custom_symlink(self):
         def custom_symlink(source, destination):
             destination += '.symlink'
             os.symlink(source, destination)
 
-        dict_apply('/', {'a': {'b': [('blah', '/t/blah.mkv')]}}, symlink_method=custom_symlink)
-        assert os.path.exists('/a/b/blah.symlink')
+        dict_apply('/test/', {'a': {'b': [('blah', '/t/blah.mkv')]}}, symlink_method=custom_symlink)
+        assert os.path.exists('/test/a/b/blah.symlink')
 
     @mock.patch('mii_common.tools.logger')
     def test_dict_apply_custom_symlink_raises_error(self, logger):
@@ -66,13 +67,13 @@ class TestWithFakeFS(FakeFSTestCase):
             destination += '.symlink'
             raise OSError()
 
-        dict_apply('/', {'a': {'b': [('blah', '/t/blah.mkv')]}}, symlink_method=custom_symlink)
-        assert not os.path.exists('/a/b/blah.symlink')
+        dict_apply('/test', {'a': {'b': [('blah', '/t/blah.mkv')]}}, symlink_method=custom_symlink)
+        assert not os.path.exists('/test/a/b/blah.symlink')
         assert logger.error.called
         assert logger.error.call_count == 2
 
     def test_dict_apply_empty_dict(self):
-        before = os.listdir('/')
-        dict_apply('/', {})
-        after = os.listdir('/')
+        before = os.listdir('/test')
+        dict_apply('/test', {})
+        after = os.listdir('/test')
         assert before == after

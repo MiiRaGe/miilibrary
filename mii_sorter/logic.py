@@ -10,6 +10,7 @@ from middleware.remote_execution import symlink, remove_dir
 from django.conf import settings
 from middleware import mii_cache_wrapper
 from mii_common import tools
+from mii_common.tools import get_size
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, insert_report, \
     RegexRenaming, update_whatsnew, SpecialHandling
 from movieinfo import hash_tool as ht
@@ -391,15 +392,6 @@ class Sorter:
         except Exception as e:
             logger.exception(u'Found an exception when moving movie : %s' % repr(e))
         return False
-
-
-def get_size(file_name):
-    return os.path.getsize(os.path.abspath(file_name))
-
-
-def get_dir_size(dir_name):
-    # TODO : Write unite test for that method
-    return sum([get_size(os.path.join(dir_name, x)) for x in os.listdir(dir_name)]) if os.path.exists(dir_name) else 0
 
 
 def get_info(name):
