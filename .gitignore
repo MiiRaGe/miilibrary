@@ -9,3 +9,4 @@ local.py
 *.log
 .cache
 .coverage
+media
