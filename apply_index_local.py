@@ -2,12 +2,15 @@
 import json
 import os
 import settings
-
-from raven import Client
-
-client = Client(settings.SENTRY_URL)
+import random
+import logging
 
 from mii_common import tools
+
+i = random.randint(0, 100)
+LOG_FILENAME = 'apply_index_{}.log'.format(i)
+
+logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
 
 
 def apply_index(path, json_file_name):
@@ -17,7 +20,6 @@ def apply_index(path, json_file_name):
     with open(json_file_path, 'rb') as inputfile:
         input_json = inputfile.read().decode('utf8')
         dict_index = json.loads(input_json)
-    client.captureMessage(u'Opened the json file')
     index_path = os.path.join(path, 'Movies', 'Index')
     current_path_root = tools.make_dir(index_path)
     tools.dict_apply(current_path_root, dict_index, symlink_method=os.symlink)
@@ -27,5 +29,5 @@ def apply_index(path, json_file_name):
 if __name__ == '__main__':
     try:
         apply_index(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
-    except Exception:
-        client.captureException()
+    except Exception as e:
+        logging.exception('Failed {}'.format(repr(e)))
