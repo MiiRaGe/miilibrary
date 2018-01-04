@@ -20,10 +20,21 @@ def apply_index(path, json_file_name):
     with open(json_file_path, 'rb') as inputfile:
         input_json = inputfile.read().decode('utf8')
         dict_index = json.loads(input_json)
-    index_path = os.path.join(path, 'Movies', 'Index')
-    current_path_root = tools.make_dir(index_path)
-    tools.dict_apply(current_path_root, dict_index, symlink_method=os.symlink)
-    os.remove(json_file_path)
+    try:
+        with open(json_file_path + '.old', 'rb') as inputfile:
+            input_json = inputfile.read().decode('utf8')
+            old_dict_index = json.loads(input_json)
+    except IOError:
+        old_dict_index = {}
+    if dict_index == old_dict_index:
+        os.remove(json_file_path)
+    else:
+        index_path = os.path.join(path, 'Movies', 'Index')
+        current_path_root = tools.make_dir(index_path)
+        tools.dict_apply(current_path_root, dict_index, symlink_method=os.symlink)
+        if os.path.exists(json_file_path + '.old'):
+            os.remove(json_file_path + '.old')
+        os.rename(json_file_path, json_file_path + '.old')
 
 
 if __name__ == '__main__':
