@@ -103,7 +103,7 @@ def dict_apply(path, dictionnary, symlink_method=None):
                                                                              name))
                         logger.error(u'Error: %s' % e)
                 else:
-                    current_path_content = current_path_content.remove(name)
+                    current_path_content.remove(name)
                     if get_dir_size(abs_path_to_name) != get_dir_size(new_one):
                         safe_delete(new_one)
                         try:
