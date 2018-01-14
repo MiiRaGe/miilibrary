@@ -93,7 +93,7 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '+^(g2=uuez(s1qgpmznc&amp;zx4win6o36*9d$7l=5!)tf77*110c'
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     # 'devserver.middleware.DevServerMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
