@@ -3,7 +3,7 @@
 if [[ $SMB_LOGIN && $SMB_PASSWORD && $MOUNT_FOLDER && $SMB_PATH ]];
 then
  echo "Mounting device...";
- mount -t cifs $SMB_PATH $MOUNT_FOLDER -o user=$SMB_LOGIN,pass=$SMB_PASSWORD
+ mount -t cifs $SMB_PATH $MOUNT_FOLDER -o user=$SMB_LOGIN,pass=$SMB_PASSWORD,vers=2.0
 else
  echo "SMB detail not found, not mounting network drive"
 fi;
