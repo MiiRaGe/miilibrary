@@ -9,8 +9,7 @@ before_install:
 
 language: python
 python:
-  - "3.4"
-  - "3.5"
+  - "3.11"
 # command to install dependencies
 install:
  - pip install -U --force-reinstall pip
