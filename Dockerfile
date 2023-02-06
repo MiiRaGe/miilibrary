@@ -1,24 +1,26 @@
-FROM resin/raspberrypi2-python:3.5.2
+FROM balenalib/raspberry-pi2-alpine-python:latest
 
-RUN apt-get update && apt-get install -yq openssh-server cifs-utils build-essential debconf-utils rabbitmq-server libmysqlclient-dev memcached libffi-dev \
-    libssl-dev supervisor  rsyslog
+RUN install_packages openssh-server cifs-utils build-base git mariadb-dev memcached libffi-dev \
+    openssl-dev supervisor rsyslog
 
-RUN echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections  \
-		&& echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections
+RUN apk add rabbitmq-server --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 
-RUN apt-get install -y nginx nginx-light
+RUN install_packages nginx
 
-RUN apt-get install -y mysql-server && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN install_packages mariadb
 
-RUN sed -i -e "s@^datadir.*@datadir = /data/mysql@" /etc/mysql/my.cnf
+RUN sed -i -e "s@^skip-networking@skip-networking\ndatadir = /data/mysql@" /etc/my.cnf.d/mariadb-server.cnf
 
 ADD requirements.txt /
 
-RUN pip install --no-input -r requirements.txt
+RUN install_packages cargo rust
 
+RUN pip install --upgrade pip && pip install --no-input --upgrade --force-reinstall -r requirements.txt
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY . /app
+
+RUN chmod 755 /app/start_app.sh
 
 WORKDIR /app
 

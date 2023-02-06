@@ -1,14 +1,16 @@
-celery==4.0.2
+celery
 coveralls
 cryptography
 django
 django-celery-results
 django-celery-beat
+django-dbbackup
 factory-boy
 flower
 gunicorn
 pyasn1
 pyopenssl
+pyfakefs
 pytest
 pytest-django
 pytest-cov
@@ -23,6 +25,4 @@ ndg-httpsclient
 raven
 requests
 responses
-git+https://github.com/MiiRaGe/pyfakefs.git
 git+https://github.com/MiiRaGe/pyreport.git
-git+https://github.com/MiiRaGe/django-dbbackup.git
