@@ -1,4 +1,5 @@
-from factory import DjangoModelFactory, Sequence
+from factory.django import DjangoModelFactory
+from factory import  Sequence
 
 from mii_unpacker.models import Unpacked
 

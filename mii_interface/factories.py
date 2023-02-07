@@ -2,7 +2,7 @@ import pytz
 
 
 from datetime import datetime
-from factory import DjangoModelFactory
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyDateTime, FuzzyChoice
 
 from mii_interface.models import Report

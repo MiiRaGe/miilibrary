@@ -1,4 +1,5 @@
-from factory import DjangoModelFactory, SubFactory
+from factory.django import DjangoModelFactory
+from factory import  SubFactory
 from factory.fuzzy import FuzzyChoice
 
 from mii_indexer.models import MovieRelation, Person, MovieTagging, Tag

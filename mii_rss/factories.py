@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from factory import DjangoModelFactory
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyInteger, FuzzyChoice, FuzzyDateTime
 
 from mii_rss.models import FeedDownloaded, FeedEntries, FeedFilter
