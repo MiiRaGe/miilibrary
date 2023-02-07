@@ -41,16 +41,14 @@ rabbitmq-server &
 echo "Rabbitmq started"
 
 echo "Configuring nginx"
-if [ -f /etc/nginx/sites-enabled/default ];
+if [ -f /etc/nginx/http.d/default.conf ];
 then
-	rm -f /etc/nginx/sites-enabled/default;
+	rm -f /etc/nginx/http.d/default.conf;
 fi
 
-if [ ! -f /etc/nginx/sites-available/miilibrary ]; then
-	cd /etc/nginx/sites-available && mv /app/miilibrary.nginx miilibrary;
+if [ ! -f /etc/nginx/http.d/miilibrary.conf ]; then
+	cd /etc/nginx/http.d && mv /app/miilibrary.nginx miilibrary.conf;
 fi
-
-cd /etc/nginx/sites-enabled && ln -sf ../sites-available/miilibrary miilibrary;
 
 service nginx start
 echo "Nginx Started"
