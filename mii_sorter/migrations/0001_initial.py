@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('rating', models.FloatField(null=True)),
                 ('folder_path', models.CharField(max_length=400)),
                 ('file_size', models.BigIntegerField()),
-                ('seen', models.NullBooleanField(default=None)),
+                ('seen', models.BooleanField(null=True)),
             ],
             options={
                 'ordering': ['year', 'title'],
