@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Test environment for MySQL
-      uses: mirromutth/mysql-action@1.1
+      uses: mirromutth/mysql-action@v1.1
       with:
         # MYSQL_ROOT_PASSWORD - root superuser password
         mysql root password: changeme
