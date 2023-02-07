@@ -44,4 +44,6 @@ jobs:
       run: |
         py.test --cov=.
     - name: Coveralls
-      run: coveralls
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: coveralls --service=github
