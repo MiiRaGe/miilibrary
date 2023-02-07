@@ -17,7 +17,7 @@ class TestApplyIndex(TestMiilibrary):
 
     def _dump_index(self, dict_index):
         index_path = os.path.join(self.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
-        self.fs.CreateFile(index_path,
+        self.fs.create_file(index_path,
                            contents=json.dumps(dict_index))
         return index_path
 

@@ -126,7 +126,7 @@ class TestTask(FakeFsTestCase, TestCase):
     @mock.patch('mii_rss.tasks.add_torrent_to_transmission')
     @mock.patch('mii_rss.tasks.feedparser')
     def test_task_feed_matching_already_exist(self, feedparser, add_torrent_to_transmission):
-        self.fs.CreateFile('/test.torrent')
+        self.fs.create_file('/test.torrent')
         feedparser.parse.return_value = {'status': 200,
                                          'entries': [{'title': 'non_matching', 'link': '/test.torrent?'}]
                                          }

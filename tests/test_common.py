@@ -24,20 +24,20 @@ class TestTools(TestCase):
 class TestWithFakeFS(FakeFSTestCase):
     def setUp(self):
         self.setUpPyfakefs()
-        self.fs.CreateFile('/t/blah.mkv')
+        self.fs.create_file('/t/blah.mkv')
         os.mkdir('/test/')
 
     def test_delete_dir(self):
-        self.fs.CreateFile('/t/e/s/t/blah.mkv')
-        self.fs.CreateFile('/t/e/s/blah.mkv')
-        self.fs.CreateFile('/t/e/t/blah.mkv')
+        self.fs.create_file('/t/e/s/t/blah.mkv')
+        self.fs.create_file('/t/e/s/blah.mkv')
+        self.fs.create_file('/t/e/t/blah.mkv')
         delete_dir('/t/e/')
         assert not os.path.exists('/t/e')
 
     def test_delete_dir_excluding_root(self):
-        self.fs.CreateFile('/t/e/s/t/blah.mkv')
-        self.fs.CreateFile('/t/e/s/blah.mkv')
-        self.fs.CreateFile('/t/e/t/blah.mkv')
+        self.fs.create_file('/t/e/s/t/blah.mkv')
+        self.fs.create_file('/t/e/s/blah.mkv')
+        self.fs.create_file('/t/e/t/blah.mkv')
         delete_dir('/t/e/', include_root=False)
         assert not os.listdir('/t/e')
 

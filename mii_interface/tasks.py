@@ -5,7 +5,7 @@ import time
 from datetime import timedelta
 from django.utils import timezone
 
-from celery import task
+from celery import shared_task
 
 from mii_interface.models import Report
 from mii_rss.models import FeedEntries
@@ -14,7 +14,7 @@ from mii_sorter.models import WhatsNew
 from mii_unpacker.models import Unpacked
 
 
-@task(serializer='json')
+@shared_task(serializer='json')
 def clean_history():
     month_old = timezone.now() - timedelta(days=45)
     FeedEntries.objects.filter(date__lte=month_old).delete()

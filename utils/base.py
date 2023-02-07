@@ -41,20 +41,20 @@ class TestMiilibrary(TestCase, DjTestCase):
         self.DESTINATION_FOLDER = '/processed/'
         tools.make_dir(self.DESTINATION_FOLDER)
         tools.make_dir(self.SOURCE_FOLDER)
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'The.big.bank.theory.S01E01.720p.mkv', contents='TheBigBank' * 65535)
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'The.big.bank.theory.S01E01.mkv', contents='TheBig' * 65535)
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.(2011).720p.mkv', contents='Thor' * 65535)
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.(2011).mkv', contents='Tho' * 65535)
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor-sample.mkv', contents=self._generate_data(1))
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
-        self.fs.CreateFile(self.SOURCE_FOLDER + '/sub/Thor.2.part01.rar', contents=self._generate_data(1))
-        self.fs.CreateFile(self.SOURCE_FOLDER + '/sub/Thor.2.part02.rar', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'The.big.bank.theory.S01E01.720p.mkv', contents='TheBigBank' * 65535)
+        self.fs.create_file(self.SOURCE_FOLDER + 'The.big.bank.theory.S01E01.mkv', contents='TheBig' * 65535)
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.(2011).720p.mkv', contents='Thor' * 65535)
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.(2011).mkv', contents='Tho' * 65535)
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor-sample.mkv', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + '/sub/Thor.2.part01.rar', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + '/sub/Thor.2.part02.rar', contents=self._generate_data(1))
 
         def fake_unrar(*args, **kwargs):
             try:
-                self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2-sample.mkv', contents=self._generate_data(1))
-                self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.srt', contents=self._generate_data(1))
-                self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.The.Dark.World.mkv',
+                self.fs.create_file(self.DESTINATION_FOLDER + '/data/Thor.2-sample.mkv', contents=self._generate_data(1))
+                self.fs.create_file(self.DESTINATION_FOLDER + '/data/Thor.2.srt', contents=self._generate_data(1))
+                self.fs.create_file(self.DESTINATION_FOLDER + '/data/Thor.The.Dark.World.mkv',
                                    contents='Not Thor' * 65535)
             except IOError as e:
                 pass
@@ -72,7 +72,7 @@ class TestMiilibrary(TestCase, DjTestCase):
 
     def _fill_data(self):
         def lazy_creation(filename, contents=None):
-            self.fs.CreateFile(os.path.join(self.DESTINATION_FOLDER, 'data', filename), contents=contents)
+            self.fs.create_file(os.path.join(self.DESTINATION_FOLDER, 'data', filename), contents=contents)
         lazy_creation('The.big.bank.theory.S01E01.720p.mkv', contents='TheBigBank' * 65535)
         lazy_creation('The.big.bank.theory.S01E01.mkv', contents='TheBig' * 65535)
         lazy_creation('Thor.(2011).720p.mkv', contents='Thor' * 65535)
@@ -83,7 +83,7 @@ class TestMiilibrary(TestCase, DjTestCase):
         os.mkdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)'))
         os.mkdir(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)'))
 
-        self.fs.CreateFile(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)', 'Thor.(2011).720p.mkv'),
+        self.fs.create_file(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor (2011)', 'Thor.(2011).720p.mkv'),
                            contents='Thor' * 65535)
-        self.fs.CreateFile(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)', 'Thor-.The.Dark.World.(2013).720p.mkv'),
+        self.fs.create_file(os.path.join(self.DESTINATION_FOLDER, 'Movies', 'All', 'Thor- The Dark World (2013)', 'Thor-.The.Dark.World.(2013).720p.mkv'),
                            contents='Tho' * 65535)

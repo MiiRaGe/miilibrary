@@ -18,6 +18,7 @@ spur
 feedparser
 mock
 python-coveralls
+pymemcache
 jsonrpc-requests
 python-memcached
 mysqlclient

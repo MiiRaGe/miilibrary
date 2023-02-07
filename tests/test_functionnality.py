@@ -165,63 +165,63 @@ class TestSpecificUnpacker(TestMiilibrary):
     @mock.patch('mii_unpacker.logic.unrar')
     def test_already_unrared(self, unrar):
         UnpackedFactory.create(filename='Thor.2.rar')
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert not unrar.called
         assert self.recursive_unrarer.extracted == 0
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unrar(self, unrar):
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert unrar.called
         assert self.recursive_unrarer.extracted == 1
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unrar_raising_error(self, unrar):
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
         unrar.side_effect = CalledProcessError(u'', '', '')
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.extracted == 0
 
     def test_linking_video(self):
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
 
     def test_linking_video_already_exists(self):
         UnpackedFactory.create(filename='Thor.2.mkv')
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 0
 
     def test_linking_video_file_exists_but_less(self):
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
-        self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(2))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
+        self.fs.create_file(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(2))
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 0
 
     def test_linking_video_file_exists_betters(self):
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(2))
-        self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(2))
+        self.fs.create_file(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
 
     @mock.patch('mii_unpacker.logic.link', new=mock.MagicMock(side_effect=AttributeError))
     def test_linking_video_file_exists_betters_link_fails(self):
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(2))
-        self.fs.CreateFile(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(2))
+        self.fs.create_file(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unicode_archive(self, unrar):
-        self.fs.CreateFile(self.SOURCE_FOLDER + u'ééü.rar', contents=self._generate_data(2))
+        self.fs.create_file(self.SOURCE_FOLDER + u'ééü.rar', contents=self._generate_data(2))
         self.recursive_unrarer.unrar_and_link()
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unicode_archive(self, unrar):
-        self.fs.CreateFile(self.SOURCE_FOLDER + 'ééü.mkv', contents=self._generate_data(2))
+        self.fs.create_file(self.SOURCE_FOLDER + 'ééü.mkv', contents=self._generate_data(2))
         self.recursive_unrarer.unrar_and_link()
 
 
@@ -238,21 +238,21 @@ class TestSpecificSorter(TestMiilibrary):
     def test_get_size(self):
         f1 = os.path.join(self.data_path, 'file1')
         f2 = os.path.join(self.data_path, 'file2')
-        self.fs.CreateFile(f1, contents=self._generate_data(1))
-        self.fs.CreateFile(f2, contents=self._generate_data(1))
+        self.fs.create_file(f1, contents=self._generate_data(1))
+        self.fs.create_file(f2, contents=self._generate_data(1))
         dir_size = get_dir_size(self.data_path)
         assert dir_size >= (get_size(f1) + get_size(f2))
 
     @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
     def test_sort_open_subtitle_is_called(self):
-        self.fs.CreateFile(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
+        self.fs.create_file(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
         self.sorter.sort_open_subtitle_info = mock.MagicMock()
         self.sorter.sort()
         assert self.sorter.sort_open_subtitle_info.called
 
     @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
     def test_sort_open_subtitle_is_called_with_get_movie_name(self):
-        self.fs.CreateFile(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
+        self.fs.create_file(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
         self.sorter.sort_open_subtitle_info = mock.MagicMock()
         self.sorter.mii_osdb.get_subtitles = mock.MagicMock(return_value=False)
         self.sorter.sort()
@@ -260,7 +260,7 @@ class TestSpecificSorter(TestMiilibrary):
 
     @mock.patch('mii_sorter.logic.get_best_match', new=lambda x, y: x[0])
     def test_sort_open_subtitle_is_called_with_error(self):
-        self.fs.CreateFile(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
+        self.fs.create_file(os.path.join(self.data_path, 'test_file.mkv'), contents='test_file' * 65535)
         self.sorter.sort_open_subtitle_info = mock.MagicMock(side_effect=Exception('test'))
         self.sorter.sort_movie_from_name = mock.MagicMock()
         self.sorter.sort()
@@ -316,8 +316,8 @@ class TestSpecificSorter(TestMiilibrary):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
         MovieFactory.create(file_size=5000, title='test', folder_path=existing_file, year=1500)
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         self.sorter.move_to_unsorted = mock.MagicMock()
         assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
         self.sorter.move_to_unsorted.assert_called_with(test_file)
@@ -325,8 +325,8 @@ class TestSpecificSorter(TestMiilibrary):
     def test_create_dir_and_move_movie_same_size(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         MovieFactory.create(file_size=os.path.getsize(test_file), title='test', folder_path=existing_file, year=1500)
         assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
         assert not os.path.exists(test_file)
@@ -335,8 +335,8 @@ class TestSpecificSorter(TestMiilibrary):
     def test_create_dir_and_move_movie_error_handling(self, delete_dir):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         MovieFactory.create(file_size=os.path.getsize(test_file), title='test', folder_path=existing_file, year=1500)
         delete_dir.side_effect = OSError()
         assert not self.sorter.create_dir_and_move_movie('test', 1500, '1', 'test.mkv')
@@ -348,8 +348,8 @@ class TestSpecificSorter(TestMiilibrary):
         EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1,
                               number=1)
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         self.sorter.move_to_unsorted = mock.MagicMock()
         assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
         self.sorter.move_to_unsorted.assert_called_with(test_file)
@@ -359,8 +359,8 @@ class TestSpecificSorter(TestMiilibrary):
         EpisodeFactory.create(file_size=5000, season__serie__name='Test', file_path=existing_file, season__number=1,
                               number=1)
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         self.sorter.move_to_unsorted = mock.MagicMock()
         self.sorter.move_to_unsorted.side_effect = OSError()
         assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
@@ -368,8 +368,8 @@ class TestSpecificSorter(TestMiilibrary):
     def test_create_dir_and_move_serie_same_size(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test', file_path=existing_file,
                               season__number=1, number=1)
         assert not self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
@@ -377,8 +377,8 @@ class TestSpecificSorter(TestMiilibrary):
     def test_create_dir_and_move_serie_new_is_bigger(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         self.sorter.move_to_unsorted = mock.MagicMock()
         EpisodeFactory.create(file_size=os.path.getsize(test_file) - 1, season__serie__name='Test',
                               file_path=existing_file, season__number=1, number=1)
@@ -388,8 +388,8 @@ class TestSpecificSorter(TestMiilibrary):
     def test_create_dir_and_move_serie_replace_missing(self):
         existing_file = os.path.join(self.data_path, 'test2.mkv')
         test_file = os.path.join(self.data_path, 'test.mkv')
-        self.fs.CreateFile(test_file, contents='test_file')
-        self.fs.CreateFile(existing_file, contents='test_file')
+        self.fs.create_file(test_file, contents='test_file')
+        self.fs.create_file(existing_file, contents='test_file')
         EpisodeFactory.create(file_size=os.path.getsize(test_file), season__serie__name='Test',
                               file_path='/unknown_path', season__number=1, number=1)
         assert self.sorter.create_dir_and_move_serie('test', '1', '1', 'title', 'test.mkv')
@@ -424,8 +424,8 @@ class TestSpecificSorter(TestMiilibrary):
         assert not self.sorter.sort_movie_from_name('Movie.(2000).mkv')
 
     def test_move_to_unsorted(self):
-        self.fs.CreateFile('/test.mkv', contents='a')
-        self.fs.CreateFile('/unsorted/test.mkv', contents='b')
+        self.fs.create_file('/test.mkv', contents='a')
+        self.fs.create_file('/unsorted/test.mkv', contents='b')
         self.sorter.unsorted_dir = '/unsorted'
         self.sorter.move_to_unsorted('/', 'test.mkv')
         assert not os.path.exists('/test.mkv')

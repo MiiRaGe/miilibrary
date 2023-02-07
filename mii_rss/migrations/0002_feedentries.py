@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import datetime
-from django.utils.timezone import utc
+from datetime import timezone
 
 
 class Migration(migrations.Migration):
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('json_entries', models.TextField()),
-                ('date', models.DateTimeField(default=datetime.datetime(2015, 6, 26, 20, 42, 31, 349515, tzinfo=utc))),
+                ('date', models.DateTimeField(default=datetime.datetime(2015, 6, 26, 20, 42, 31, 349515, tzinfo=timezone.utc))),
             ],
             options={
                 'get_latest_by': 'date',
