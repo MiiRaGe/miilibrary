@@ -1,0 +1,6 @@
+[client-server]
+socket=/tmp/mysql.sock
+port=3306
+
+[mysqld]
+datadir = /data/mysql
