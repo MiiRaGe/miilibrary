@@ -9,7 +9,7 @@ else
 fi;
 
 echo "Starting memcached"
-memcached -u memcache -d
+memcached -d
 echo "memcached started"
 
 if [ ! -d /data/mysql ]; then
@@ -22,7 +22,7 @@ fi
 echo "Making sure the user is correct for mysqld"
 chown -R mysql:mysql /data/mysql
 echo "Starting Mysql"
-service mysql start
+/usr/bin/mysqld_safe
 echo "Mysql Started"
 
 echo "Creating db and user if not exist"
