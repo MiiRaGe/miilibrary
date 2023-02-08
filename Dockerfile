@@ -9,6 +9,10 @@ ADD requirements.txt /
 
 RUN pip install --upgrade pip && pip install --no-input --upgrade --force-reinstall -r requirements.txt
 
+RUN apk add --no-cache tzdata
+
+ENV TZ=Europe/Stockholm
+
 COPY miilibrary.cnf /etc/my.cnf.d/miilibrary.cnf
 
 RUN adduser -D memcache
