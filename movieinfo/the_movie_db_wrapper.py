@@ -1,4 +1,4 @@
-import cgi
+import html
 import json
 import re
 import requests
@@ -11,7 +11,7 @@ class TheMovieDBWrapper:
 
     def get_movie_name(self, movie_name, year=None):
         movie_name = re.sub("\s+", "+", movie_name)
-        url = "%s/3/search/movie?%s&query=%s" % (self.server, self.api_key, cgi.escape(movie_name))
+        url = "%s/3/search/movie?%s&query=%s" % (self.server, self.api_key, html.escape(movie_name))
         if year:
             url += "&year=%s" % year
         results = self.get_url(url)
