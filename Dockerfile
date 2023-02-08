@@ -13,7 +13,7 @@ COPY miilibrary.cnf /etc/my.cnf.d/miilibrary.cnf
 
 RUN adduser -D memcache
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY supervisord.conf /etc/supervisor.d/supervisord.ini
 
 COPY . /app
 

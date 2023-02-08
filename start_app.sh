@@ -12,19 +12,19 @@ echo "Starting memcached"
 memcached -umemcache -d
 echo "memcached started"
 
+chmod 444 /etc/my.cnf.d/miilibrary.cnf
 if [ ! -d /data/mysql ]; then
     echo "Creating mysql folder in persistent storage"
 	mkdir -p /data/mysql
 	cp -r /var/lib/mysql/* /data/mysql
 	rm -rf /var/lib/mysql
+    mysql_install_db --user=mysql
 fi
 
 echo "Making sure the user and config is correct for mysqld"
 chown -R mysql:mysql /data/mysql
-chmod 444 /etc/my.cnf.d/miilibrary.cnf
-mysql_install_db --user=mysql
 echo "Starting Mysql"
-/usr/bin/mysqld_safe
+/usr/bin/mysqld_safe&
 echo "Mysql Started"
 
 echo "Creating db and user if not exist"
@@ -64,4 +64,4 @@ echo "Running migrations"
 python /app/manage.py migrate
 
 echo "Starting main app"
-supervisord -c /etc/supervisor/supervisord.conf
+supervisord -c /etc/supervisord.conf
