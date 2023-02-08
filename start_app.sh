@@ -9,7 +9,7 @@ else
 fi;
 
 echo "Starting memcached"
-memcached -d
+memcached -umemcache -d
 echo "memcached started"
 
 if [ ! -d /data/mysql ]; then

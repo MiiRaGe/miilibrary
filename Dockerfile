@@ -15,6 +15,8 @@ RUN chmod 222 /etc/my.cnf.d/miilibrary.cnf
 
 RUN mysql_install_db --user=mysql
 
+RUN useradd -ms /bin/bash memcache
+
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY . /app
