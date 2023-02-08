@@ -11,6 +11,8 @@ RUN pip install --upgrade pip && pip install --no-input --upgrade --force-reinst
 
 COPY miilibrary.cnf /etc/my.cnf.d/miilibrary.cnf
 
+RUN chmod 222 /etc/my.cnf.d/miilibrary.cnf
+
 RUN mysql_install_db --user=mysql
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
