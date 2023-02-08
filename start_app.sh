@@ -50,7 +50,7 @@ if [ ! -f /etc/nginx/http.d/miilibrary.conf ]; then
 	cd /etc/nginx/http.d && mv /app/miilibrary.nginx miilibrary.conf;
 fi
 
-service nginx start
+service nginx restart
 echo "Nginx Started"
 
 cd /app

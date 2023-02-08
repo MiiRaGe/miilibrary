@@ -1,21 +1,18 @@
 FROM balenalib/raspberry-pi2-alpine-python:latest
 
 RUN install_packages openssh-server cifs-utils build-base git mariadb-dev memcached libffi-dev \
-    openssl-dev supervisor rsyslog
+    openssl-dev supervisor rsyslog openrc nginx mariadb cargo rust mysql-client
 
 RUN apk add rabbitmq-server --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 
-RUN install_packages nginx
-
-RUN install_packages mariadb
-
-RUN sed -i -e "s@^skip-networking@skip-networking\ndatadir = /data/mysql@" /etc/my.cnf.d/mariadb-server.cnf
-
 ADD requirements.txt /
 
-RUN install_packages cargo rust
-
 RUN pip install --upgrade pip && pip install --no-input --upgrade --force-reinstall -r requirements.txt
+
+COPY miilibrary.cnf /etc/my.cnf.d/miilibrary.cnf
+
+RUN mysql_install_db --user=mysql
+
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY . /app
