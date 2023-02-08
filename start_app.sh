@@ -19,8 +19,10 @@ if [ ! -d /data/mysql ]; then
 	rm -rf /var/lib/mysql
 fi
 
-echo "Making sure the user is correct for mysqld"
+echo "Making sure the user and config is correct for mysqld"
 chown -R mysql:mysql /data/mysql
+chmod 444 /etc/my.cnf.d/miilibrary.cnf
+mysql_install_db --user=mysql
 echo "Starting Mysql"
 /usr/bin/mysqld_safe
 echo "Mysql Started"
