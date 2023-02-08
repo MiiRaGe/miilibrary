@@ -24,11 +24,19 @@ fi
 echo "Making sure the user and config is correct for mysqld"
 chown -R mysql:mysql /data/mysql
 echo "Starting Mysql"
+MYSQL=`which mysql`
 /usr/bin/mysqld_safe&
+
+OUTPUT="Can't connect"
+while [[ $OUTPUT == *"Can't connect"* ]]
+do
+    OUTPUT=$($MYSQL -uroot -proot -e "FLUSH PRIVILEGES;" 2>&1)
+	echo "Trying to connect to mysql..."
+	sleep 1
+done
 echo "Mysql Started"
 
 echo "Creating db and user if not exist"
-MYSQL=`which mysql`
 
 Q1="CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 Q2="GRANT ALL ON *.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';"
@@ -52,7 +60,7 @@ if [ ! -f /etc/nginx/http.d/miilibrary.conf ]; then
 	cd /etc/nginx/http.d && mv /app/miilibrary.nginx miilibrary.conf;
 fi
 
-service nginx restart
+nginx
 echo "Nginx Started"
 
 cd /app
