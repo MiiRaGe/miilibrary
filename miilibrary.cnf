@@ -1,5 +1,5 @@
 [client-server]
-socket=/tmp/mysql.sock
+socket=/run/mysqld/mysqld.sock  
 port=3306
 
 [mysqld]

@@ -40,6 +40,7 @@ echo "Creating db and user if not exist"
 
 Q1="CREATE DATABASE IF NOT EXISTS $DB_NAME;"
 Q2="GRANT ALL ON *.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';"
+Q2="GRANT ALL ON *.* TO '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
 Q3="FLUSH PRIVILEGES;"
 SQL="${Q1}${Q2}${Q3}"
 
