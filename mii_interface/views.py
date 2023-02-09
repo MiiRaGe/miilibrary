@@ -232,10 +232,10 @@ def discrepancies(request):
                 movie.save()
 
         Episode.objects.filter(id__in=[x['id'] for x in serie_discrepancy]).delete()
-        for season in Season.objects.all().select_related('episodes'):
+        for season in Season.objects.all().prefetch_related('episodes'):
             if season.episodes == []:
                 season.delete()
-        for serie in Serie.objects.all().select_related('seasons'):
+        for serie in Serie.objects.all().prefetch_related('seasons'):
             if serie.seasons == []:
                 serie.delete()
 
