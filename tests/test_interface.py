@@ -11,7 +11,7 @@ from mii_indexer.factories import MovieRelationFactory, MovieTaggingFactory
 from mii_interface.factories import ReportFactory
 from mii_interface.views import discrepancies
 from mii_rating.models import QuestionAnswer, MovieQuestionSet
-from mii_sorter.factories import EpisodeFactory, MovieFactory
+from mii_sorter.factories import EpisodeFactory, MovieFactory, SerieFactory
 from mii_sorter.models import Movie
 
 
@@ -136,14 +136,19 @@ class TestDiscrepancies(FSTestCase, TestCase):
         cls.movie_without_path = MovieFactory.create(folder_path='dummy_path.mkv')
         cls.movie_with_path = MovieFactory.create(folder_path='path_exists')
         cls.movie_with_different_path = MovieFactory.create(title='Match', year=2000, folder_path='path_exists2')
+        cls.serie_with_path = SerieFactory.create(name='Serie2')
+        cls.serie_without_path = SerieFactory.create(name='Serie3')
 
     def setUp(self):
         self.setUpPyfakefs()
         dest_dir = tools.make_dir('/processed/')
         movie_dir = tools.make_dir(os.path.join(dest_dir, 'Movies'))
+        serie_dir = tools.make_dir(os.path.join(dest_dir, 'Series'))
         all_movie_dir = tools.make_dir(os.path.join(movie_dir, 'All'))
         self.title_folder = tools.make_dir(os.path.join(all_movie_dir, 'Title (2014)'))
         self.match_folder = tools.make_dir(os.path.join(all_movie_dir, 'Match (2000)'))
+        self.serie1_folder = tools.make_dir(os.path.join(serie_dir, 'Serie1'))
+        self.serie2_folder = tools.make_dir(os.path.join(serie_dir, 'Serie2'))
         tools.make_dir('path_exists')
         tools.make_dir('path_exists2')
 
@@ -167,7 +172,11 @@ class TestDiscrepancies(FSTestCase, TestCase):
                     {
                         'folder': self.title_folder
                     }
-                ]
+                ],
+                'serie_folder_discrepancy': [],
+                'episodes_discrepancy': [],
+                'seasons_discrepancy': [],
+                'series_discrepancy': [],
             }
         )
 
@@ -184,6 +193,7 @@ class TestDiscrepancies(FSTestCase, TestCase):
             mock.ANY,
             {
                 'movie_discrepancy': [],
-                'folder_discrepancy': []
+                'folder_discrepancy': [],
+                'serie_folder_discrepancy': [],
             }
         )

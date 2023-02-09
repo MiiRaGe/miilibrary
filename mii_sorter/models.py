@@ -40,17 +40,24 @@ class Movie(Model):
 
 class Serie(Model):
     name = CharField(unique=True, max_length=50)
+    folder_path = CharField(max_length=400)
 
     class Meta:
         ordering = ['name']
 
     def __unicode__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if self.folder_path:
+            self.folder_path = self.folder_path.replace(settings.DESTINATION_FOLDER, settings.DESTINATION_PLACEHOLDER)
+        return super(Serie, self).save(*args, **kwargs)
 
 
 class Season(Model):
     number = IntegerField()
     serie = ForeignKey(Serie, CASCADE, related_name='seasons')
+    folder_path = CharField(max_length=400)
 
     class Meta:
         unique_together = [
@@ -61,6 +68,10 @@ class Season(Model):
     def __unicode__(self):
         return '%s S%s' % (self.serie.name, self.number)
 
+    def save(self, *args, **kwargs):
+        if self.folder_path:
+            self.folder_path = self.folder_path.replace(settings.DESTINATION_FOLDER, settings.DESTINATION_PLACEHOLDER)
+        return super(Season, self).save(*args, **kwargs)
 
 class Episode(Model):
     number = IntegerField()

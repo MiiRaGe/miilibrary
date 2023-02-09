@@ -93,12 +93,30 @@ def discrepancies(request):
     """
     movie_discrepancy = []
     folder_discrepancy = []
+    series_discrepancy = []
+    seasons_discrepancy = []
+    episodes_discrepancy = []
     serie_folder_discrepancy = []
 
     movies = Movie.objects.all()
     for movie in movies:
         if not os.path.exists(movie.abs_folder_path):
             movie_discrepancy.append({'title': movie.title, 'id': movie.id})
+    
+    episodes = Episode.objects.all().select_related('season','season__serie')
+    for episode in episodes:
+        if not os.path.exists(episode.abs_file_path):
+            episodes_discrepancy.append({'title': str(episode), 'id': episode.id})
+    
+    seasons = Season.objects.all().select_related('serie').prefetch_related('episodes')
+    for season in seasons:
+        if list(seasons.episodes.all()) == []:
+            seasons_discrepancy.append({'number': str(season.number), 'id': season.id})
+    
+    series = Serie.objects.all().prefetch_related('seasons')
+    for serie in series:
+        if list(serie.seasons.all()) == []:
+            series_discrepancy.append({'name': str(serie.name), 'id': serie.id})  
 
     compiled_re = re.compile(u'^(.+) \((\d{4})\).*$')
     folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All')
@@ -121,11 +139,7 @@ def discrepancies(request):
                                         'movie_folder': movie_object.abs_folder_path,
                                         'movie_folder_exists': os.path.exists(movie_object.abs_folder_path)})
         
-        serie_discrepancy = []
-        episodes = Episode.objects.all().select_related('season','season__serie')
-        for episode in episodes:
-            if not os.path.exists(episode.abs_file_path):
-                serie_discrepancy.append({'title': str(episode), 'id': episode.id})
+        
 
         # {
         # 'name': 'serie1'
@@ -143,7 +157,7 @@ def discrepancies(request):
         serie_folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Series')
         for serie_folder in os.listdir(serie_folder_dir):
             serie_path = os.path.join(serie_folder_dir, serie_folder)
-            serie_object = Serie.objects.filter(name=serie_folder).select_related('seasons', 'seasons__episodes').first()
+            serie_object = Serie.objects.filter(name=serie_folder).prefetch_related('seasons', 'seasons__episodes').first()
             discrepancy = {
                 'name': serie_folder,
                 'seasons': [],
@@ -231,7 +245,7 @@ def discrepancies(request):
                 movie.folder_path = discrepancy['folder']
                 movie.save()
 
-        Episode.objects.filter(id__in=[x['id'] for x in serie_discrepancy]).delete()
+        Episode.objects.filter(id__in=[x['id'] for x in episodes_discrepancy]).delete()
         for season in Season.objects.all().prefetch_related('episodes'):
             if season.episodes == []:
                 season.delete()
@@ -244,6 +258,9 @@ def discrepancies(request):
                   'mii_interface/discrepancies.html',
                   {'movie_discrepancy': sorted(movie_discrepancy, key=lambda x: x['title']),
                    'folder_discrepancy': sorted(folder_discrepancy, key=lambda x: x['folder']),
+                   'series_discrepancy': sorted(series_discrepancy, key=lambda x: x['name']),
+                   'seasons_discrepancy': sorted(seasons_discrepancy, key=lambda x: x['title']),
+                   'episodes_discrepancy': sorted(episodes_discrepancy, key=lambda x: x['title']),
                    'serie_folder_discrepancy': sorted(serie_folder_discrepancy, key=lambda x: x['name']),
                    })
 
