@@ -25,4 +25,23 @@
         <li><span class="{% if folder.folder_exists %}text-success{% endif %}">{{ folder.folder }}</span> {% if folder.movie_folder %}<span class="{% if folder.movie_folder_exists %}text-success{% endif %}">(Object: {{ folder.movie_folder }})</span>{% endif %}</li>
     {% endfor %}
 </ul>
+<h1>Series Discrepancies</h1>
+<ul>
+    {% for folder in serie_folder_discrepancy %}
+        <li><span>{{ folder.name }}</span>
+        <ul>
+            {% for season in folder.seasons %}
+                <li><span>{{ season.number }}</span>
+                    <ul>
+                        {% for episode in season.episodes %}
+                        <span>{{episode}}</span>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+        </li>
+    {% endfor %}
+</ul>
+
 {% endblock %}

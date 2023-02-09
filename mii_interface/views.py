@@ -13,7 +13,7 @@ from middleware.remote_execution import remote_play
 from mii_common import tools
 from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
-from mii_sorter.models import Movie, Serie, Episode
+from mii_sorter.models import Movie, Serie, Season, Episode
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
 from mii_unpacker.tasks import unpack
 from mii_sorter.tasks import sort
@@ -91,35 +91,125 @@ def discrepancies(request):
     :param request:
     :return:
     """
-    movies = Movie.objects.all()
     movie_discrepancy = []
+    folder_discrepancy = []
+    serie_folder_discrepancy = []
+
+    movies = Movie.objects.all()
     for movie in movies:
         if not os.path.exists(movie.abs_folder_path):
             movie_discrepancy.append({'title': movie.title, 'id': movie.id})
 
-    folder_discrepancy = []
     compiled_re = re.compile(u'^(.+) \((\d{4})\).*$')
     folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All')
-    for movie_folder in os.listdir(folder_dir):
-        movie_path = os.path.join(folder_dir, movie_folder)
-        matched_info = compiled_re.match(movie_folder)
-        if not matched_info:
-            folder_discrepancy.append({'folder': movie_path, 'error': matched_info})
-            continue
-        title = matched_info.group(1)
-        year = matched_info.group(2)
-        movie_object = Movie.objects.filter(title=title, year=year).first()
-        if not movie_object:
-            folder_discrepancy.append({'folder': movie_path})
-        elif movie_object.abs_folder_path != movie_path:
-            folder_discrepancy.append({'folder': movie_path,
-                                       'folder_exists': os.path.exists(movie_path),
-                                       'movie_id': movie_object.id,
-                                       'movie_folder': movie_object.abs_folder_path,
-                                       'movie_folder_exists': os.path.exists(movie_object.abs_folder_path)})
+    try:
+        for movie_folder in os.listdir(folder_dir):
+            movie_path = os.path.join(folder_dir, movie_folder)
+            matched_info = compiled_re.match(movie_folder)
+            if not matched_info:
+                folder_discrepancy.append({'folder': movie_path, 'error': matched_info})
+                continue
+            title = matched_info.group(1)
+            year = matched_info.group(2)
+            movie_object = Movie.objects.filter(title=title, year=year).first()
+            if not movie_object:
+                folder_discrepancy.append({'folder': movie_path})
+            elif movie_object.abs_folder_path != movie_path:
+                folder_discrepancy.append({'folder': movie_path,
+                                        'folder_exists': os.path.exists(movie_path),
+                                        'movie_id': movie_object.id,
+                                        'movie_folder': movie_object.abs_folder_path,
+                                        'movie_folder_exists': os.path.exists(movie_object.abs_folder_path)})
+        
+        serie_discrepancy = []
+        episodes = Episode.objects.all().select_related('season','season__serie')
+        for episode in episodes:
+            if not os.path.exists(episode.abs_file_path):
+                serie_discrepancy.append({'title': str(episode), 'id': episode.id})
+
+        # {
+        # 'name': 'serie1'
+        # 'seasons': [
+        #   {
+        #    'number': 1,
+        #    'episodes': [
+        #    'number': 1
+        #    'file_path': '//',
+        #    'file_size': 1,
+        #    ]
+        #   }
+        # ]
+        # }
+        serie_folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Series')
+        for serie_folder in os.listdir(serie_folder_dir):
+            serie_path = os.path.join(serie_folder_dir, serie_folder)
+            serie_object = Serie.objects.filter(name=serie_folder).select_related('seasons', 'seasons__episodes').first()
+            discrepancy = {
+                'name': serie_folder,
+                'seasons': [],
+            }
+            if not serie_object:   
+                for season_folder in os.listdir(serie_path):
+                    season_discrepancy = {
+                        'number': season_folder,
+                        'episodes': [],
+                    }
+                    discrepancy['seasons'].append(season_discrepancy)
+                    season_path = os.path.join(serie_path, season_folder)
+                    for episode in os.listdir(season_path):
+                        serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
+                        result = serie_regex.match(episode)
+                        if result:
+                            episode_path = os.path.join(season_path, episode)
+                            season_discrepancy['episodes'].append({
+                                'number': int(result.group(1)),
+                                'file_path': episode_path,
+                                'file_size': os.path.getsize(episode_path),
+                            })
+                serie_folder_discrepancy.append(discrepancy)
+            else:
+                for season_folder in os.listdir(serie_path):
+                    season_object = serie_object.seasons.filter(number=season_folder).first()
+                    season_discrepancy = {
+                        'number': season_folder,
+                        'episodes': [],
+                        }
+                    if not season_object:
+                        discrepancy['seasons'].append(season_discrepancy)
+                        season_path = os.path.join(serie_path, season_folder)
+                        for episode in os.listdir(season_path):
+                            serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
+                            result = serie_regex.match(episode)
+                            if result:
+                                episode_path = os.path.join(season_path, episode)
+                                season_discrepancy['episodes'].append({
+                                    'number': int(result.group(1)),
+                                    'file_path': episode_path,
+                                    'file_size': os.path.getsize(episode_path),
+                                })
+                    else:
+                        season_path = os.path.join(serie_path, season_folder)
+                        for episode in os.listdir(season_path):
+                            serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
+                            result = serie_regex.match(episode)
+                            if result:
+                                episode_object = season_object.episodes.filter(number=result.group(1)).first()
+                                if not episode_object:
+                                    episode_path = os.path.join(season_path, episode)
+                                    season_discrepancy['episodes'].append({
+                                        'number': int(result.group(1)),
+                                        'file_path': episode_path,
+                                        'file_size': os.path.getsize(episode_path),
+                                    })
+                        if season_discrepancy['episodes'] != []:
+                            discrepancy['seasons'].append(season_discrepancy)
+                if discrepancy['seasons'] != []:
+                    serie_folder_discrepancy.append(discrepancy)
+    except FileNotFoundError:
+        pass
+
     if request.method == 'POST':
-        print(movie_discrepancy)
-        print(Movie.objects.filter(id__in=[x['id'] for x in movie_discrepancy]).delete())
+        Movie.objects.filter(id__in=[x['id'] for x in movie_discrepancy]).delete()
         media_dir = os.path.join(settings.DESTINATION_FOLDER, 'data')
         for discrepancy in folder_discrepancy:
             if not discrepancy.get('movie_folder'):
@@ -140,11 +230,22 @@ def discrepancies(request):
                 movie = Movie.objects.get(id=discrepancy['movie_id'])
                 movie.folder_path = discrepancy['folder']
                 movie.save()
+
+        Episode.objects.filter(id__in=[x['id'] for x in serie_discrepancy]).delete()
+        for season in Season.objects.all().select_related('episodes'):
+            if season.episodes == []:
+                season.delete()
+        for serie in Serie.objects.all().select_related('seasons'):
+            if serie.seasons == []:
+                serie.delete()
+
         return redirect('discrepancies')
     return render(request,
                   'mii_interface/discrepancies.html',
                   {'movie_discrepancy': sorted(movie_discrepancy, key=lambda x: x['title']),
-                   'folder_discrepancy': sorted(folder_discrepancy, key=lambda x: x['folder'])})
+                   'folder_discrepancy': sorted(folder_discrepancy, key=lambda x: x['folder']),
+                   'serie_folder_discrepancy': sorted(serie_folder_discrepancy, key=lambda x: x['name']),
+                   })
 
 
 def reports(request):
