@@ -106,11 +106,11 @@ def discrepancies(request):
     episodes = Episode.objects.all().select_related('season','season__serie')
     for episode in episodes:
         if not os.path.exists(episode.abs_file_path):
-            episodes_discrepancy.append({'title': str(episode), 'id': episode.id})
+            episodes_discrepancy.append({'title': str(episode), 'file_path': episode.file_path, 'id': episode.id})
     
     seasons = Season.objects.all().select_related('serie').prefetch_related('episodes')
     for season in seasons:
-        if list(seasons.episodes.all()) == []:
+        if list(season.episodes.all()) == []:
             seasons_discrepancy.append({'number': str(season.number), 'id': season.id})
     
     series = Serie.objects.all().prefetch_related('seasons')
@@ -138,8 +138,6 @@ def discrepancies(request):
                                         'movie_id': movie_object.id,
                                         'movie_folder': movie_object.abs_folder_path,
                                         'movie_folder_exists': os.path.exists(movie_object.abs_folder_path)})
-        
-        
 
         # {
         # 'name': 'serie1'
@@ -155,21 +153,27 @@ def discrepancies(request):
         # ]
         # }
         serie_folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Series')
+        season_re = re.compile('\ASeason (\d+)\Z')
         for serie_folder in os.listdir(serie_folder_dir):
             serie_path = os.path.join(serie_folder_dir, serie_folder)
             serie_object = Serie.objects.filter(name=serie_folder).prefetch_related('seasons', 'seasons__episodes').first()
             discrepancy = {
                 'name': serie_folder,
+                'folder_path': serie_path,
                 'seasons': [],
             }
             if not serie_object:   
                 for season_folder in os.listdir(serie_path):
+                    result = season_re.match(season_folder)
+                    if not result:
+                        continue
+                    season_path = os.path.join(serie_path, season_folder)
                     season_discrepancy = {
-                        'number': season_folder,
+                        'number': result.group(1),
+                        'folder_path': season_path,
                         'episodes': [],
                     }
                     discrepancy['seasons'].append(season_discrepancy)
-                    season_path = os.path.join(serie_path, season_folder)
                     for episode in os.listdir(season_path):
                         serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
                         result = serie_regex.match(episode)
@@ -183,14 +187,18 @@ def discrepancies(request):
                 serie_folder_discrepancy.append(discrepancy)
             else:
                 for season_folder in os.listdir(serie_path):
-                    season_object = serie_object.seasons.filter(number=season_folder).first()
+                    result = season_re.match(season_folder)
+                    if not result:
+                        continue
+                    season_path = os.path.join(serie_path, season_folder)
+                    season_object = serie_object.seasons.filter(number=result.group(1)).first()
                     season_discrepancy = {
-                        'number': season_folder,
+                        'number': result.group(1),
+                        'folder_path': season_path,
                         'episodes': [],
                         }
                     if not season_object:
                         discrepancy['seasons'].append(season_discrepancy)
-                        season_path = os.path.join(serie_path, season_folder)
                         for episode in os.listdir(season_path):
                             serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
                             result = serie_regex.match(episode)
@@ -202,7 +210,6 @@ def discrepancies(request):
                                     'file_size': os.path.getsize(episode_path),
                                 })
                     else:
-                        season_path = os.path.join(serie_path, season_folder)
                         for episode in os.listdir(season_path):
                             serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
                             result = serie_regex.match(episode)
@@ -247,11 +254,26 @@ def discrepancies(request):
 
         Episode.objects.filter(id__in=[x['id'] for x in episodes_discrepancy]).delete()
         for season in Season.objects.all().prefetch_related('episodes'):
-            if season.episodes == []:
+            if len(season.episodes.all()) == 0:
                 season.delete()
         for serie in Serie.objects.all().prefetch_related('seasons'):
-            if serie.seasons == []:
+            if len(serie.seasons.all()) == 0:
                 serie.delete()
+
+        for discrepancy in serie_folder_discrepancy:
+            serie, _ = Serie.objects.get_or_create(name=discrepancy['name'])
+            serie.folder_path = discrepancy['folder_path']
+            serie.save()
+            for season_discrepancy in discrepancy['seasons']:
+                season, _ = Season.objects.get_or_create(serie=serie, number=season_discrepancy['number'])
+                season.folder_path = season_discrepancy['folder_path']
+                season.save()
+
+                for episode_discrepancy in season_discrepancy['episodes']:
+                    episode, _ = Episode.objects.get_or_create(season=season, number=episode_discrepancy['number'], defaults={'file_size': 5})
+                    episode.file_path = episode_discrepancy['file_path']
+                    episode.file_size = episode_discrepancy['file_size']
+                    episode.save()
 
         return redirect('discrepancies')
     return render(request,
@@ -259,7 +281,7 @@ def discrepancies(request):
                   {'movie_discrepancy': sorted(movie_discrepancy, key=lambda x: x['title']),
                    'folder_discrepancy': sorted(folder_discrepancy, key=lambda x: x['folder']),
                    'series_discrepancy': sorted(series_discrepancy, key=lambda x: x['name']),
-                   'seasons_discrepancy': sorted(seasons_discrepancy, key=lambda x: x['title']),
+                   'seasons_discrepancy': sorted(seasons_discrepancy, key=lambda x: x['number']),
                    'episodes_discrepancy': sorted(episodes_discrepancy, key=lambda x: x['title']),
                    'serie_folder_discrepancy': sorted(serie_folder_discrepancy, key=lambda x: x['name']),
                    })

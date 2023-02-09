@@ -11,7 +11,7 @@ from mii_indexer.factories import MovieRelationFactory, MovieTaggingFactory
 from mii_interface.factories import ReportFactory
 from mii_interface.views import discrepancies
 from mii_rating.models import QuestionAnswer, MovieQuestionSet
-from mii_sorter.factories import EpisodeFactory, MovieFactory, SerieFactory
+from mii_sorter.factories import EpisodeFactory, MovieFactory, SerieFactory, SeasonFactory
 from mii_sorter.models import Movie
 
 
@@ -42,7 +42,8 @@ class TestViews(TestCase):
         assert self.client.get('/reports').status_code == 200
 
     def test_report(self):
-        assert self.client.get('/report/%s/' % self.report.id).status_code == 200
+        assert self.client.get('/report/%s/' %
+                               self.report.id).status_code == 200
 
     def test_report_missing(self):
         assert self.client.get('/report/39202390/').status_code == 200
@@ -133,10 +134,20 @@ class TestMiiRating(TestCase):
 class TestDiscrepancies(FSTestCase, TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.movie_without_path = MovieFactory.create(folder_path='dummy_path.mkv')
+        cls.movie_without_path = MovieFactory.create(
+            folder_path='dummy_path.mkv')
         cls.movie_with_path = MovieFactory.create(folder_path='path_exists')
-        cls.movie_with_different_path = MovieFactory.create(title='Match', year=2000, folder_path='path_exists2')
+        cls.movie_with_different_path = MovieFactory.create(
+            title='Match', year=2000, folder_path='path_exists2')
         cls.serie_with_path = SerieFactory.create(name='Serie2')
+        cls.season_with_path = SeasonFactory.create(
+            serie=cls.serie_with_path, number=1)
+        cls.season_without_path = SeasonFactory.create(
+            serie=cls.serie_with_path, number=2)
+        cls.episode_with_path = EpisodeFactory(
+            season=cls.season_with_path, number=1)
+        cls.episode_without_path = EpisodeFactory(
+            season=cls.season_with_path, number=2)
         cls.serie_without_path = SerieFactory.create(name='Serie3')
 
     def setUp(self):
@@ -145,10 +156,23 @@ class TestDiscrepancies(FSTestCase, TestCase):
         movie_dir = tools.make_dir(os.path.join(dest_dir, 'Movies'))
         serie_dir = tools.make_dir(os.path.join(dest_dir, 'Series'))
         all_movie_dir = tools.make_dir(os.path.join(movie_dir, 'All'))
-        self.title_folder = tools.make_dir(os.path.join(all_movie_dir, 'Title (2014)'))
-        self.match_folder = tools.make_dir(os.path.join(all_movie_dir, 'Match (2000)'))
+        self.title_folder = tools.make_dir(
+            os.path.join(all_movie_dir, 'Title (2014)'))
+        self.match_folder = tools.make_dir(
+            os.path.join(all_movie_dir, 'Match (2000)'))
         self.serie1_folder = tools.make_dir(os.path.join(serie_dir, 'Serie1'))
+        self.serie1_season1_folder = tools.make_dir(
+            os.path.join(self.serie1_folder, 'Season 1'))
+        self.serie1_season1_ep1_path = self.fs.create_file(os.path.join(
+            self.serie1_season1_folder, 'serie.name.s01e01.mkv'), contents='dummy')
         self.serie2_folder = tools.make_dir(os.path.join(serie_dir, 'Serie2'))
+        self.season_with_path.folder_path = tools.make_dir(
+            os.path.join(self.serie2_folder, 'Season 1'))
+        self.season_with_path.save()
+        self.episode_with_path.file_path = os.path.join(
+            self.season_with_path.folder_path, str(self.episode_with_path))
+        self.episode_with_path.save()
+        self.fs.create_file(self.episode_with_path.file_path, contents='dummy')
         tools.make_dir('path_exists')
         tools.make_dir('path_exists2')
 
@@ -173,10 +197,7 @@ class TestDiscrepancies(FSTestCase, TestCase):
                         'folder': self.title_folder
                     }
                 ],
-                'serie_folder_discrepancy': [],
-                'episodes_discrepancy': [],
-                'seasons_discrepancy': [],
-                'series_discrepancy': [],
+                'series_discrepancy': [{'name': 'Serie3', 'id': 2}], 'seasons_discrepancy': [{'number': '2', 'id': 2}], 'episodes_discrepancy': [{'title': 'Episode object (2)', 'file_path': '{destination_dir}serie_13.mkv', 'id': 2}], 'serie_folder_discrepancy': [{'name': 'Serie1', 'folder_path': '/processed/Series/Serie1', 'seasons': [{'number': '1', 'folder_path': '/processed/Series/Serie1/Season 1', 'episodes': [{'number': 1, 'file_path': '/processed/Series/Serie1/Season 1/serie.name.s01e01.mkv', 'file_size': 5}]}]}],
             }
         )
 
@@ -195,5 +216,8 @@ class TestDiscrepancies(FSTestCase, TestCase):
                 'movie_discrepancy': [],
                 'folder_discrepancy': [],
                 'serie_folder_discrepancy': [],
+                'episodes_discrepancy': [],
+                'seasons_discrepancy': [],
+                'series_discrepancy': [],
             }
         )
