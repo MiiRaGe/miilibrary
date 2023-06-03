@@ -13,7 +13,7 @@ def add_folder_to_serie_and_season(apps, schema_editor):
         serie.folder_path = serie_path
         serie.save()
 
-        for season in serie.seasons:
+        for season in serie.seasons.all():
             season.folder_path = os.path.join(serie_path, 'Season %s' % season.number)
             season.save()
 
