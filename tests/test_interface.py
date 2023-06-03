@@ -197,7 +197,24 @@ class TestDiscrepancies(FSTestCase, TestCase):
                         'folder': self.title_folder
                     }
                 ],
-                'series_discrepancy': [{'name': 'Serie3', 'id': 2}], 'seasons_discrepancy': [{'number': '2', 'id': 2}], 'episodes_discrepancy': [{'title': 'Episode object (2)', 'file_path': '{destination_dir}serie_13.mkv', 'id': 2}], 'serie_folder_discrepancy': [{'name': 'Serie1', 'folder_path': '/processed/Series/Serie1', 'seasons': [{'number': '1', 'folder_path': '/processed/Series/Serie1/Season 1', 'episodes': [{'number': 1, 'file_path': '/processed/Series/Serie1/Season 1/serie.name.s01e01.mkv', 'file_size': 5}]}]}],
+                'series_discrepancy': [{'name': 'Serie3', 'id': 2}],
+                'seasons_discrepancy': [{'number': '2', 'id': 2}],
+                'episodes_discrepancy': [{'title': 'Episode object (2)', 'file_path': '{destination_dir}serie_13.mkv', 'id': 2}],
+                'serie_folder_discrepancy': [
+                    {'name': 'Serie1',
+                     'folder_path': '/processed/Series/Serie1',
+                     'seasons': [{
+                         'number': '1',
+                         'folder_path': '/processed/Series/Serie1/Season 1',
+                         'episodes': [
+                             {'number': 1,
+                              'file_path': '/processed/Series/Serie1/Season 1/serie.name.s01e01.mkv',
+                              'file_size': 5}
+                         ]
+                     }
+                     ]
+                     }
+                ],
             }
         )
 
