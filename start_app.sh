@@ -30,6 +30,8 @@ echo "Give time for mysql to start"
 sleep 10
 
 MYSQL=`which mysql`
+echo Trying to run: $MYSQL
+
 OUTPUT="Can't connect"
 while [[ $OUTPUT == *"Can't connect"* ]]
 do
