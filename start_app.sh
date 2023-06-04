@@ -49,7 +49,7 @@ Q2="GRANT ALL ON *.* TO '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
 Q3="FLUSH PRIVILEGES;"
 SQL="${Q1}${Q2}${Q3}"
 
-$MYSQL -uroot -proot -e "$SQL"
+$MYSQL_BIN -uroot -proot -e "$SQL"
 echo "User created"
 
 echo "Starting rabbitmq"
