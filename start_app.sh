@@ -24,9 +24,12 @@ fi
 echo "Making sure the user and config is correct for mysqld"
 chown -R mysql:mysql /data/mysql
 echo "Starting Mysql"
-MYSQL=`which mysql`
 /usr/bin/mysqld_safe&
 
+echo "Give time for mysql to start"
+sleep 10
+
+MYSQL=`which mysql`
 OUTPUT="Can't connect"
 while [[ $OUTPUT == *"Can't connect"* ]]
 do
