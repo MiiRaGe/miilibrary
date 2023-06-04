@@ -27,15 +27,15 @@ echo "Starting Mysql"
 /usr/bin/mysqld_safe&
 
 echo "Give time for mysql to start"
-sleep 10
+sleep 30
 
-MYSQL=`which mysql`
-echo Trying to run: $MYSQL
+MYSQL_BIN=`which mysql`
+echo Trying to run: $MYSQL_BIN
 
 OUTPUT="Can't connect"
 while [[ $OUTPUT == *"Can't connect"* ]]
 do
-    OUTPUT=$($MYSQL -uroot -proot -e "FLUSH PRIVILEGES;" 2>&1)
+    OUTPUT=$($MYSQL_BIN -uroot -proot -e "FLUSH PRIVILEGES;" 2>&1)
 	echo "Trying to connect to mysql..."
 	sleep 1
 done
