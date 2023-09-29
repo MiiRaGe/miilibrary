@@ -1,5 +1,5 @@
 from django.contrib.admin import ModelAdmin, site
-from mii_sorter.models import Episode, Season, Serie, RegexRenaming, SpecialHandling
+from mii_sorter.models import Episode, Movie, Season, Serie, RegexRenaming, SpecialHandling
 
 __author__ = 'MiiRaGe'
 
@@ -42,6 +42,7 @@ class SpecialHandlingAdmin(ModelAdmin):
     list_display = ('regex', 'name')
 
 
+site.register(Movie)
 site.register(Episode, EpisodeAdmin)
 site.register(Season, SeasonAdmin)
 site.register(Serie, SerieAdmin)
