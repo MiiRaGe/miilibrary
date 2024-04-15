@@ -130,7 +130,7 @@ def dump_to_json_file(index_dict):
 
 
 def search_index(folder_and_folder_abs):
-    matched = re.match('(^[^\(]*)\(.*', folder_and_folder_abs[0])
+    matched = re.match(r'(^[^\(]*)\(.*', folder_and_folder_abs[0])
     if matched:
         name = matched.group(1)
     else:

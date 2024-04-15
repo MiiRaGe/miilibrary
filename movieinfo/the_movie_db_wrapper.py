@@ -10,7 +10,7 @@ class TheMovieDBWrapper:
         self.api_key = 'api_key=9a35d9bef7cbb4fc7355bf143f8560b4'
 
     def get_movie_name(self, movie_name, year=None):
-        movie_name = re.sub("\s+", "+", movie_name)
+        movie_name = re.sub(r"\s+", "+", movie_name)
         url = "%s/3/search/movie?%s&query=%s" % (self.server, self.api_key, html.escape(movie_name))
         if year:
             url += "&year=%s" % year

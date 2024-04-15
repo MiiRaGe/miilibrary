@@ -118,7 +118,7 @@ def discrepancies(request):
         if list(serie.seasons.all()) == []:
             series_discrepancy.append({'name': str(serie.name), 'id': serie.id})  
 
-    compiled_re = re.compile(u'^(.+) \((\d{4})\).*$')
+    compiled_re = re.compile(r'^(.+) \((\d{4})\).*$')
     folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All')
     try:
         for movie_folder in os.listdir(folder_dir):
@@ -153,7 +153,7 @@ def discrepancies(request):
         # ]
         # }
         serie_folder_dir = os.path.join(settings.DESTINATION_FOLDER, 'Series')
-        season_re = re.compile('\ASeason (\d+)\Z')
+        season_re = re.compile(r'\ASeason (\d+)\Z')
         for serie_folder in os.listdir(serie_folder_dir):
             serie_path = os.path.join(serie_folder_dir, serie_folder)
             serie_object = Serie.objects.filter(name=serie_folder).prefetch_related('seasons', 'seasons__episodes').first()
@@ -175,7 +175,7 @@ def discrepancies(request):
                     }
                     discrepancy['seasons'].append(season_discrepancy)
                     for episode in os.listdir(season_path):
-                        serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
+                        serie_regex = re.compile(r'\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
                         result = serie_regex.match(episode)
                         if result:
                             episode_path = os.path.join(season_path, episode)
@@ -200,7 +200,7 @@ def discrepancies(request):
                     if not season_object:
                         discrepancy['seasons'].append(season_discrepancy)
                         for episode in os.listdir(season_path):
-                            serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
+                            serie_regex = re.compile(r'\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
                             result = serie_regex.match(episode)
                             if result:
                                 episode_path = os.path.join(season_path, episode)
@@ -211,7 +211,7 @@ def discrepancies(request):
                                 })
                     else:
                         for episode in os.listdir(season_path):
-                            serie_regex = re.compile('\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
+                            serie_regex = re.compile(r'\A.*[sS]0*\d+\s?[eE](\d+).*\Z')
                             result = serie_regex.match(episode)
                             if result:
                                 episode_object = season_object.episodes.filter(number=result.group(1)).first()

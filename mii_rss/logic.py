@@ -14,7 +14,7 @@ def already_exists(db_name, title):
             return True
         else:
             return False
-    matched = re.match('.*%s.*S(\d\d)' % db_name, title)
+    matched = re.match(r'.*%s.*S(\d\d)' % db_name, title)
     if matched:
         return True
     return False
@@ -34,7 +34,7 @@ def get_or_create_downloading_object(db_name, title):
             FeedDownloaded.objects.create(re_filter=db_name, episode=regex_result.group(2),
                                           season=regex_result.group(1))
             return True
-    regex_result = re.match('.*%s.*S(\d\d)' % db_name, title)
+    regex_result = re.match(r'.*%s.*S(\d\d)' % db_name, title)
     if regex_result:
         try:
             FeedDownloaded.objects.get(re_filter=db_name, episode=None, season=regex_result.group(1))

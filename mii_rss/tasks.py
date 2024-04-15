@@ -67,7 +67,7 @@ def process_feeds(entries):
         logger.info(u'Entry : %s' % entry['title'])
         matched, re_filter = match(entry, filters.keys())
         if matched:
-            file_name = re.search('/([^\/]*\.torrent)\?', entry['link']).group(1)
+            file_name = re.search(r'/([^\/]*\.torrent)\?', entry['link']).group(1)
             logger.info(u'Torrent filename : %s' % file_name)
             if os.path.exists(os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name)) or \
                     already_exists(filters[re_filter], entry['title']):

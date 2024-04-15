@@ -6,7 +6,7 @@ for setting in dir(config_module):
     if setting == setting.upper():
         locals()[setting] = getattr(config_module, setting)
 
-from settings.django import DATABASES
+from settings.django import DATABASES, CACHES
 from os import environ
 from settings.base import ALLOWED_HOSTS
 
@@ -56,6 +56,12 @@ DATABASES['default']['USER'] = environ.get('DB_USER', 'MiiRaGe')
 DATABASES['default']['PASSWORD'] = environ.get('DB_PASSWORD', '1234')
 DATABASES['default']['HOST'] = environ.get('DB_HOST', 'localhost')
 DATABASES['default']['ENGINE'] = environ.get('DB_ENGINE', 'django.db.backends.sqlite3')
+
+"""[Django Caches]"""
+CACHES['default']['LOCATION'] = environ.get('CACHE_LOCATION', '127.0.0.1:6379')
+
+"""Celery Broker"""
+BROKER_URL = environ.get('BROKER_URL', 'amqp://guest:**@localhost:5672//')
 
 #Set them equal to SOURCE_FOLDER if not using a remote storage.
 # Some operation on the file are done remotely through SSH, so you need to provide the mapping between the mounted

@@ -1,4 +1,4 @@
-celery
+celery[redis]
 coveralls
 cryptography
 django
@@ -18,10 +18,8 @@ spur
 feedparser
 mock
 python-coveralls
-pymemcache
 jsonrpc-requests
-python-memcached
-mysqlclient
+psycopg
 ndg-httpsclient
 raven
 requests

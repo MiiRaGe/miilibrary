@@ -57,14 +57,14 @@ class RecursiveUnrarer:
                     logger.debug(u'%sExtracting :%s' % (indent, data_file))
                     self.unrar(full_file_path, data_file)
 
-                elif re.match(".*\.part[0-9]*\.rar$", data_file):
+                elif re.match(r".*\.part[0-9]*\.rar$", data_file):
                     logger.debug(u'%sBypassing :%s' % (indent, data_file))
 
                 elif data_file.endswith(".rar"):
                     logger.debug(u'%sExtracting :%s' % (indent, data_file))
                     self.unrar(full_file_path, data_file)
 
-                elif re.match(".*\.(mkv|avi|mp4|mpg|flv)$", data_file) and \
+                elif re.match(r".*\.(mkv|avi|mp4|mpg|flv)$", data_file) and \
                                 os.path.getsize(full_file_path) > settings.MINIMUM_SIZE * 1000000:
                     # Moving every movie type, cleanup later
                     if self.link_video(current_directory, data_file):
@@ -95,7 +95,7 @@ class RecursiveUnrarer:
         for media_file in os.listdir(self.destination_dir):
             # If it's not a movie media_file or if the size < MINIMUM_SIZE Mo (samples)
             logger.debug(u'Reading (cleanup):%s' % media_file)
-            if not re.match(".*\.(mkv|avi|mp4|mpg|flv)", media_file):
+            if not re.match(r".*\.(mkv|avi|mp4|mpg|flv)", media_file):
                 logger.debug(u'Removing (Reason : not a movie):')
                 os.remove(self.destination_dir + os.path.sep + media_file)
                 self.removed += 1

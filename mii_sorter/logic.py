@@ -38,7 +38,7 @@ class Sorter:
         self.special_dir = os.path.join(self.media_dir, 'Specials')
         self.unsorted_dir = os.path.join(self.media_dir, 'unsorted')
         self.alphabetical_movie_dir = os.path.join(self.movie_dir, 'All')
-        self.serie_regex = re.compile('[sS]0*(\d+)[eE](\d\d)')
+        self.serie_regex = re.compile(r'[sS]0*(\d+)[eE](\d\d)')
         tools.make_dir(self.serie_dir)
         tools.make_dir(self.movie_dir)
         tools.make_dir(self.alphabetical_movie_dir)
@@ -215,7 +215,7 @@ class Sorter:
         if quality:
             new_file_name += ' [%s]' % quality
         new_file_name += extension
-        new_file_name = re.sub('[\s\.]+', '.', new_file_name)
+        new_file_name = re.sub(r'[\s\.]+', '.', new_file_name)
         result_dir = tools.make_dir(os.path.join(self.serie_dir, name))
         season_dir = tools.make_dir(os.path.join(u'%s/Season %s' % (result_dir, season)))
 
@@ -260,7 +260,7 @@ class Sorter:
 
     def sort_tv_serie(self, media):
         new_media = rename_serie(media)
-        self.serie_regex = re.compile('\A(.*)[sS]0*(\d+)\s?[eE](\d\d).*\Z')
+        self.serie_regex = re.compile(r'\A(.*)[sS]0*(\d+)\s?[eE](\d\d).*\Z')
         result = self.serie_regex.match(new_media)
         if result:
             serie_name = format_serie_name(result.group(1))
@@ -289,7 +289,7 @@ class Sorter:
                 movie_id = str(result.get('id'))
                 logger.debug(u'Matching result: %s' % result)
                 matching_year = result.get('release_date', '1900-01-01')
-                matched = re.match('(?:\d{4})', matching_year)
+                matched = re.match(r'(?:\d{4})', matching_year)
                 if matched:
                     if not year:
                         year = matched.group(0)
@@ -346,7 +346,7 @@ class Sorter:
     def create_dir_and_move_movie(self, movie_name, year, imdb_id, filename):
         logger.info(u'Create and move movie %s, %s, %s, %s' % (movie_name, year, imdb_id, filename))
         # Because Wall-e was WALL*E for some reason...and : isn't supported on winos...
-        movie_name = re.sub('[\*\:]', '-', movie_name)
+        movie_name = re.sub(r'[\*\:]', '-', movie_name)
         file_path = os.path.join(self.data_dir, filename)
 
         custom_movie_dir = "%s (%s)" % (movie_name, year)
@@ -383,7 +383,7 @@ class Sorter:
             if imdb_id:
                 movie.imdb_id = imdb_id
                 movie.save()
-            new_name = re.sub('.*(\.[a-zA-Z0-9]*)$', '%s\g<1>' % re.sub(' ', '.', custom_movie_dir), filename)
+            new_name = re.sub(r'.*(\.[a-zA-Z0-9]*)$', r'%s\g<1>' % re.sub(' ', '.', custom_movie_dir), filename)
             logger.info(u'Moving %s, with new name %s' % (filename, new_name))
             os.rename(file_path, os.path.join(created_movie_dir, new_name))
             return True
@@ -397,18 +397,18 @@ class Sorter:
 def get_info(name):
     regex_res = re.match('^(.+)(20[0-2][0-9]|19[5-9][0-9])', name)
     if regex_res:
-        title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
+        title = re.sub(r'\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         result = dict(title=title)
         result['year'] = regex_res.group(2)
         return result
 
     regex_res = re.match('(.+)(?:720p?|1080p?)', name)
     if regex_res:
-        title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
+        title = re.sub(r'\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
         return dict(title=title)
 
     regex_res = re.match('^(.+).{4}$', name)
-    title = re.sub('\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
+    title = re.sub(r'\.', ' ', change_token_to_dot(regex_res.group(1))).strip()
     return dict(title=title)
 
 
@@ -435,8 +435,8 @@ def get_quality(name):
 
 def rename_serie(file_name):
     new_name = change_token_to_dot(file_name)
-    if re.sub('[^\d]([0-3]?\d)x(\d{1,2})[^\d]', 'S\g<1>E\g<2>', new_name) is not new_name:
-        new_name = re.sub('([0-3]?\d)x(\d{1,2})', 'S\g<1>E\g<2>', new_name)
+    if re.sub(r'[^\d]([0-3]?\d)x(\d{1,2})[^\d]', r'S\g<1>E\g<2>', new_name) is not new_name:
+        new_name = re.sub(r'([0-3]?\d)x(\d{1,2})', r'S\g<1>E\g<2>', new_name)
     return new_name
 
 
@@ -449,7 +449,7 @@ def compare(file_name, api_result):
         if api_result.get('MovieKind') == 'movie':
             logger.info(u'Type Inconsistent : ' + api_result.get('MovieKind') + u' expected Tv Series/Episode')
             return False, 0
-        matching_pattern = re.search('(.*)[sS]0*(\d+)[eE]0*(\d+)', file_name) or re.search('(.*)(\d?\d)x(\d?\d)',
+        matching_pattern = re.search(r'(.*)[sS]0*(\d+)[eE]0*(\d+)', file_name) or re.search(r'(.*)(\d?\d)x(\d?\d)',
                                                                                            file_name)
         if not all([api_result.get('SeriesSeason') == matching_pattern.group(2),
                     api_result.get('SeriesEpisode') == matching_pattern.group(3)]):
@@ -461,7 +461,7 @@ def compare(file_name, api_result):
 
         # Weak comparison using letters
         api_serie_name = api_result.get('MovieName')
-        title_matched = re.search('\"([^\"]*)\"', api_serie_name)
+        title_matched = re.search(r'\"([^\"]*)\"', api_serie_name)
         api_serie_name = title_matched.group(1) if title_matched else api_serie_name
 
         if letter_coverage(matching_pattern.group(1), api_serie_name) < 65:
@@ -476,14 +476,14 @@ def compare(file_name, api_result):
         return False, 0
 
     # Year pattern api_result
-    name_year_matching = re.search('([^\(\)]*).(20[01][0-9]|19[5-9][0-9])?', file_name)
+    name_year_matching = re.search(r'([^\(\)]*).(20[01][0-9]|19[5-9][0-9])?', file_name)
     if name_year_matching.group(2) and not (name_year_matching.group(2) == api_result.get('MovieYear')):
         logger.info(u"Year Inconsistent, found %s but expected %s" %
                     (api_result.get('MovieYear'), name_year_matching.group(2)))
         return False, 0
     else:
         score += 0.10
-    name_matching = re.search('([^\(\)]*).+(20[01][0-9]|19[5-9][0-9])', file_name)
+    name_matching = re.search(r'([^\(\)]*).+(20[01][0-9]|19[5-9][0-9])', file_name)
     if name_matching:
         if not (letter_coverage(name_matching.group(1), api_result.get('MovieName')) > 65):
             logger.info(u'Letter inconsistency : %s, %s' %
@@ -514,7 +514,7 @@ def get_best_match(api_result_list, file_name):
 
 
 def is_serie(name):
-    return re.match('.*[sS](\d\d)\s?[Ee](\d\d).*', name) or re.match('.*(\d?\d)x(\d?\d).*', name)
+    return re.match(r'.*[sS](\d\d)\s?[Ee](\d\d).*', name) or re.match(r'.*(\d?\d)x(\d?\d).*', name)
 
 
 def change_token_to_dot(string):
