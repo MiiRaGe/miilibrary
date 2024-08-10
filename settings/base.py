@@ -6,7 +6,7 @@ for setting in dir(config_module):
     if setting == setting.upper():
         locals()[setting] = getattr(config_module, setting)
 
-from settings.django import DATABASES, CACHES, CSRF_TRUSTED_ORIGINS, SECRET_KEY
+from settings.django import DATABASES, CACHES
 from os import environ
 from settings.base import ALLOWED_HOSTS
 
@@ -61,10 +61,10 @@ DATABASES['default']['ENGINE'] = environ.get('DB_ENGINE', 'django.db.backends.sq
 CACHES['default']['LOCATION'] = environ.get('CACHE_LOCATION', '127.0.0.1:6379')
 
 """[Django Secrets]"""
-SECRET_KEY = environ.get('SECRET_KEY', SECRET_KEY)
+SECRET_KEY = environ.get('SECRET_KEY', '+^(g2=uuez(s1qgpmznc&amp;zx4win6o36*9d$7l=5!)tf77*110c')
 
 """[Django Origins]"""
-CSRF_TRUSTED_ORIGINS = CSRF_TRUSTED_ORIGINS + [u'https://' + environ.get('EXTRA_ALLOWED_HOST', u'localhost')]
+CSRF_TRUSTED_ORIGINS = [u'https://' + environ.get('EXTRA_ALLOWED_HOST', u'localhost')]
 
 """Celery Broker"""
 BROKER_URL = environ.get('BROKER_URL', 'amqp://guest:**@localhost:5672//')
