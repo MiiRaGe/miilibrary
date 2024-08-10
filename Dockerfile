@@ -10,8 +10,7 @@ ENV TZ=Europe/Stockholm
 
 COPY . /app
 
-RUN chmod 755 /app/start_app.sh
-
 WORKDIR /app
 
-CMD ["/bin/bash", "-c", "python /app/manage.py migrate && celery -A mii_celery beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"]
+EXPOSE 5555
+EXPOSE 8000

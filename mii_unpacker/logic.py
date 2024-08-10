@@ -120,7 +120,7 @@ class RecursiveUnrarer:
                 os.remove(destination_file)
                 try:
                     link(source_file, destination_file)
-                except AttributeError:
+                except (AttributeError, RuntimeError):
                     shutil.copy(source_file, destination_file)
                 self.linked += 1
                 Unpacked.objects.create(filename=file_to_link)
@@ -131,7 +131,7 @@ class RecursiveUnrarer:
         else:
             try:
                 link(source_file, destination_file)
-            except AttributeError:
+            except (AttributeError, RuntimeError):
                 shutil.copy(source_file, destination_file)
             Unpacked.objects.create(filename=file_to_link)
             self.linked += 1
