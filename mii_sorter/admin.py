@@ -1,5 +1,5 @@
 from django.contrib.admin import ModelAdmin, site
-from mii_sorter.models import Episode, Movie, Season, Serie, RegexRenaming, SpecialHandling
+from mii_sorter.models import Episode, Movie, Season, Serie, RegexRenaming, SpecialHandling, WhatsNew
 
 __author__ = 'MiiRaGe'
 
@@ -48,3 +48,4 @@ site.register(Season, SeasonAdmin)
 site.register(Serie, SerieAdmin)
 site.register(RegexRenaming, RegexRenamingAdmin)
 site.register(SpecialHandling, SpecialHandlingAdmin)
+site.register(WhatsNew)

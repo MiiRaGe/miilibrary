@@ -97,7 +97,7 @@ class RecursiveUnrarer:
             logger.debug(u'Reading (cleanup):%s' % media_file)
             if not re.match(r".*\.(mkv|avi|mp4|mpg|flv)", media_file):
                 logger.debug(u'Removing (Reason : not a movie):')
-                os.remove(self.destination_dir + os.path.sep + media_file)
+                tools.safe_delete(self.destination_dir + os.path.sep + media_file)
                 self.removed += 1
             else:
                 if os.path.getsize(self.destination_dir + os.path.sep + media_file) < settings.MINIMUM_SIZE * 1000000\
