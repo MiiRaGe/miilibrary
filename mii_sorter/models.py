@@ -109,6 +109,9 @@ class WhatsNew(Model):
     class Meta:
         ordering = ['date']
 
+    def __unicode__(self):
+        return '%s' % (self.name)
+    
     def get_displayable_date(self):
         today = timezone.now()
         day_delta = (today - self.date).days
@@ -122,6 +125,18 @@ class WhatsNew(Model):
             return '%s week(s) ago' % (day_delta // 7)
         else:
             return '%s day(s) ago' % day_delta
+    
+    @property
+    def abs_path(self):
+        try:
+            return self.path.format(destination_dir=settings.DESTINATION_FOLDER)
+        except Exception:
+            return self.path
+
+    def save(self, *args, **kwargs):
+        if self.path:
+            self.path = self.path.replace(settings.DESTINATION_FOLDER, '{destination_dir}')
+        return super(WhatsNew, self).save(*args, **kwargs)
 
 
 class RegexRenaming(Model):

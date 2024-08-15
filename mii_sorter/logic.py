@@ -123,13 +123,17 @@ class Sorter:
         logger.debug(u'Does New folder exists? %s' % os.path.exists(self.new_dir))
         if os.path.exists(self.new_dir):
             logger.debug(u'Deleting the New folder')
-            remove_dir(self.new_dir)
+            tools.safe_delete(self.new_dir)
+            sleep(2)
+            if os.path.exists(self.new_dir):
+                remove_dir(self.new_dir)
+            sleep(1)
             retry = 0
             while os.path.exists(self.new_dir):
                 retry += 1
                 sleep(1)
                 logger.debug(u'Folder still exists, waiting for deletion...')
-                if retry == 5:
+                if retry == 6:
                     logger.debug(u'Retried too much waiting for folder to delete')
                     return
         logger.debug(u'Creating the new folder')
@@ -137,17 +141,17 @@ class Sorter:
         logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
         try:
             for whatsnew in WhatsNew.objects.all().order_by('-date')[:60]:
-                if not os.path.exists(whatsnew.path):
+                if not os.path.exists(whatsnew.abs_path):
                     continue
                 logger.debug(u'Creating %s directory' % whatsnew.get_displayable_date())
                 relative_date_directory = tools.make_dirs(os.path.join(self.new_dir, whatsnew.get_displayable_date()))
                 logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
-                if os.path.isdir(whatsnew.path):
-                    logger.info(u'Linking directory %s to %s' % (whatsnew.path, whatsnew.name))
-                    symlink(whatsnew.path, os.path.join(relative_date_directory, whatsnew.name))
+                if os.path.isdir(whatsnew.abs_path):
+                    logger.info(u'Linking directory %s to %s' % (whatsnew.abs_path, whatsnew.name))
+                    symlink(whatsnew.abs_path, os.path.join(relative_date_directory, whatsnew.name))
                 else:
-                    logger.info(u'Linking file %s to %s' % (whatsnew.path, whatsnew.name))
-                    symlink(whatsnew.path, os.path.join(relative_date_directory, whatsnew.path.split('/')[-1]))
+                    logger.info(u'Linking file %s to %s' % (whatsnew.abs_path, whatsnew.name))
+                    symlink(whatsnew.abs_path, os.path.join(relative_date_directory, whatsnew.abs_path.split('/')[-1]))
         except Exception as e:
             logger.exception(u'Exception when updating new entry, %s' % repr(e))
 
