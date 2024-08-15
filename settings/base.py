@@ -64,7 +64,7 @@ CACHES['default']['LOCATION'] = environ.get('CACHE_LOCATION', '127.0.0.1:6379')
 SECRET_KEY = environ.get('SECRET_KEY', '+^(g2=uuez(s1qgpmznc&amp;zx4win6o36*9d$7l=5!)tf77*110c')
 
 """[Django Origins]"""
-CSRF_TRUSTED_ORIGINS = [u'https://' + environ.get('EXTRA_ALLOWED_HOST', u'localhost')]
+CSRF_TRUSTED_ORIGINS = [u'https://' + environ.get('EXTRA_ALLOWED_HOST', u'localhost'), u'http://' + environ.get('EXTRA_ALLOWED_IP', u'127.0.0.1') ]
 
 """Celery Broker"""
 BROKER_URL = environ.get('BROKER_URL', 'amqp://guest:**@localhost:5672//')
@@ -100,7 +100,7 @@ TRANSMISSION_RPC_URL = environ.get('TRANSMISSION_RPC_URL', u'http://192.168.0.2:
 TRANSMISSION_RPC_USERNAME = environ.get('TRANSMISSION_RPC_USERNAME', u'admin')
 TRANSMISSION_RPC_PASSWORD = environ.get('TRANSMISSION_RPC_PASSWORD', u'admin')
 
-ALLOWED_HOSTS = ALLOWED_HOSTS + [environ.get('EXTRA_ALLOWED_HOST', u'192.168.0.101')]
+ALLOWED_HOSTS = ALLOWED_HOSTS + [environ.get('EXTRA_ALLOWED_HOST', u'192.168.0.101'), environ.get('EXTRA_ALLOWED_IP', u'127.0.0.1')]
 JSON_RPC_USERNAME = environ.get('JSON_RPC_USERNAME', 'kodi')
 JSON_RPC_PASSWORD = environ.get('JSON_RPC_PASSWORD', 'kodi')
 DEBUG = bool(environ.get('DEBUG', False))
