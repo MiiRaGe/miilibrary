@@ -1,37 +1,68 @@
-# Filesystem worker for the NAS (QNAP Container Station or `docker compose up -d` over SSH).
-#
-# It only consumes the "filesystem" queue (unpack, sort, index, discrepancies), so every file operation is a local
-# POSIX call on the NAS. The web UI, celery beat, the default worker, postgres and the broker stay in kubernetes.
+# Transmission and the miilibrary filesystem worker on the NAS (QNAP Container Station, or `docker compose up -d`).
 #
 # Storage layout:
-#   NVMe volume: transmission writes incomplete pieces to <downloads>/incomplete and moves finished torrents to
-#                <downloads>/complete (same volume, so the move is an instant rename). Torrents keep seeding from
-#                the NVMe, where random reads are cheap. In transmission's settings.json:
-#                  "incomplete-dir-enabled": true, "incomplete-dir": ".../incomplete", "download-dir": ".../complete"
-#   HDD volume:  the library. The unpacker copies each completed video (or extracts each archive) once, sequentially,
-#                into <media>/data, then the sorter renames it into Movies/TVSeries on the same volume.
+#   NVMe: /share/Downloads, a single folder. Transmission downloads and seeds there: the random writes and the random
+#         reads of seeding both hit flash. No incomplete/complete split: with "rename-partial-files": true
+#         (transmission's default, keep it) a file only gets its real name once fully downloaded, and the unpacker
+#         ignores *.part files.
+#   HDD:  /share/MoviesSeries, the library. The worker copies each finished video (or extracts each archive) once,
+#         sequentially, then sorts it with renames on the same volume. Transmission never sees the library.
 #
-# Torrents and their NVMe copy are deleted by clean_history after TORRENT_RETENTION_DAYS.
+# Both containers mount the downloads at /downloads, so the path is the same for transmission and for miilibrary:
+# SOURCE_FOLDER=/downloads here, TRANSMISSION_DOWNLOAD_DIR=/downloads in the cluster.
+# Torrents and their data are deleted by clean_history (in the cluster) after TORRENT_RETENTION_DAYS.
+#
+# /share/<ShareName> are QNAP's links to the shared folders, stable whatever the CACHEDEVn volume number is.
+# create_host_path: false makes a wrong path fail at startup instead of docker creating an empty folder.
 services:
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    restart: unless-stopped
+    environment:
+      # Owner of the files, the worker must be able to read them: check with `id <user>` on the NAS
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-100}
+      - TZ=Europe/Stockholm
+      # Same as TRANSMISSION_RPC_USERNAME / TRANSMISSION_RPC_PASSWORD in the cluster
+      - USER=change-me
+      - PASS=change-me
+      # The rss and clean_history tasks call the RPC from the cluster
+      - WHITELIST=127.0.0.1,192.168.0.*
+    volumes:
+      # settings.json lives here: download-dir=/downloads, incomplete-dir-enabled=false, rename-partial-files=true,
+      # and the script-torrent-done-* entries calling miilibrary's /rpc/unpack_sort_index
+      - type: bind
+        source: ${TRANSMISSION_CONFIG_PATH:-/share/Container/transmission}
+        target: /config
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${DOWNLOADS_PATH:-/share/Downloads}
+        target: /downloads
+        bind:
+          create_host_path: false
+    ports:
+      - 9091:9091
+      # Peer port, forward it on the router for incoming connections
+      - 51413:51413
+      - 51413:51413/udp
+
   miilibrary-filesystem-worker:
     image: miirage/rpi-cluster:miilibrary-latest
     restart: unless-stopped
-    # Must be able to read transmission's files and write the library, check with `id <user>` on the NAS.
     user: "${PUID:-1000}:${PGID:-100}"
+    # Only the file tasks (unpack, sort, index, library check). It doesn't talk to transmission, the cluster does.
     command: celery -A mii_celery worker -Q filesystem -c 2 --loglevel=info
     # Database, broker, cache and API credentials, see miilibrary.env.example
     env_file: miilibrary.env
     environment:
-      - SOURCE_FOLDER=/downloads/complete
+      - SOURCE_FOLDER=/downloads
       - DESTINATION_FOLDER=/media
-    # /share/<ShareName> are QNAP's links to the shared folders, stable whatever the CACHEDEVn volume number is.
-    # create_host_path: false makes a wrong path fail at startup, instead of docker creating an empty folder and the
-    # worker building a new library in it.
     volumes:
-      # Read-only: the worker copies from the downloads, it never modifies what transmission seeds.
+      # Read-only: the worker copies from the downloads, it never modifies what transmission seeds
       - type: bind
-        source: ${DOWNLOADS_PATH:-/share/Downloads}/complete
-        target: /downloads/complete
+        source: ${DOWNLOADS_PATH:-/share/Downloads}
+        target: /downloads
         read_only: true
         bind:
           create_host_path: false

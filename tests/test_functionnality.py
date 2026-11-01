@@ -197,6 +197,17 @@ class TestSpecificUnpacker(TestMiilibrary):
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
 
+    @mock.patch('mii_unpacker.logic.unrar')
+    def test_partial_downloads_are_ignored(self, unrar):
+        # transmission's rename-partial-files: files are only given their real name once fully downloaded
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv.part', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.3/Thor.3.rar.part', contents=self._generate_data(1))
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.3/Thor.3.part01.rar.part', contents=self._generate_data(1))
+        self.recursive_unrarer.unrar_and_link()
+        assert self.recursive_unrarer.linked == 0
+        assert not unrar.called
+        assert os.listdir(self.DESTINATION_FOLDER + '/data') == []
+
     def test_linking_video_already_exists(self):
         UnpackedFactory.create(filename='Thor.2.mkv')
         self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
