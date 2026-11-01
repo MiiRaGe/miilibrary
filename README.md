@@ -24,6 +24,8 @@ The same image runs in two places:
 
 All file operations are local POSIX calls on the NAS (no more SSH). Completed torrents stay on the download volume (NVMe) to seed and are copied once to the library volume (HDD); links in `New/` and `Movies/Index/` are relative so they resolve through NFS/SMB too.
 
+Movie folders carry a `[imdbid-tt...]` tag for exact Jellyfin matching. In Jellyfin, add `Movies/All` and `TVSeries` as the library folders, not the share root: it also holds the working folders (`data/`, `.incoming/`, `unsorted/`) and the `New/` and `Movies/Index/` link trees, which would show up as duplicates.
+
 ### Dependencies ###
 
 * Python 3.4-3.5

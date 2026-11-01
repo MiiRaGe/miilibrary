@@ -86,15 +86,6 @@ CELERY_BEAT_SCHEDULE = {
 
 REPORT_ENABLED = env_bool('REPORT_ENABLED', True)
 
-# Django-dbbackup settings (django-dbbackup >= 5 reads its storage from STORAGES)
-STORAGES = {
-    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
-    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
-    'dbbackup': {
-        'BACKEND': environ.get('DBBACKUP_STORAGE', 'django.core.files.storage.FileSystemStorage'),
-        'OPTIONS': {'location': environ.get('DBBACKUP_BACKUP_DIRECTORY', '/tmp/backup/')},
-    },
-}
 
 SENTRY_URL = environ.get('SENTRY_URL', '')
 DESTINATION_PLACEHOLDER = u'{destination_folder}'

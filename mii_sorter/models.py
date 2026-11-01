@@ -10,6 +10,17 @@ from mii_interface.models import Report
 logger = logging.getLogger(__name__)
 
 
+def imdb_tag(imdb_id):
+    """
+    Jellyfin tag matching a folder to its exact IMDb entry: [imdbid-tt0800369].
+    Ids come as 'tt0800369' from TheMovieDB and as '800369' from OpenSubtitles.
+    """
+    digits = (imdb_id or '').strip().lower().lstrip('t')
+    if not digits.isdigit():
+        return ''
+    return '[imdbid-tt%s]' % digits.zfill(7)
+
+
 class Movie(Model):
     title = CharField(max_length=100, db_index=True)
     year = IntegerField(null=True, default=1900, db_index=True)

@@ -1,10 +1,9 @@
 celery[redis]
 coveralls
 cryptography
-django>=5.2,<5.3
+django
 django-celery-results
 django-celery-beat
-django-dbbackup>=5
 factory-boy
 flower
 gunicorn

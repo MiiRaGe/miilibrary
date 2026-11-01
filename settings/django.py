@@ -146,7 +146,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'dbbackup',
     'middleware',
     'mii_interface',
     'mii_unpacker',

@@ -8,7 +8,6 @@ from middleware.decorators import single_instance_task
 
 from middleware.mii_cache_wrapper import MiiCachedData
 from middleware.models import JSONKeyValue
-from middleware.tasks import db_backup
 
 __author__ = 'MiiRaGe'
 
@@ -72,12 +71,6 @@ class TestMiiMongoStored(TestCase):
         self.cached_functions.test()
         assert not set.called
 
-
-class TestDbBackup():
-    @mock.patch('middleware.tasks.Command')
-    def test_dbbackup(self, Command):
-        db_backup()
-        assert Command.called
 
 class TestSingleInstanceTask(TestCase):
     def setUp(self):

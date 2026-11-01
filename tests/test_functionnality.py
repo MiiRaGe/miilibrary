@@ -11,9 +11,9 @@ from mii_common import tools
 from mii_indexer.models import MovieRelation
 from mii_indexer.models import MovieTagging, Person
 from mii_sorter.factories import MovieFactory, EpisodeFactory
-from mii_sorter.logic import Sorter
+from mii_sorter.logic import Sorter, tag_movie_folders
 from mii_common.tools import get_size, get_dir_size
-from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew
+from mii_sorter.models import Movie, Episode, Serie, Season, get_serie_episode, WhatsNew, imdb_tag
 from mii_unpacker.factories import UnpackedFactory
 from mii_unpacker.logic import RecursiveUnrarer
 from utils.base import TestMiilibrary, mii_osdb_mock
@@ -111,8 +111,8 @@ class TestMain(TestMiilibrary):
         assert Movie.objects.all().count() == 2
 
         assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')) == 2
-        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')) == 1
-        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')) == 1
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [imdbid-tt0800369] [720p]')) == 1
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013) [imdbid-tt1981115]')) == 1
 
         assert Episode.objects.get(number=1)
         assert Season.objects.get(number=1)
@@ -139,8 +139,8 @@ class TestMain(TestMiilibrary):
         self.sorter.sort()
 
         assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All')) == 2
-        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [720p]')) == 1
-        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013)')) == 1
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor (2011) [imdbid-tt0800369] [720p]')) == 1
+        assert len(os.listdir(self.DESTINATION_FOLDER + '/Movies/All/Thor- The Dark World (2013) [imdbid-tt1981115]')) == 1
 
         tv_series_folder = os.path.join(self.DESTINATION_FOLDER, 'TVSeries')
         assert 'The Big Bank Theory' in os.listdir(tv_series_folder)
@@ -153,7 +153,7 @@ class TestMain(TestMiilibrary):
 
         self.indexer.index()
         thor_link = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Years', '2011', 'Thor (2011)')
-        assert os.readlink(thor_link) == os.path.join('..', '..', '..', 'All', 'Thor (2011) [720p]')
+        assert os.readlink(thor_link) == os.path.join('..', '..', '..', 'All', 'Thor (2011) [imdbid-tt0800369] [720p]')
         assert os.path.isdir(thor_link)
 
         new_link = os.path.join(self.DESTINATION_FOLDER, 'New', 'Today', 'Thor (2011)')
@@ -463,3 +463,32 @@ class TestSpecificSorter(TestMiilibrary):
         self.sorter.move_to_unsorted('/', 'test.mkv')
         assert not os.path.exists('/test.mkv')
         assert os.path.exists('/unsorted/test.mkv')
+
+
+class TestImdbTag(TestMiilibrary):
+    def setUp(self):
+        self.setUpPyfakefs()
+        self.movie_dir = os.path.join('/processed/', 'Movies', 'All')
+        os.makedirs(os.path.join(self.movie_dir, 'Thor (2011) [720p]'))
+
+    def test_imdb_tag(self):
+        assert imdb_tag('tt0800369') == '[imdbid-tt0800369]'
+        assert imdb_tag('800369') == '[imdbid-tt0800369]'
+        assert imdb_tag('tt10872600') == '[imdbid-tt10872600]'
+        assert imdb_tag(None) == ''
+        assert imdb_tag('') == ''
+
+    def test_tag_movie_folders(self):
+        folder = os.path.join(self.movie_dir, 'Thor (2011) [720p]')
+        movie = MovieFactory.create(title='Thor', year=2011, imdb_id='800369', folder_path=folder)
+        MovieFactory.create(title='Missing', year=2000, imdb_id='tt1', folder_path='/processed/Movies/All/Missing (2000)')
+        MovieFactory.create(title='No id', year=2000, imdb_id=None, folder_path=folder)
+        WhatsNew.objects.create(name='Thor (2011)', path=folder)
+
+        tagged = os.path.join(self.movie_dir, 'Thor (2011) [imdbid-tt0800369] [720p]')
+        assert tag_movie_folders() == [(folder, tagged)]
+        assert os.listdir(self.movie_dir) == ['Thor (2011) [imdbid-tt0800369] [720p]']
+        movie.refresh_from_db()
+        assert movie.abs_folder_path == tagged
+        assert WhatsNew.objects.get(name='Thor (2011)').abs_path == tagged
+        assert tag_movie_folders() == []

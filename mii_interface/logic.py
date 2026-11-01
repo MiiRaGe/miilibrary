@@ -6,6 +6,7 @@ from django.conf import settings
 from pyreport.reporter import Report
 
 from mii_common import tools
+from mii_sorter.logic import tag_movie_folders
 from mii_sorter.models import Movie, Serie, Season, Episode, insert_report
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,9 @@ def check_library():
     logger.info(u'****************************************')
     logger.info(u'**********   Library check    **********')
     logger.info(u'****************************************')
+    tools.check_mounted(os.path.join(settings.DESTINATION_FOLDER, 'Movies', 'All'))
+    for folder, new_folder in tag_movie_folders():
+        logger.info(u'Tagged %s -> %s' % (folder, new_folder))
     for discrepancy_type, discrepancies in fix_discrepancies().items():
         for discrepancy in discrepancies:
             logger.info(u'Fixed %s: %s' % (discrepancy_type, discrepancy))

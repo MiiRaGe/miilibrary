@@ -10,7 +10,7 @@ from middleware import mii_cache_wrapper
 from mii_common import tools
 from mii_common.tools import get_size
 from mii_sorter.models import WhatsNew, get_serie_episode, insert_serie_episode, get_movie, insert_movie, insert_report, \
-    RegexRenaming, update_whatsnew, SpecialHandling
+    RegexRenaming, update_whatsnew, SpecialHandling, Movie, imdb_tag
 from movieinfo import hash_tool as ht
 
 logger = logging.getLogger(__name__)
@@ -339,6 +339,8 @@ class Sorter:
         file_path = os.path.join(self.data_dir, filename)
 
         custom_movie_dir = "%s (%s)" % (movie_name, year)
+        if imdb_tag(imdb_id):
+            custom_movie_dir += ' ' + imdb_tag(imdb_id)
         quality = get_quality(filename)
         if quality:
             custom_movie_dir += ' [' + quality + ']'
@@ -381,6 +383,38 @@ class Sorter:
         except Exception as e:
             logger.exception(u'Found an exception when moving movie : %s' % repr(e))
         return False
+
+
+def tag_movie_folders():
+    """
+    Adds the [imdbid-tt...] tag to the folders of movies sorted before it existed, right after the year:
+    'Thor (2011) [720p]' -> 'Thor (2011) [imdbid-tt0800369] [720p]'. The index links are rebuilt by the next indexing.
+    :return list: (old folder, new folder) renamed
+    """
+    renamed = []
+    for movie in Movie.objects.exclude(imdb_id=None).exclude(imdb_id=''):
+        tag = imdb_tag(movie.imdb_id)
+        folder = movie.abs_folder_path.rstrip(os.sep)
+        name = os.path.basename(folder)
+        if not tag or tag in name or not os.path.isdir(folder):
+            continue
+        new_name, inserted = re.subn(r'^(.* \(\d{4}\))', lambda m: '%s %s' % (m.group(1), tag), name, count=1)
+        if not inserted:
+            new_name = '%s %s' % (name, tag)
+        new_folder = os.path.join(os.path.dirname(folder), new_name)
+        if os.path.exists(new_folder):
+            logger.error(u'Can\'t tag %s, %s already exists' % (folder, new_folder))
+            continue
+        os.rename(folder, new_folder)
+        movie.folder_path = new_folder
+        movie.save()
+        # WhatsNew stores its path relative to the destination folder
+        stored_path = folder.replace(settings.DESTINATION_FOLDER, '{destination_dir}')
+        for whatsnew in WhatsNew.objects.filter(path__in=[folder, stored_path]):
+            whatsnew.path = new_folder
+            whatsnew.save()
+        renamed.append((folder, new_folder))
+    return renamed
 
 
 def get_info(name):
