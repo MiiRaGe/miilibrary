@@ -1,13 +1,13 @@
 import logging
 import os
 import re
-import shutil
 import subprocess
+import tempfile
 
 from pyreport import reporter
 from django.conf import settings
-from middleware.remote_execution import link, unrar
 from mii_common import tools
+from mii_common.tools import link_or_copy, unrar
 from mii_sorter.models import insert_report
 
 from mii_unpacker.models import Unpacked
@@ -20,7 +20,11 @@ if settings.REPORT_ENABLED:
 
 class RecursiveUnrarer:
     def __init__(self):
-        self.destination_dir = tools.make_dir(os.path.join(settings.DESTINATION_FOLDER, "data"))
+        tools.check_mounted(settings.SOURCE_FOLDER)
+        self.destination_dir = tools.make_dir(os.path.join(tools.check_mounted(settings.DESTINATION_FOLDER), "data"))
+        # Copies and extractions are written here first then renamed into the data folder, so the sorter never sees
+        # a partial file. It's outside the data folder but on the same filesystem so the rename is atomic.
+        self.staging_dir = os.path.join(settings.DESTINATION_FOLDER, ".incoming")
         self.source_dir = settings.SOURCE_FOLDER
         self.level = 0
         self.removed = 0
@@ -40,6 +44,8 @@ class RecursiveUnrarer:
         logger.info(u'****************************************')
         self.linked = 0
         self.extracted = 0
+        # Leftovers from an interrupted copy or extraction
+        tools.safe_delete(self.staging_dir)
         self.recursive_unrar_and_link(self.source_dir)
 
     def recursive_unrar_and_link(self, current_directory):
@@ -81,7 +87,11 @@ class RecursiveUnrarer:
         logger.debug(u'Processing extraction...')
 
         try:
-            output = unrar(archive_file, self.destination_dir)
+            extract_dir = tempfile.mkdtemp(dir=tools.make_dirs(self.staging_dir))
+            unrar(archive_file, extract_dir)
+            for extracted_file in os.listdir(extract_dir):
+                os.replace(os.path.join(extract_dir, extracted_file), os.path.join(self.destination_dir, extracted_file))
+            tools.safe_delete(extract_dir)
             logger.debug(u'Extraction OK!')
             Unpacked.objects.create(filename=file_name)
             self.extracted += 1
@@ -118,10 +128,7 @@ class RecursiveUnrarer:
         if os.path.exists(destination_file):
             if os.path.getsize(destination_file) < os.path.getsize(source_file):
                 os.remove(destination_file)
-                try:
-                    link(source_file, destination_file)
-                except (AttributeError, RuntimeError):
-                    shutil.copy(source_file, destination_file)
+                link_or_copy(source_file, destination_file, self.staging_dir)
                 self.linked += 1
                 Unpacked.objects.create(filename=file_to_link)
                 return True
@@ -129,10 +136,7 @@ class RecursiveUnrarer:
                 logger.error(u'Not linking, same file exist (weight wise)')
                 return False
         else:
-            try:
-                link(source_file, destination_file)
-            except (AttributeError, RuntimeError):
-                shutil.copy(source_file, destination_file)
+            link_or_copy(source_file, destination_file, self.staging_dir)
             Unpacked.objects.create(filename=file_to_link)
             self.linked += 1
             return True

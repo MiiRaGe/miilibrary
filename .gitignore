@@ -12,3 +12,4 @@ local.py
 media
 .venv/
 .vscode
+deploy/nas/miilibrary.env

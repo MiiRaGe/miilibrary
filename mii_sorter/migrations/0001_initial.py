@@ -69,10 +69,7 @@ class Migration(migrations.Migration):
             name='serie',
             field=models.ForeignKey(related_name='seasons', on_delete=models.CASCADE, to='mii_sorter.Serie'),
         ),
-        migrations.AlterIndexTogether(
-            name='movie',
-            index_together=set([('title', 'year')]),
-        ),
+        # index_together removed: Django >= 5.1 no longer creates it, the index is managed by 0015.
         migrations.AddField(
             model_name='episode',
             name='season',

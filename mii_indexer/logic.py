@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 import os
@@ -8,7 +7,6 @@ from raven import Client
 from django.conf import settings
 from pyreport.reporter import Report
 from middleware import mii_cache_wrapper
-from middleware.remote_execution import symlink
 from mii_common import tools
 from mii_common.tools import dict_apply
 from mii_indexer.models import Tag, MovieTagging, Person, MovieRelation
@@ -40,15 +38,9 @@ class Indexer:
     def index(self):
         self.movie_list = []
         dict_index = self.get_dict_index()
-        if settings.DUMP_INDEX_JSON_FILE_NAME:
-            dump_to_json_file(dict_index)
-        else:
-            source_dir = os.path.join(settings.DESTINATION_FOLDER, 'Movies')
-            index_dir = tools.make_dir(os.path.join(source_dir, "Index"))
-            if settings.REMOTE_FILE_OPERATION_ENABLED:
-                dict_apply(index_dir, dict_index, symlink_method=symlink)
-            else:
-                dict_apply(index_dir, dict_index)
+        source_dir = os.path.join(tools.check_mounted(settings.DESTINATION_FOLDER), 'Movies')
+        index_dir = tools.make_dir(os.path.join(source_dir, "Index"))
+        dict_apply(index_dir, dict_index)
         if settings.REPORT_ENABLED:
             insert_report(logger.finalize_report(), report_type='indexer')
 
@@ -117,16 +109,6 @@ class Indexer:
             MovieRelation.objects.get_or_create(person=person, movie=movie, type=link_type)
             logger.debug(
                 u'Link is saved :%s,%s,%s' % (person.name, movie.title, link_type))
-
-
-def dump_to_json_file(index_dict):
-    json_index = json.dumps(index_dict)
-    json_index = json_index.replace(settings.LOCAL_ROOT, settings.NAS_ROOT)
-    json_path = os.path.join(settings.DESTINATION_FOLDER, settings.DUMP_INDEX_JSON_FILE_NAME)
-    if os.path.exists(json_path):
-        os.remove(json_path)
-    with open(json_path, 'w') as outfile:
-        outfile.write(json_index)
 
 
 def search_index(folder_and_folder_abs):

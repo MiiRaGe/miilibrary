@@ -3,7 +3,6 @@ import hashlib
 import base64
 import json
 import logging
-import os
 import re
 from time import sleep
 
@@ -17,7 +16,6 @@ from django.core.cache import cache
 from django.utils import timezone
 from pyreport.reporter import Report
 
-from middleware.remote_execution import map_to_nas
 from mii_celery import app
 from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, match
 from mii_rss.models import FeedEntries, FeedFilter
@@ -69,8 +67,7 @@ def process_feeds(entries):
         if matched:
             file_name = re.search(r'/([^\/]*\.torrent)\?', entry['link']).group(1)
             logger.info(u'Torrent filename : %s' % file_name)
-            if os.path.exists(os.path.join(settings.TORRENT_WATCHED_FOLDER, file_name)) or \
-                    already_exists(filters[re_filter], entry['title']):
+            if already_exists(filters[re_filter], entry['title']):
                 logger.info(u'Skipped, already exists')
                 continue
             created = get_or_create_downloading_object(re_filter, entry['title'])
@@ -106,7 +103,7 @@ def add_torrent_to_transmission(url_link):
         "method": "torrent-add",
         "arguments": {
             "metainfo": content,
-            "download-dir": map_to_nas(settings.SOURCE_FOLDER),
+            "download-dir": settings.TRANSMISSION_DOWNLOAD_DIR,
             "paused": False
         }
     }

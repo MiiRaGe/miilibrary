@@ -1,0 +1,42 @@
+# Filesystem worker for the NAS (QNAP Container Station or `docker compose up -d` over SSH).
+#
+# It only consumes the "filesystem" queue (unpack, sort, index, discrepancies), so every file operation is a local
+# POSIX call on the NAS. The web UI, celery beat, the default worker, postgres and the broker stay in kubernetes.
+#
+# Storage layout:
+#   NVMe volume: transmission writes incomplete pieces to <downloads>/incomplete and moves finished torrents to
+#                <downloads>/complete (same volume, so the move is an instant rename). Torrents keep seeding from
+#                the NVMe, where random reads are cheap. In transmission's settings.json:
+#                  "incomplete-dir-enabled": true, "incomplete-dir": ".../incomplete", "download-dir": ".../complete"
+#   HDD volume:  the library. The unpacker copies each completed video (or extracts each archive) once, sequentially,
+#                into <media>/data, then the sorter renames it into Movies/TVSeries on the same volume.
+#
+# Torrents and their NVMe copy are deleted by clean_history after TORRENT_RETENTION_DAYS.
+services:
+  miilibrary-filesystem-worker:
+    image: miirage/rpi-cluster:miilibrary-latest
+    restart: unless-stopped
+    # Must be able to read transmission's files and write the library, check with `id <user>` on the NAS.
+    user: "${PUID:-1000}:${PGID:-100}"
+    command: celery -A mii_celery worker -Q filesystem -c 2 --loglevel=info
+    # Database, broker, cache and API credentials, see miilibrary.env.example
+    env_file: miilibrary.env
+    environment:
+      - SOURCE_FOLDER=/downloads/complete
+      - DESTINATION_FOLDER=/media
+    # /share/<ShareName> are QNAP's links to the shared folders, stable whatever the CACHEDEVn volume number is.
+    # create_host_path: false makes a wrong path fail at startup, instead of docker creating an empty folder and the
+    # worker building a new library in it.
+    volumes:
+      # Read-only: the worker copies from the downloads, it never modifies what transmission seeds.
+      - type: bind
+        source: ${DOWNLOADS_PATH:-/share/Downloads}/complete
+        target: /downloads/complete
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_PATH:-/share/MoviesSeries}
+        target: /media
+        bind:
+          create_host_path: false

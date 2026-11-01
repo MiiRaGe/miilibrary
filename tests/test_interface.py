@@ -9,7 +9,9 @@ from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 from mii_common import tools
 from mii_indexer.factories import MovieRelationFactory, MovieTaggingFactory
 from mii_interface.factories import ReportFactory
-from mii_interface.views import discrepancies
+from mii_common.tools import LibraryNotMounted
+from mii_interface.logic import check_library, find_discrepancies, fix_discrepancies
+from mii_interface.models import Report
 from mii_rating.models import QuestionAnswer, MovieQuestionSet
 from mii_sorter.factories import EpisodeFactory, MovieFactory, SerieFactory, SeasonFactory
 from mii_sorter.models import Movie
@@ -98,11 +100,6 @@ class TestViews(TestCase):
         assert Movie.objects.get(id=movie.id).seen is False
         assert response.status_code == 200
 
-    @mock.patch('mii_interface.views.remote_play')
-    def test_play(self, remote_play):
-        self.client.post('/play', data={'episode_id': self.episode.id})
-        remote_play.assert_called_with(self.episode.file_path)
-
 
 @override_settings(DESTINATION_FOLDER='/home/destination')
 class TestMiiRating(TestCase):
@@ -154,7 +151,7 @@ class TestDiscrepancies(FSTestCase, TestCase):
         self.setUpPyfakefs()
         dest_dir = tools.make_dir('/processed/')
         movie_dir = tools.make_dir(os.path.join(dest_dir, 'Movies'))
-        serie_dir = tools.make_dir(os.path.join(dest_dir, 'Series'))
+        serie_dir = tools.make_dir(os.path.join(dest_dir, 'TVSeries'))
         all_movie_dir = tools.make_dir(os.path.join(movie_dir, 'All'))
         self.title_folder = tools.make_dir(
             os.path.join(all_movie_dir, 'Title (2014)'))
@@ -176,14 +173,8 @@ class TestDiscrepancies(FSTestCase, TestCase):
         tools.make_dir('path_exists')
         tools.make_dir('path_exists2')
 
-    @mock.patch('mii_interface.views.render')
-    def test_discrepancies(self, render):
-        request = mock.MagicMock()
-        discrepancies(request)
-        render.assert_called_with(
-            request,
-            mock.ANY,
-            {
+    def test_discrepancies(self):
+        assert find_discrepancies() == {
                 'movie_discrepancy': [
                     {'title': self.movie_without_path.title, 'id': self.movie_without_path.id}],
                 'folder_discrepancy': [
@@ -199,16 +190,16 @@ class TestDiscrepancies(FSTestCase, TestCase):
                 ],
                 'series_discrepancy': [{'name': 'Serie3', 'id': 2}],
                 'seasons_discrepancy': [{'number': '2', 'id': 2}],
-                'episodes_discrepancy': [{'title': 'Episode object (2)', 'file_path': '{destination_dir}serie_13.mkv', 'id': 2}],
+                'episodes_discrepancy': [{'title': 'Episode object (2)', 'file_path': self.episode_without_path.file_path, 'id': 2}],
                 'serie_folder_discrepancy': [
                     {'name': 'Serie1',
-                     'folder_path': '/processed/Series/Serie1',
+                     'folder_path': '/processed/TVSeries/Serie1',
                      'seasons': [{
                          'number': '1',
-                         'folder_path': '/processed/Series/Serie1/Season 1',
+                         'folder_path': '/processed/TVSeries/Serie1/Season 1',
                          'episodes': [
                              {'number': 1,
-                              'file_path': '/processed/Series/Serie1/Season 1/serie.name.s01e01.mkv',
+                              'file_path': '/processed/TVSeries/Serie1/Season 1/serie.name.s01e01.mkv',
                               'file_size': 5}
                          ]
                      }
@@ -216,25 +207,29 @@ class TestDiscrepancies(FSTestCase, TestCase):
                      }
                 ],
             }
-        )
 
-    @mock.patch('mii_interface.views.render')
-    def test_discrepancies_fixing(self, render):
-        fixing_request = mock.MagicMock()
-        fixing_request.method = 'POST'
-        discrepancies(fixing_request)
-        request = mock.MagicMock()
-        request.method = 'GET'
-        discrepancies(request)
-        render.assert_called_with(
-            request,
-            mock.ANY,
-            {
-                'movie_discrepancy': [],
-                'folder_discrepancy': [],
-                'serie_folder_discrepancy': [],
-                'episodes_discrepancy': [],
-                'seasons_discrepancy': [],
-                'series_discrepancy': [],
-            }
-        )
+    def test_discrepancies_fixing(self):
+        fix_discrepancies()
+        assert find_discrepancies() == {
+            'movie_discrepancy': [],
+            'folder_discrepancy': [],
+            'serie_folder_discrepancy': [],
+            'episodes_discrepancy': [],
+            'seasons_discrepancy': [],
+            'series_discrepancy': [],
+        }
+
+    @override_settings(DESTINATION_FOLDER='/not_mounted/')
+    def test_discrepancies_library_not_mounted(self):
+        movie_count = Movie.objects.count()
+        with self.assertRaises(LibraryNotMounted):
+            fix_discrepancies()
+        assert Movie.objects.count() == movie_count
+
+    @override_settings(REPORT_ENABLED=True)
+    @mock.patch('mii_interface.logic.logger')
+    def test_check_library_reports(self, logger):
+        logger.finalize_report.return_value = 'report'
+        check_library()
+        assert find_discrepancies()['movie_discrepancy'] == []
+        assert Report.objects.get(report_type='library_check').report_html == 'report'

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import errno
 import logging
 from subprocess import CalledProcessError
 import mock
 import os
 from datetime import timedelta
-from django.test import override_settings
 from django.utils import timezone
 from mii_common import tools
 from mii_indexer.models import MovieRelation
@@ -20,8 +20,11 @@ from utils.base import TestMiilibrary, mii_osdb_mock
 
 logger = logging.getLogger(__name__)
 
+# What os.link raises when the downloads and the library are on different volumes
+CROSS_DEVICE_ERROR = OSError(errno.EXDEV, 'Invalid cross-device link')
 
-@mock.patch('mii_unpacker.logic.link', new=mock.MagicMock(side_effect=AttributeError))
+
+@mock.patch('mii_common.tools.os.link', new=mock.MagicMock(side_effect=CROSS_DEVICE_ERROR))
 class TestMain(TestMiilibrary):
     def test_unpack(self):
         logger.info("== Testing doUnpack ==")
@@ -129,8 +132,7 @@ class TestMain(TestMiilibrary):
         assert MovieRelation.objects.count() == 33
         assert Person.objects.count() == 22
 
-    @override_settings(DUMP_INDEX_JSON_FILE_NAME='data.json')
-    def test_json_dump(self):
+    def test_unpack_sort_index_relative_links(self):
         self.recursive_unrarer.run()
         assert len(os.listdir(self.DESTINATION_FOLDER + '/data')) == 5
 
@@ -150,7 +152,13 @@ class TestMain(TestMiilibrary):
         assert 'The.Big.Bank.Theory.S01E01.[720p].mkv' in os.listdir(tbbt_season1_folder)
 
         self.indexer.index()
-        assert os.path.exists(self.DESTINATION_FOLDER + '/data.json')
+        thor_link = os.path.join(self.DESTINATION_FOLDER, 'Movies', 'Index', 'Years', '2011', 'Thor (2011)')
+        assert os.readlink(thor_link) == os.path.join('..', '..', '..', 'All', 'Thor (2011) [720p]')
+        assert os.path.isdir(thor_link)
+
+        new_link = os.path.join(self.DESTINATION_FOLDER, 'New', 'Today', 'Thor (2011)')
+        assert not os.path.isabs(os.readlink(new_link))
+        assert os.path.isdir(new_link)
 
 
 class TestSpecificUnpacker(TestMiilibrary):
@@ -207,12 +215,37 @@ class TestSpecificUnpacker(TestMiilibrary):
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
 
-    @mock.patch('mii_unpacker.logic.link', new=mock.MagicMock(side_effect=AttributeError))
+    @mock.patch('mii_common.tools.os.link', new=mock.MagicMock(side_effect=CROSS_DEVICE_ERROR))
     def test_linking_video_file_exists_betters_link_fails(self):
         self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(2))
         self.fs.create_file(self.DESTINATION_FOLDER + '/data/Thor.2.mkv', contents=self._generate_data(1))
         self.recursive_unrarer.unrar_and_link()
         assert self.recursive_unrarer.linked == 1
+        destination = self.DESTINATION_FOLDER + '/data/Thor.2.mkv'
+        assert os.stat(destination).st_nlink == 1
+        assert get_size(destination) == get_size(self.SOURCE_FOLDER + 'Thor.2.mkv')
+        assert not os.listdir(self.DESTINATION_FOLDER + '/.incoming')
+
+    def test_linking_video_same_volume_hardlinks(self):
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.mkv', contents=self._generate_data(1))
+        self.recursive_unrarer.unrar_and_link()
+        assert os.stat(self.DESTINATION_FOLDER + '/data/Thor.2.mkv').st_nlink == 2
+
+    def test_interrupted_copy_is_cleaned(self):
+        self.fs.create_file(self.DESTINATION_FOLDER + '/.incoming/Thor.2.mkv', contents='half')
+        self.recursive_unrarer.unrar_and_link()
+        assert not os.path.exists(self.DESTINATION_FOLDER + '/.incoming')
+
+    @mock.patch('mii_unpacker.logic.unrar')
+    def test_unrar_moves_extracted_files_to_data(self, unrar):
+        def fake_unrar(archive_file, extract_dir):
+            assert extract_dir.startswith(os.path.join(self.DESTINATION_FOLDER, '.incoming'))
+            self.fs.create_file(os.path.join(extract_dir, 'Thor.2.mkv'), contents='Thor')
+        unrar.side_effect = fake_unrar
+        self.fs.create_file(self.SOURCE_FOLDER + 'Thor.2.rar', contents=self._generate_data(1))
+        self.recursive_unrarer.unrar_and_link()
+        assert os.listdir(self.DESTINATION_FOLDER + '/data') == ['Thor.2.mkv']
+        assert os.listdir(self.DESTINATION_FOLDER + '/.incoming') == []
 
     @mock.patch('mii_unpacker.logic.unrar')
     def test_unicode_archive(self, unrar):

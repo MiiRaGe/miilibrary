@@ -8,33 +8,28 @@ for setting in dir(config_module):
 
 from settings.django import DATABASES, CACHES
 from os import environ
+from celery.schedules import crontab
 from settings.base import ALLOWED_HOSTS
+
+
+def env_bool(name, default):
+    # bool('False') is True, so parse the usual spellings explicitly
+    return environ.get(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
+
 
 #MiiNASLibrary configuration file
 
 """Configuration file"""
-#This Folder is browsed recursively for .rar files and movie files (mkv,avi...)
+# Both are only needed by the filesystem worker, and must be absolute paths of mounted folders.
+#This Folder is browsed recursively for .rar files and movie files (mkv,avi...): the completed torrents
 SOURCE_FOLDER = environ.get('SOURCE_FOLDER', '')
 
 #This is the root of the media folder (destination)
 DESTINATION_FOLDER = environ.get('DESTINATION_FOLDER', '')
 
 """[Unpacking]"""
-#Is the script unpacking and moving from the source folder (can be deactivated to only sort what's in the data folder)
-UNPACKING_ENABLED = True
-
 #Minimum size to be considered as non sample (in MB)
 MINIMUM_SIZE = 125
-
-#Delete the empty folders in the source folder, useful when resorting the whole TVSeries output folder
-SOURCE_CLEANUP = False
-
-"""[Sorting]"""
-#Contain custom rules for renaming
-# TODO: Move to DB regex.
-CUSTOM_RENAMING = {
-    'dummy name US': 'name',
-}
 
 """[OpenSubtitle]"""
 OPENSUBTITLE_API_URL = environ.get('OPENSUBTITLE_API_URL', "https://api.opensubtitles.org/xml-rpc")
@@ -44,21 +39,18 @@ OPENSUBTITLE_PASSWORD = environ.get('OPENSUBTITLE_PASSWORD', '')
 
 """[RSS Link]"""
 RSS_URL = environ.get('RSS_URL', 'http://www.torrentday.com/torrents/rss?download;l7;u=xxx;tp=xxx')
-TORRENT_WATCHED_FOLDER = environ.get('TORRENT_WATCHED_FOLDER', '/PATH/TO/WATCHED/FOLDER/')
-# TODO: Move to DB.
-RSS_FILTERS = [
-    'the.peoples.couch.*720p'
-]
 
 """[Django Databases]"""
 DATABASES['default']['NAME'] = environ.get('DB_NAME', 'media')
 DATABASES['default']['USER'] = environ.get('DB_USER', 'MiiRaGe')
 DATABASES['default']['PASSWORD'] = environ.get('DB_PASSWORD', '1234')
 DATABASES['default']['HOST'] = environ.get('DB_HOST', 'localhost')
+DATABASES['default']['PORT'] = environ.get('DB_PORT', '')
 DATABASES['default']['ENGINE'] = environ.get('DB_ENGINE', 'django.db.backends.sqlite3')
 
 """[Django Caches]"""
-CACHES['default']['LOCATION'] = environ.get('CACHE_LOCATION', '127.0.0.1:6379')
+# Shared by every worker: it holds the single instance task locks. Must be a redis:// url.
+CACHES['default']['LOCATION'] = environ.get('CACHE_LOCATION', 'redis://127.0.0.1:6379')
 
 """[Django Secrets]"""
 SECRET_KEY = environ.get('SECRET_KEY', '+^(g2=uuez(s1qgpmznc&amp;zx4win6o36*9d$7l=5!)tf77*110c')
@@ -70,28 +62,39 @@ CSRF_TRUSTED_ORIGINS = [u'https://' + environ.get('EXTRA_ALLOWED_HOST', u'localh
 BROKER_URL = environ.get('BROKER_URL', 'amqp://guest:**@localhost:5672//')
 CELERY_BROKER_URL = BROKER_URL
 
-#Set them equal to SOURCE_FOLDER if not using a remote storage.
-# Some operation on the file are done remotely through SSH, so you need to provide the mapping between the mounted
-# folder on the server, and the physical folder on the remote storage.
-LOCAL_ROOT = environ.get('LOCAL_ROOT', '/mnt/smb_folder/')
+"""Celery task routing"""
+# Tasks touching the media files are sent to this queue, consumed by the worker running next to the storage (the NAS)
+# where every file operation is a local POSIX call. The other tasks (rss, transmission, history) stay on the default
+# "celery" queue and can run anywhere (e.g. the kubernetes cluster).
+FILESYSTEM_QUEUE = environ.get('FILESYSTEM_QUEUE', 'filesystem')
+CELERY_TASK_ROUTES = {task_name: {'queue': FILESYSTEM_QUEUE} for task_name in (
+    'mii_unpacker.tasks.unpack',
+    'mii_sorter.tasks.sort',
+    'mii_indexer.tasks.index_movies',
+    'mii_interface.tasks.check_library',
+)}
+# The broker lives on another machine, keep retrying instead of crashing the worker when it's not up yet.
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+# Synced into the django_celery_beat tables by the database scheduler. Before the 6am unpack/sort so moved back
+# orphan folders get sorted again.
+CELERY_BEAT_SCHEDULE = {
+    'check_library': {
+        'task': 'mii_interface.tasks.check_library',
+        'schedule': crontab(hour=5, minute=30),
+    },
+}
 
-#Those parameter will ssh log and link files remotely.
-REMOTE_FILE_OPERATION_ENABLED = bool(environ.get('REMOTE_FILE_OPERATION_ENABLED', False))
-NAS_IP = environ.get('NAS_IP', '')
-NAS_USERNAME = environ.get('NAS_USERNAME', 'foo')
-NAS_PASSWORD = environ.get('NAS_PASSWORD', 'bar')
-NAS_ROOT = environ.get('NAS_ROOT', '/share/MD0_DATA/')
-REMOTE_UNRAR_PATH = environ.get('NAS_UNRAR_PATH', u"/usr/local/sbin/unrar")
+REPORT_ENABLED = env_bool('REPORT_ENABLED', True)
 
-#Indexer
-# This is enabling dumping the index data in a json file at the root of the MoviesSeries folder for another programm to index
-DUMP_INDEX_JSON_FILE_NAME = environ.get('DUMP_INDEX_JSON_FILE_NAME', 'data.json')
-
-REPORT_ENABLED = bool(environ.get('REPORT_ENABLED', True))
-
-# Django-dbbackup settings
-DBBACKUP_STORAGE = environ.get('DBBACKUP_STORAGE', 'django.core.files.storage.FileSystemStorage')
-DBBACKUP_STORAGE_OPTIONS = {'location': environ.get('DBBACKUP_BACKUP_DIRECTORY', '/tmp/backup/')}
+# Django-dbbackup settings (django-dbbackup >= 5 reads its storage from STORAGES)
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    'dbbackup': {
+        'BACKEND': environ.get('DBBACKUP_STORAGE', 'django.core.files.storage.FileSystemStorage'),
+        'OPTIONS': {'location': environ.get('DBBACKUP_BACKUP_DIRECTORY', '/tmp/backup/')},
+    },
+}
 
 SENTRY_URL = environ.get('SENTRY_URL', '')
 DESTINATION_PLACEHOLDER = u'{destination_folder}'
@@ -99,8 +102,11 @@ DESTINATION_PLACEHOLDER = u'{destination_folder}'
 TRANSMISSION_RPC_URL = environ.get('TRANSMISSION_RPC_URL', u'http://192.168.0.2:9091/transmission/rpc')
 TRANSMISSION_RPC_USERNAME = environ.get('TRANSMISSION_RPC_USERNAME', u'admin')
 TRANSMISSION_RPC_PASSWORD = environ.get('TRANSMISSION_RPC_PASSWORD', u'admin')
+# Where transmission saves completed torrents, as seen by transmission. Only differs from SOURCE_FOLDER when
+# transmission and the filesystem worker mount the downloads volume at different paths.
+TRANSMISSION_DOWNLOAD_DIR = environ.get('TRANSMISSION_DOWNLOAD_DIR', SOURCE_FOLDER)
+# Torrents (and their data on the download volume) are removed after this many days of seeding.
+TORRENT_RETENTION_DAYS = int(environ.get('TORRENT_RETENTION_DAYS', 90))
 
 ALLOWED_HOSTS = ALLOWED_HOSTS + [environ.get('EXTRA_ALLOWED_HOST', u'192.168.0.101'), environ.get('EXTRA_ALLOWED_IP', u'127.0.0.1')]
-JSON_RPC_USERNAME = environ.get('JSON_RPC_USERNAME', 'kodi')
-JSON_RPC_PASSWORD = environ.get('JSON_RPC_PASSWORD', 'kodi')
-DEBUG = bool(environ.get('DEBUG', False))
+DEBUG = env_bool('DEBUG', False)

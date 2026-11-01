@@ -1,10 +1,13 @@
+import errno
 import mock
 import os
 
 from pyfakefs.fake_filesystem_unittest import TestCase as FakeFSTestCase
 from unittest import TestCase
 
-from mii_common.tools import make_dir, delete_dir, listdir_abs, dict_apply
+from mii_common.tools import make_dir, delete_dir, listdir_abs, dict_apply, link_or_copy, relative_symlink, \
+    safe_delete, unrar, check_mounted, LibraryNotMounted
+from settings.base import env_bool
 
 
 @mock.patch('mii_common.tools.os')
@@ -77,3 +80,53 @@ class TestWithFakeFS(FakeFSTestCase):
         dict_apply('/test', {})
         after = os.listdir('/test')
         assert before == after
+
+    def test_relative_symlink(self):
+        os.makedirs('/test/a/b')
+        relative_symlink('/t/blah.mkv', '/test/a/b/blah.mkv')
+        assert os.readlink('/test/a/b/blah.mkv') == '../../../t/blah.mkv'
+        assert os.path.exists('/test/a/b/blah.mkv')
+
+    def test_safe_delete_dangling_symlink(self):
+        os.symlink('/t/missing.mkv', '/test/dangling.mkv')
+        safe_delete('/test/dangling.mkv')
+        assert not os.path.lexists('/test/dangling.mkv')
+
+    def test_link_or_copy_same_filesystem(self):
+        link_or_copy('/t/blah.mkv', '/test/blah.mkv', '/test/.staging')
+        assert os.stat('/test/blah.mkv').st_nlink == 2
+        assert not os.path.exists('/test/.staging')
+
+    def test_link_or_copy_other_filesystem(self):
+        with mock.patch('mii_common.tools.os.link', side_effect=OSError(errno.EXDEV, 'Invalid cross-device link')):
+            link_or_copy('/t/blah.mkv', '/test/blah.mkv', '/test/.staging')
+        assert os.stat('/test/blah.mkv').st_nlink == 1
+        assert os.listdir('/test/.staging') == []
+
+    def test_link_or_copy_unexpected_error(self):
+        with mock.patch('mii_common.tools.os.link', side_effect=OSError(errno.ENOSPC, 'No space left on device')):
+            with self.assertRaises(OSError):
+                link_or_copy('/t/blah.mkv', '/test/blah.mkv', '/test/.staging')
+
+
+class TestUnrar(TestCase):
+    @mock.patch('mii_common.tools.subprocess')
+    def test_unrar_paths_with_spaces(self, subprocess):
+        unrar('/raw/My Movie (2011)/movie.rar', '/processed/.incoming/tmp')
+        subprocess.check_output.assert_called_with(
+            ['unrar', 'e', '-y', '/raw/My Movie (2011)/movie.rar', '/processed/.incoming/tmp/'])
+
+    def test_check_mounted(self):
+        assert check_mounted('/') == '/'
+        for path in ('', 'test', '/not_mounted_miilibrary'):
+            with self.assertRaises(LibraryNotMounted):
+                check_mounted(path)
+
+
+class TestSettings(TestCase):
+    def test_env_bool(self):
+        for value, expected in (('False', False), ('0', False), ('', False), ('true', True), ('1', True)):
+            with mock.patch.dict('settings.base.environ', {'FLAG': value}):
+                assert env_bool('FLAG', True) is expected
+        with mock.patch.dict('settings.base.environ', {}, clear=True):
+            assert env_bool('FLAG', True) is True

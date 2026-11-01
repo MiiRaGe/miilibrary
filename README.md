@@ -17,8 +17,12 @@ It acts as an rpc server, with 3 different actions:
 
 ### Technical Stack ###
 
-This project includes the dockerfile needed to use resin.io.
-It uses a local django, local mysql db, a local celery instance and a local rabbitmq broker.
+The same image runs in two places:
+
+* Kubernetes cluster: django web UI, celery beat, a celery worker on the default `celery` queue (rss, transmission, history), postgres and the broker/redis.
+* NAS: a celery worker consuming only the `filesystem` queue (unpack, sort, index, daily library check), with the downloads and the library mounted locally. See `deploy/nas/docker-compose.yml`.
+
+All file operations are local POSIX calls on the NAS (no more SSH). Completed torrents stay on the download volume (NVMe) to seed and are copied once to the library volume (HDD); links in `New/` and `Movies/Index/` are relative so they resolve through NFS/SMB too.
 
 ### Dependencies ###
 

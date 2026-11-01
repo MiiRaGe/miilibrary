@@ -10,9 +10,7 @@ class Migration(migrations.Migration):
         ('mii_sorter', '0004_auto_20150630_2211'),
     ]
 
+    # Was AlterIndexTogether(('year', 'title')): Django >= 5.1 no longer creates index_together indexes on a fresh
+    # database, so removing the previous one failed. The index is managed by 0015.
     operations = [
-        migrations.AlterIndexTogether(
-            name='movie',
-            index_together=set([('year', 'title')]),
-        ),
     ]

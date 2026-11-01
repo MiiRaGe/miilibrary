@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.db.models import Model, IntegerField, ForeignKey, CharField, BigIntegerField, FloatField, \
-    DateTimeField, BooleanField, CASCADE
+    DateTimeField, BooleanField, CASCADE, Index
 from mii_interface.models import Report
 
 logger = logging.getLogger(__name__)
@@ -21,8 +21,8 @@ class Movie(Model):
     indexed = BooleanField(default=False)
 
     class Meta:
-        index_together = [
-            ['year', 'title']
+        indexes = [
+            Index(fields=['year', 'title']),
         ]
         ordering = ['title']
 

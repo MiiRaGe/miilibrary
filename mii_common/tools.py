@@ -1,6 +1,7 @@
+import errno
 import logging
 import os
-from errno import ENOTDIR
+import subprocess
 
 import shutil
 
@@ -55,7 +56,8 @@ def get_dir_size(dir_name):
 
 
 def safe_delete(path):
-    if os.path.exists(path):
+    # lexists so that dangling symlinks are removed too
+    if os.path.lexists(path):
         if os.path.islink(path):
             os.unlink(path)
         elif os.path.isdir(path):
@@ -64,7 +66,53 @@ def safe_delete(path):
             os.remove(path)
 
 
-def dict_apply(path, dictionnary, symlink_method=None):
+class LibraryNotMounted(Exception):
+    pass
+
+
+def check_mounted(path):
+    """
+    Refuse to work on a missing or relative folder: an unset variable or a volume not mounted in the container would
+    otherwise create an empty library in the working directory, or make every file in the db look deleted.
+    """
+    if not path or not os.path.isabs(path) or not os.path.isdir(path):
+        raise LibraryNotMounted('%r is not an existing absolute folder, is the volume mounted?' % path)
+    return path
+
+
+def relative_symlink(target, link_path):
+    # Relative links resolve the same on the NAS, inside containers and through NFS/SMB clients,
+    # as long as both ends live in the same share.
+    os.symlink(os.path.relpath(target, os.path.dirname(link_path)), link_path)
+
+
+# errno values for which a hardlink can't be made but a copy can (other filesystem, protected_hardlinks...)
+LINK_UNSUPPORTED_ERRNOS = (errno.EXDEV, errno.EPERM, errno.EMLINK, errno.EOPNOTSUPP)
+
+
+def link_or_copy(source_file, destination_file, staging_dir):
+    """
+    Hardlink source_file to destination_file, or copy it when they are on different filesystems
+    (e.g. torrents seeding on the NVMe volume and the library on the HDD volume).
+    The copy is written in staging_dir first and renamed into place, so destination_file is never seen half
+    written. staging_dir must be on the same filesystem as destination_file for the rename to be atomic.
+    """
+    try:
+        os.link(source_file, destination_file)
+        return
+    except OSError as e:
+        if e.errno not in LINK_UNSUPPORTED_ERRNOS:
+            raise
+    staging_file = os.path.join(make_dirs(staging_dir), os.path.basename(destination_file))
+    shutil.copyfile(source_file, staging_file)
+    os.replace(staging_file, destination_file)
+
+
+def unrar(archive_file, destination_dir):
+    return subprocess.check_output(['unrar', 'e', '-y', archive_file, os.path.join(destination_dir, '')])
+
+
+def dict_apply(path, dictionnary, symlink_method=relative_symlink):
     '''
     This method expect a dict with any depth where leaf are a list of tuple (name, path) where a symlink is going to be created
     following the path in the tree to match the patch in the file system.
@@ -93,10 +141,7 @@ def dict_apply(path, dictionnary, symlink_method=None):
                 new_one = os.path.join(current_path, name)
                 if name not in current_path_content:
                     try:
-                        if not symlink_method:
-                            os.symlink(abs_path_to_name, new_one)
-                        else:
-                            symlink_method(abs_path_to_name, new_one)
+                        symlink_method(abs_path_to_name, new_one)
                     except OSError as e:
                         logger.error(u'Tried to symlink: "%s" to "%s/%s"' % (abs_path_to_name,
                                                                              current_path,
@@ -107,10 +152,7 @@ def dict_apply(path, dictionnary, symlink_method=None):
                     if get_dir_size(abs_path_to_name) != get_dir_size(new_one):
                         safe_delete(new_one)
                         try:
-                            if not symlink_method:
-                                os.symlink(abs_path_to_name, new_one)
-                            else:
-                                symlink_method(abs_path_to_name, new_one)
+                            symlink_method(abs_path_to_name, new_one)
                         except OSError as e:
                             logger.error(u'Tried to symlink: "%s" to "%s/%s"' % (abs_path_to_name,
                                                                                  current_path,

@@ -1,7 +1,10 @@
 import json
 import mock
 
+from django.core.cache import cache
 from django.test import TestCase
+
+from middleware.decorators import single_instance_task
 
 from middleware.mii_cache_wrapper import MiiCachedData
 from middleware.models import JSONKeyValue
@@ -75,3 +78,36 @@ class TestDbBackup():
     def test_dbbackup(self, Command):
         db_backup()
         assert Command.called
+
+class TestSingleInstanceTask(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_runs(self):
+        calls = []
+        single_instance_task(60)(lambda: calls.append(1))()
+        assert calls == [1]
+
+    def test_call_while_running_reruns_once(self):
+        calls = []
+
+        @single_instance_task(60)
+        def task():
+            calls.append(1)
+            if len(calls) == 1:
+                # Two torrents finish while the first run is in progress
+                task()
+                task()
+
+        task()
+        assert calls == [1, 1]
+
+    def test_rerun_after_failure(self):
+        @single_instance_task(60)
+        def task():
+            raise ValueError()
+
+        with self.assertRaises(ValueError):
+            task()
+        with self.assertRaises(ValueError):
+            task()

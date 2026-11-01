@@ -1,12 +1,10 @@
 import logging
 import os
 import re
-from time import sleep
 from uuid import uuid4
 
 from django.utils import timezone
 from pyreport.reporter import Report
-from middleware.remote_execution import symlink, remove_dir
 from django.conf import settings
 from middleware import mii_cache_wrapper
 from mii_common import tools
@@ -30,7 +28,7 @@ class Sorter:
             logger.create_report()
         self.hash_array = []
         self.map = {}
-        self.media_dir = settings.DESTINATION_FOLDER
+        self.media_dir = tools.check_mounted(settings.DESTINATION_FOLDER)
         self.new_dir = os.path.join(self.media_dir, 'New')
         self.data_dir = os.path.join(self.media_dir, 'data')
         self.serie_dir = os.path.join(self.media_dir, 'TVSeries')
@@ -120,22 +118,8 @@ class Sorter:
             insert_report(logger.finalize_report(), report_type='sorting')
 
     def update_new(self):
-        logger.debug(u'Does New folder exists? %s' % os.path.exists(self.new_dir))
-        if os.path.exists(self.new_dir):
-            logger.debug(u'Deleting the New folder')
-            tools.safe_delete(self.new_dir)
-            sleep(2)
-            if os.path.exists(self.new_dir):
-                remove_dir(self.new_dir)
-            sleep(1)
-            retry = 0
-            while os.path.exists(self.new_dir):
-                retry += 1
-                sleep(1)
-                logger.debug(u'Folder still exists, waiting for deletion...')
-                if retry == 6:
-                    logger.debug(u'Retried too much waiting for folder to delete')
-                    return
+        logger.debug(u'Deleting the New folder')
+        tools.safe_delete(self.new_dir)
         logger.debug(u'Creating the new folder')
         self.new_dir = tools.make_dir(self.new_dir)
         logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
@@ -148,10 +132,11 @@ class Sorter:
                 logger.debug(u'Content of New: %s' % os.listdir(self.new_dir))
                 if os.path.isdir(whatsnew.abs_path):
                     logger.info(u'Linking directory %s to %s' % (whatsnew.abs_path, whatsnew.name))
-                    symlink(whatsnew.abs_path, os.path.join(relative_date_directory, whatsnew.name))
+                    tools.relative_symlink(whatsnew.abs_path, os.path.join(relative_date_directory, whatsnew.name))
                 else:
                     logger.info(u'Linking file %s to %s' % (whatsnew.abs_path, whatsnew.name))
-                    symlink(whatsnew.abs_path, os.path.join(relative_date_directory, whatsnew.abs_path.split('/')[-1]))
+                    tools.relative_symlink(whatsnew.abs_path,
+                                           os.path.join(relative_date_directory, whatsnew.abs_path.split('/')[-1]))
         except Exception as e:
             logger.exception(u'Exception when updating new entry, %s' % repr(e))
 

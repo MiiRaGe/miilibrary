@@ -1,6 +1,10 @@
-FROM python:3.12.3-bullseye
+FROM python:3.12.3-bookworm
 
-RUN apt install tzdata
+# unrar (non-free) is needed by the filesystem worker, archives are extracted locally on the NAS
+RUN sed -i 's/^Components: main$/Components: main non-free/' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends unrar \
+    && rm -rf /var/lib/apt/lists/*
 
 ADD requirements.txt /
 

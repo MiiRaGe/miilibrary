@@ -18,4 +18,9 @@ DATABASES['default'] = {
     'NAME': 'testdb'
 }
 
-REMOTE_FILE_OPERATION_ENABLED = False
+# Tests don't need a redis server
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}

@@ -46,17 +46,7 @@
                             <table class="table-default table table-condensed">
                                 {% for number, id in episodes %}
                                 <tr>
-                                    <td>
-                                        <form method="post" action="./play" class="form-inline">
-                                            <div class="form-group">
-                                                <label for="play_button">Episode {{ number }}</label>
-                                                {% csrf_token %}
-                                                <input type="hidden" name="episode_id" value="{{ id }}"/>
-                                                <input id="play_button" type="submit" class="btn btn-default"
-                                                       value="Play"/>
-                                            </div>
-                                        </form>
-                                    </td>
+                                    <td>Episode {{ number }}</td>
                                 </tr>
                                 {% endfor %}
                             </table>

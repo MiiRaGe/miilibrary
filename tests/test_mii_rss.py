@@ -99,7 +99,6 @@ class TestRSS(TestCase):
         assert resulting_dict == {'entries': [{'title': 'title', 'link': 'link'} for x in range(0, 5)]}
 
 
-@override_settings(TORRENT_WATCHED_FOLDER='/')
 class TestTask(FakeFsTestCase, TestCase):
     def setUp(self):
         self.setUpPyfakefs()
@@ -122,16 +121,6 @@ class TestTask(FakeFsTestCase, TestCase):
     def test_task_feed(self, feedparser):
         feedparser.parse.return_value = {'status': 200, 'entries': [{'title': 'arrow', 'link': None}]}
         check_feed_and_download_torrents()
-
-    @mock.patch('mii_rss.tasks.add_torrent_to_transmission')
-    @mock.patch('mii_rss.tasks.feedparser')
-    def test_task_feed_matching_already_exist(self, feedparser, add_torrent_to_transmission):
-        self.fs.create_file('/test.torrent')
-        feedparser.parse.return_value = {'status': 200,
-                                         'entries': [{'title': 'non_matching', 'link': '/test.torrent?'}]
-                                         }
-        check_feed_and_download_torrents()
-        assert not add_torrent_to_transmission.delay.called
 
     @mock.patch('mii_rss.tasks.add_torrent_to_transmission')
     @mock.patch('mii_rss.tasks.feedparser')
