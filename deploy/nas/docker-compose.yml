@@ -19,9 +19,9 @@ services:
     image: lscr.io/linuxserver/transmission:latest
     restart: unless-stopped
     environment:
-      # Owner of the files, the worker must be able to read them: check with `id <user>` on the NAS
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-100}
+      # Owner of the files, the worker must be able to read them: check with `id <user>` on the NAS (also in user: below)
+      - PUID=1000
+      - PGID=100
       - TZ=Europe/Stockholm
       # Same as TRANSMISSION_RPC_USERNAME / TRANSMISSION_RPC_PASSWORD in the cluster
       - USER=change-me
@@ -32,12 +32,12 @@ services:
       # settings.json lives here: download-dir=/downloads, incomplete-dir-enabled=false, rename-partial-files=true,
       # and the script-torrent-done-* entries calling miilibrary's /rpc/unpack_sort_index
       - type: bind
-        source: ${TRANSMISSION_CONFIG_PATH:-/share/Container/transmission}
+        source: /share/Container/transmission
         target: /config
         bind:
           create_host_path: false
       - type: bind
-        source: ${DOWNLOADS_PATH:-/share/Downloads}
+        source: /share/Downloads
         target: /downloads
         bind:
           create_host_path: false
@@ -50,24 +50,25 @@ services:
   miilibrary-filesystem-worker:
     image: miirage/rpi-cluster:miilibrary-latest
     restart: unless-stopped
-    user: "${PUID:-1000}:${PGID:-100}"
+    user: "1000:100"
     # Only the file tasks (unpack, sort, index, library check). It doesn't talk to transmission, the cluster does.
     command: celery -A mii_celery worker -Q filesystem -c 2 --loglevel=info
-    # Database, broker, cache and API credentials, see miilibrary.env.example
-    env_file: miilibrary.env
+    # Database, broker, cache and API credentials, see miilibrary.env.example. Absolute path so the compose can be
+    # pasted in the Container Station GUI: create the file before validating it.
+    env_file: /share/Container/miilibrary/miilibrary.env
     environment:
       - SOURCE_FOLDER=/downloads
       - DESTINATION_FOLDER=/media
     volumes:
       # Read-only: the worker copies from the downloads, it never modifies what transmission seeds
       - type: bind
-        source: ${DOWNLOADS_PATH:-/share/Downloads}
+        source: /share/Downloads
         target: /downloads
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: ${MEDIA_PATH:-/share/MoviesSeries}
+        source: /share/MoviesSeries
         target: /media
         bind:
           create_host_path: false
