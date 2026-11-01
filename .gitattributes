@@ -1,1 +1,2 @@
 rating/* filter=git-crypt diff=git-crypt
+deploy/nas/transmission-init/* text eol=lf
