@@ -22,11 +22,15 @@
             <td>{{ entry.date|date:"d/m/Y H:i" }}</td>
             <td>{{ entry.title }}</td>
             <td>
+                {% if entry.added %}
+                <span class="label label-success" title="{{ entry.added|date:"d/m/Y H:i" }}">Added</span>
+                {% else %}
                 <form method="post" action="{% url 'get' %}">
                     {% csrf_token %}
-                    <input type="hidden" name="entry" value="{{ entry.hash }}">
+                    <input type="hidden" name="entry" value="{{ entry.link_hash }}">
                     <button type="submit" class="btn btn-primary btn-xs">Get</button>
                 </form>
+                {% endif %}
             </td>
         </tr>
     {% empty %}

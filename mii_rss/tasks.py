@@ -15,8 +15,9 @@ from django.utils import timezone
 from pyreport.reporter import Report
 
 from mii_celery import app
-from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, get_hashed_link, match
-from mii_rss.models import FeedEntries, FeedFilter
+from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, get_hashed_link, match, \
+    save_feed_items
+from mii_rss.models import FeedEntries, FeedFilter, FeedItem
 from mii_sorter.models import insert_report
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def check_feed_and_download_torrents():
         return
 
     FeedEntries.objects.create(json_entries=json.dumps(get_dict_from_feeds(feed['entries'])))
+    save_feed_items(feed['entries'])
 
     logger.info(u'Going through the entries')
     process_feeds(feed['entries'])
@@ -89,7 +91,6 @@ def add_torrent_to_transmission(url_link):
             index = content.index(key)
             content = content[index + len(key):]
         content = base64.b64encode(content).decode('utf8')
-        cache.set(get_hashed_link(url_link), content, 600)
 
     parameters = {
         "method": "torrent-add",
@@ -103,6 +104,9 @@ def add_torrent_to_transmission(url_link):
 
     if response_dict['result'] != 'success':
         raise Exception('Adding new Torrent failed: %s' % response_dict)
+    # Only now: an error page from the tracker must not be sent again when retrying.
+    cache.set(get_hashed_link(url_link), content, 600)
+    FeedItem.objects.filter(link_hash=get_hashed_link(url_link)).update(added=timezone.now())
 
 
 def send_to_transmission_with_retry(parameters):

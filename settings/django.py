@@ -29,7 +29,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'Europe/London'
+TIME_ZONE = 'Europe/Stockholm'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -200,6 +200,6 @@ CELERY_RESULT_BACKEND = 'django-db'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']  # Ignore other content
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Europe/London'
+CELERY_TIMEZONE = 'Europe/Stockholm'
 CELERY_ENABLE_UTC = True
 BROKER_URL = 'amqp://guest:**@localhost:5672//'

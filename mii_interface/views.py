@@ -11,6 +11,7 @@ from mii_interface.models import Report
 from mii_sorter.models import Movie, Episode
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
 from mii_rss.logic import get_recent_entries
+from mii_rss.models import FeedItem
 from mii_rss.tasks import add_torrent_to_transmission
 from mii_unpacker.tasks import unpack
 from mii_sorter.tasks import sort
@@ -96,17 +97,16 @@ def report(request, report_id):
 
 
 def get_torrents(request):
-    entries = get_recent_entries()
     if request.method == 'POST':
         # The page only posts a hash: the links hold the tracker passkey, and the server only fetches links from its feeds.
-        entry = next((entry for entry in entries if entry['hash'] == request.POST.get('entry')), None)
+        entry = FeedItem.objects.filter(link_hash=request.POST.get('entry')).first()
         if entry:
-            add_torrent_to_transmission.delay(entry['link'])
-            messages.success(request, 'Queued for transmission: %s' % entry['title'])
+            add_torrent_to_transmission.delay(entry.link)
+            messages.success(request, 'Queued for transmission: %s' % entry.title)
         else:
             messages.error(request, 'This entry is no longer in the recent feeds.')
         return redirect('get')
-    return render(request, 'mii_interface/get.html', {'entries': entries})
+    return render(request, 'mii_interface/get.html', {'entries': get_recent_entries()})
 
 
 def start_unpack_sort_indexer(request):

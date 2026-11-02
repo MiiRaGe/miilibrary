@@ -1,3 +1,7 @@
+import base64
+from datetime import timedelta
+from importlib import import_module
+
 import pytest
 import responses
 
@@ -5,16 +9,22 @@ import mock
 from celery.exceptions import Retry
 from django.core.cache import cache
 from django.test import SimpleTestCase
+from django.apps import apps
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from pyfakefs.fake_filesystem_unittest import TestCase as FakeFsTestCase
 
 from mii_rss.factories import FeedEntriesFactory, FeedFilterFactory
-from mii_rss.logic import already_exists, match, get_or_create_downloading_object, get_dict_from_feeds
-from mii_rss.models import FeedDownloaded, FeedEntries
+from mii_rss.logic import already_exists, match, get_or_create_downloading_object, get_dict_from_feeds, \
+    save_feed_items
+from mii_rss.models import FeedDownloaded, FeedEntries, FeedItem
 from mii_rss.tasks import check_feed_and_download_torrents, recheck_feed_and_download_torrents, \
     add_torrent_to_transmission, get_hashed_link
 from mii_sorter.models import Season, Episode
 from mii_sorter.models import Serie
+
+
+backfill_feed_items = import_module('mii_rss.migrations.0007_feeditem').backfill_feed_items
 
 
 class TestRSS(TestCase):
@@ -141,6 +151,66 @@ class TestTask(FakeFsTestCase, TestCase):
                                          }
         check_feed_and_download_torrents()
         assert not add_torrent_to_transmission.delay.called
+
+    @mock.patch('mii_rss.tasks.feedparser')
+    def test_task_feed_saves_items_once(self, feedparser):
+        feedparser.parse.return_value = {'status': 200, 'entries': [{'title': 'Arrow', 'link': '/arrow.torrent?'}]}
+        check_feed_and_download_torrents()
+        first_date = FeedItem.objects.get().date
+        check_feed_and_download_torrents()
+        item = FeedItem.objects.get()
+        assert item.title == 'Arrow'
+        assert item.date == first_date
+        assert item.added is None
+
+    @mock.patch('mii_rss.tasks.send_to_transmission_with_retry')
+    def test_add_torrent_marks_item_added(self, send):
+        link = '/added.torrent?'
+        save_feed_items([{'title': 'added', 'link': link}, {'title': 'other', 'link': '/other.torrent?'}])
+        cache.set(get_hashed_link(link), 'dummy')
+        send.return_value = {'result': 'success'}
+        add_torrent_to_transmission(link)
+        assert FeedItem.objects.get(title='added').added
+        assert FeedItem.objects.get(title='other').added is None
+
+    @mock.patch('mii_rss.tasks.send_to_transmission_with_retry')
+    def test_add_torrent_failure_does_not_mark_item(self, send):
+        link = '/refused.torrent?'
+        save_feed_items([{'title': 'refused', 'link': link}])
+        cache.set(get_hashed_link(link), 'dummy')
+        send.return_value = {'result': 'unrecognized info'}
+        with pytest.raises(Exception):
+            add_torrent_to_transmission(link)
+        assert FeedItem.objects.get().added is None
+
+    @responses.activate
+    @mock.patch('mii_rss.tasks.send_to_transmission_with_retry')
+    def test_add_torrent_failure_can_be_retried(self, send):
+        link = 'http://tracker/retried.torrent'
+        save_feed_items([{'title': 'retried', 'link': link}])
+        responses.add(responses.GET, link, body='error page', status=404)
+        responses.add(responses.GET, link, body='torrent', status=200)
+        send.return_value = {'result': 'unrecognized info'}
+        with pytest.raises(Exception):
+            add_torrent_to_transmission(link)
+        assert cache.get(get_hashed_link(link)) is None
+
+        send.return_value = {'result': 'success'}
+        add_torrent_to_transmission(link)
+        assert base64.b64decode(send.call_args[0][0]['arguments']['metainfo']) == b'torrent'
+        assert FeedItem.objects.get().added
+        assert cache.get(get_hashed_link(link))
+
+    def test_feed_items_backfilled_from_feeds(self):
+        link = '/old.torrent?'
+        FeedEntriesFactory.create(json_entries='{"entries": [{"link": "%s", "title": "old"}]}' % link,
+                                  date=timezone.now() - timedelta(days=3))
+        newer = FeedEntriesFactory.create(json_entries='{"entries": [{"link": "%s", "title": "old"}]}' % link,
+                                          date=timezone.now() - timedelta(days=1))
+        backfill_feed_items(apps, None)
+        item = FeedItem.objects.get()
+        assert item.link_hash == get_hashed_link(link)
+        assert item.date < newer.date
 
     @mock.patch('mii_rss.tasks.process_feeds')
     def test_recheck_feeds(self, process_feeds):

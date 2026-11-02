@@ -21,6 +21,15 @@ class FeedEntries(Model):
         get_latest_by = 'date'
 
 
+class FeedItem(Model):
+    # One row per torrent seen in the feeds (FeedEntries is the raw dump of each fetch), kept until clean_history.
+    link_hash = CharField(max_length=56, unique=True)
+    title = TextField()
+    link = TextField()
+    date = DateTimeField(default=timezone.now, db_index=True)
+    added = DateTimeField(null=True, blank=True)
+
+
 class FeedFilter(Model):
     regex = CharField(max_length=255)
     name = CharField(max_length=255, unique=True)

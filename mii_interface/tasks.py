@@ -11,7 +11,7 @@ from django.conf import settings
 from middleware.decorators import single_instance_task
 from mii_interface import logic
 from mii_interface.models import Report
-from mii_rss.models import FeedEntries
+from mii_rss.models import FeedEntries, FeedItem
 from mii_rss.tasks import send_to_transmission_with_retry
 from mii_sorter.models import WhatsNew
 from mii_unpacker.models import Unpacked
@@ -21,6 +21,7 @@ from mii_unpacker.models import Unpacked
 def clean_history():
     month_old = timezone.now() - timedelta(days=45)
     FeedEntries.objects.filter(date__lte=month_old).delete()
+    FeedItem.objects.filter(date__lte=month_old).delete()
     WhatsNew.objects.filter(date__lte=month_old).delete()
     Report.objects.filter(date__lte=month_old).delete()
 
