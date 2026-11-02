@@ -16,6 +16,7 @@ urlpatterns = [
     re_path(r'^movies$', mii_interface_views.movies, name='movies'),
     re_path(r'^series$', mii_interface_views.series, name='series'),
     re_path(r'^rate$', mii_interface_views.rate, name='rate'),
+    re_path(r'^get$', mii_interface_views.get_torrents, name='get'),
     re_path(r'^reports$', mii_interface_views.reports, name='reports'),
     re_path(r'^report/(?P<report_id>[0-9]+)/$', mii_interface_views.report, name='report'),
     re_path(r'^rpc/index$', mii_indexer_views.start_index, name='start_index'),

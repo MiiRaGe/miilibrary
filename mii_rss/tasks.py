@@ -1,5 +1,3 @@
-import hashlib
-
 import base64
 import json
 import logging
@@ -17,7 +15,7 @@ from django.utils import timezone
 from pyreport.reporter import Report
 
 from mii_celery import app
-from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, match
+from mii_rss.logic import already_exists, get_or_create_downloading_object, get_dict_from_feeds, get_hashed_link, match
 from mii_rss.models import FeedEntries, FeedFilter
 from mii_sorter.models import insert_report
 
@@ -77,12 +75,6 @@ def process_feeds(entries):
                 continue
             logger.info(u'Added torrent')
             add_torrent_to_transmission.delay(entry['link'])
-
-
-def get_hashed_link(url_link):
-    if isinstance(url_link, str):
-        url_link = url_link.encode('utf8')
-    return hashlib.sha224(url_link).hexdigest()
 
 
 @app.task(serializer='json')

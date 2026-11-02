@@ -1,14 +1,17 @@
 import json
 from collections import defaultdict
 
+from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
 from mii_sorter.models import Movie, Episode
 from mii_rating.mii_rating import get_questions, save_question_answers, set_movie_unseen
+from mii_rss.logic import get_recent_entries
+from mii_rss.tasks import add_torrent_to_transmission
 from mii_unpacker.tasks import unpack
 from mii_sorter.tasks import sort
 from mii_indexer.tasks import index_movies
@@ -90,6 +93,20 @@ def report(request, report_id):
     except ObjectDoesNotExist:
         report = None
     return render(request, 'mii_interface/report.html', {'report': report})
+
+
+def get_torrents(request):
+    entries = get_recent_entries()
+    if request.method == 'POST':
+        # The page only posts a hash: the links hold the tracker passkey, and the server only fetches links from its feeds.
+        entry = next((entry for entry in entries if entry['hash'] == request.POST.get('entry')), None)
+        if entry:
+            add_torrent_to_transmission.delay(entry['link'])
+            messages.success(request, 'Queued for transmission: %s' % entry['title'])
+        else:
+            messages.error(request, 'This entry is no longer in the recent feeds.')
+        return redirect('get')
+    return render(request, 'mii_interface/get.html', {'entries': entries})
 
 
 def start_unpack_sort_indexer(request):

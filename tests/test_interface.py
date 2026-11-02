@@ -1,9 +1,12 @@
+import json
 import os
+from datetime import timedelta
 
 import mock
 
 from django.test import TestCase
 from django.test import override_settings
+from django.utils import timezone
 from pyfakefs.fake_filesystem_unittest import TestCase as FSTestCase
 
 from mii_common import tools
@@ -12,6 +15,8 @@ from mii_interface.factories import ReportFactory
 from mii_common.tools import LibraryNotMounted
 from mii_interface.logic import check_library, find_discrepancies, fix_discrepancies
 from mii_interface.models import Report
+from mii_rss.factories import FeedEntriesFactory
+from mii_rss.logic import RECENT_FEEDS, get_hashed_link
 from mii_rating.models import QuestionAnswer, MovieQuestionSet
 from mii_sorter.factories import EpisodeFactory, MovieFactory, SerieFactory, SeasonFactory
 from mii_sorter.models import Movie
@@ -125,6 +130,46 @@ class TestMiiRating(TestCase):
         MovieTaggingFactory.create_batch(5, movie=movie)
         response = self.client.get('/rate')
         assert response.status_code == 200
+
+
+class TestGetTorrents(TestCase):
+    def feed(self, days_ago, *titles):
+        entries = [{'title': title, 'link': 'http://tracker/%s.torrent?passkey=secret' % title} for title in titles]
+        return FeedEntriesFactory.create(json_entries=json.dumps({'entries': entries}),
+                                         date=timezone.now() - timedelta(days=days_ago))
+
+    def test_lists_entries_once_newest_first(self):
+        self.feed(2, 'old', 'both')
+        self.feed(1, 'both', 'new')
+        response = self.client.get('/get')
+        assert response.status_code == 200
+        assert [entry['title'] for entry in response.context['entries']] == ['new', 'old', 'both']
+        assert b'passkey' not in response.content
+
+    def test_only_recent_feeds(self):
+        self.feed(10, 'too_old')
+        for days_ago in range(RECENT_FEEDS):
+            self.feed(days_ago, 'recent')
+        titles = [entry['title'] for entry in self.client.get('/get').context['entries']]
+        assert titles == ['recent']
+
+    def test_no_feeds(self):
+        assert self.client.get('/get').status_code == 200
+
+    @mock.patch('mii_interface.views.add_torrent_to_transmission')
+    def test_get_adds_the_entry_to_transmission(self, add_torrent):
+        self.feed(1, 'wanted', 'other')
+        link = 'http://tracker/wanted.torrent?passkey=secret'
+        response = self.client.post('/get', {'entry': get_hashed_link(link)}, follow=True)
+        add_torrent.delay.assert_called_once_with(link)
+        assert b'Queued for transmission: wanted' in response.content
+
+    @mock.patch('mii_interface.views.add_torrent_to_transmission')
+    def test_get_ignores_unknown_entries(self, add_torrent):
+        self.feed(1, 'wanted')
+        response = self.client.post('/get', {'entry': get_hashed_link('http://evil/x.torrent')}, follow=True)
+        assert not add_torrent.delay.called
+        assert b'no longer in the recent feeds' in response.content
 
 
 @override_settings(DESTINATION_FOLDER='/processed/')

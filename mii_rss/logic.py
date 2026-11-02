@@ -1,10 +1,14 @@
+import hashlib
+import json
 import re
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from mii_rss.models import FeedDownloaded
+from mii_rss.models import FeedDownloaded, FeedEntries
 from mii_sorter.models import get_serie_episode, get_serie_season
 from mii_sorter.logic import is_serie
+
+RECENT_FEEDS = 5
 
 
 def already_exists(db_name, title):
@@ -51,6 +55,22 @@ def get_dict_from_feeds(entry_feeds):
     for entry in entry_feeds:
         entries_dict['entries'].append({'title': entry['title'], 'link': entry['link']})
     return entries_dict
+
+
+def get_hashed_link(url_link):
+    if isinstance(url_link, str):
+        url_link = url_link.encode('utf8')
+    return hashlib.sha224(url_link).hexdigest()
+
+
+def get_recent_entries():
+    # Feeds overlap: newest first, each entry once with the date of the oldest feed it's in (when it was first seen).
+    entries = {}
+    for feed in reversed(FeedEntries.objects.order_by('-date')[:RECENT_FEEDS]):
+        for entry in json.loads(feed.json_entries)['entries']:
+            entry_hash = get_hashed_link(entry['link'])
+            entries.setdefault(entry_hash, dict(entry, hash=entry_hash, date=feed.date))
+    return sorted(entries.values(), key=lambda entry: entry['date'], reverse=True)
 
 
 def match(entry, filters):
