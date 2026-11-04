@@ -3,8 +3,11 @@ from collections import defaultdict
 
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.http import urlencode
 
 from mii_indexer.models import MovieTagging, MovieRelation
 from mii_interface.models import Report
@@ -96,6 +99,9 @@ def report(request, report_id):
     return render(request, 'mii_interface/report.html', {'report': report})
 
 
+ENTRIES_PER_PAGE = 50
+
+
 def get_torrents(request):
     if request.method == 'POST':
         # The page only posts a hash: the links hold the tracker passkey, and the server only fetches links from its feeds.
@@ -105,8 +111,9 @@ def get_torrents(request):
             messages.success(request, 'Queued for transmission: %s' % entry.title)
         else:
             messages.error(request, 'This entry is no longer in the recent feeds.')
-        return redirect('get')
-    return render(request, 'mii_interface/get.html', {'entries': get_recent_entries()})
+        return redirect('%s?%s' % (reverse('get'), urlencode({'page': request.POST.get('page', 1)})))
+    entries = Paginator(get_recent_entries(), ENTRIES_PER_PAGE).get_page(request.GET.get('page'))
+    return render(request, 'mii_interface/get.html', {'entries': entries})
 
 
 def start_unpack_sort_indexer(request):

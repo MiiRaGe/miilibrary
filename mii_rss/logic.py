@@ -1,5 +1,6 @@
 import hashlib
 import re
+from datetime import timedelta
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -8,7 +9,7 @@ from mii_rss.models import FeedDownloaded, FeedItem
 from mii_sorter.models import get_serie_episode, get_serie_season
 from mii_sorter.logic import is_serie
 
-RECENT_ENTRIES = 100
+RECENT_DAYS = 7
 
 
 def already_exists(db_name, title):
@@ -73,7 +74,7 @@ def save_feed_items(entries):
 
 
 def get_recent_entries():
-    return FeedItem.objects.order_by('-date', 'id')[:RECENT_ENTRIES]
+    return FeedItem.objects.filter(date__gte=timezone.now() - timedelta(days=RECENT_DAYS)).order_by('-date', 'id')
 
 
 def match(entry, filters):

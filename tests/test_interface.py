@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 import mock
 
@@ -13,7 +14,8 @@ from mii_interface.factories import ReportFactory
 from mii_common.tools import LibraryNotMounted
 from mii_interface.logic import check_library, find_discrepancies, fix_discrepancies
 from mii_interface.models import Report
-from mii_rss.logic import RECENT_ENTRIES, get_hashed_link, save_feed_items
+from mii_interface.views import ENTRIES_PER_PAGE
+from mii_rss.logic import RECENT_DAYS, get_hashed_link, save_feed_items
 from mii_rss.models import FeedItem
 from mii_rating.models import QuestionAnswer, MovieQuestionSet
 from mii_sorter.factories import EpisodeFactory, MovieFactory, SerieFactory, SeasonFactory
@@ -144,11 +146,37 @@ class TestGetTorrents(TestCase):
         assert b'passkey' not in response.content
 
     def test_only_recent_entries(self):
-        self.feed('too_old')
-        self.feed(*['recent%s' % number for number in range(RECENT_ENTRIES)])
+        self.feed('too_old', 'recent')
+        FeedItem.objects.filter(title='too_old').update(date=timezone.now() - timedelta(days=RECENT_DAYS + 1))
         titles = [entry.title for entry in self.client.get('/get').context['entries']]
-        assert len(titles) == RECENT_ENTRIES
-        assert 'too_old' not in titles
+        assert titles == ['recent']
+
+    def test_pagination(self):
+        self.feed(*['entry%s' % number for number in range(ENTRIES_PER_PAGE + 1)])
+        first = self.client.get('/get')
+        assert len(first.context['entries']) == ENTRIES_PER_PAGE
+        assert b'Page 1 of 2' in first.content
+        assert b'href="?page=2"' in first.content
+        second = self.client.get('/get?page=2')
+        assert [entry.title for entry in second.context['entries']] == ['entry%s' % ENTRIES_PER_PAGE]
+        assert b'href="?page=1"' in second.content
+
+    def test_invalid_page(self):
+        self.feed(*['entry%s' % number for number in range(ENTRIES_PER_PAGE + 1)])
+        assert self.client.get('/get?page=abc').context['entries'].number == 1
+        assert self.client.get('/get?page=999').context['entries'].number == 2
+
+    def test_single_page_has_no_pager(self):
+        self.feed('entry')
+        assert b'class="pager"' not in self.client.get('/get').content
+
+    @mock.patch('mii_interface.views.add_torrent_to_transmission')
+    def test_get_returns_to_the_same_page(self, add_torrent):
+        self.feed('wanted')
+        link = 'http://tracker/wanted.torrent?passkey=secret'
+        response = self.client.post('/get', {'entry': get_hashed_link(link), 'page': '3'})
+        assert response.status_code == 302
+        assert response['Location'] == '/get?page=3'
 
     def test_added_entry_has_no_button(self):
         self.feed('wanted', 'other')
